@@ -8,10 +8,14 @@ defmodule IngestWeb.UserRegistrationLive do
     ~H"""
     <div class="mx-auto max-w-sm">
       <.header class="text-center">
+        <img class="mx-auto h-10 w-auto" src="/images/ingest_logo.png" alt="Your Company" />
         Register for an account
         <:subtitle>
           Already registered?
-          <.link navigate={~p"/users/log_in"} class="font-semibold text-brand hover:underline">
+          <.link
+            navigate={~p"/users/log_in"}
+            class="font-semibold text-brand hover:underline text-indigo-600"
+          >
             Sign in
           </.link>
           to your account now.
@@ -31,13 +35,50 @@ defmodule IngestWeb.UserRegistrationLive do
           Oops, something went wrong! Please check the errors below.
         </.error>
 
-        <.input field={@form[:email]} type="email" label="Email" required />
-        <.input field={@form[:password]} type="password" label="Password" required />
+        <.input
+          field={@form[:email]}
+          type="email"
+          label="Email"
+          required
+          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+        />
+        <.input
+          field={@form[:password]}
+          type="password"
+          label="Password"
+          required
+          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+        />
 
         <:actions>
-          <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>
+          <.button
+            phx-disable-with="Creating account..."
+            class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Create an account
+          </.button>
         </:actions>
       </.simple_form>
+
+      <div>
+        <div class="relative mt-10">
+          <div class="absolute inset-0 flex items-center" aria-hidden="true">
+            <div class="w-full border-t border-gray-200"></div>
+          </div>
+          <div class="relative flex justify-center text-sm font-medium leading-6">
+            <span class="bg-white px-6 text-gray-900">Or continue with</span>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-4">
+          <a
+            href="#"
+            class="flex w-full items-center justify-center gap-3 rounded-md bg-white px-3 py-1.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24292F]"
+          >
+            <img src="/images/oneid_logo.png" />
+          </a>
+        </div>
+      </div>
     </div>
     """
   end
