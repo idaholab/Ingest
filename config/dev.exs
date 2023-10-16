@@ -84,3 +84,13 @@ config :esbuild,
 
 config :tailwind,
   cacerts_path: "/etc/ssl/CAINLROOT.cer"
+
+config :ingest, :openid_connect_providers,
+  oneid: [
+    discovery_document_uri: "https://accounts.google.com/.well-known/openid-configuration",
+    client_id: "CLIENT_ID",
+    client_secret: "CLIENT_SECRET",
+    redirect_uri: "http://localhost:4000/oauth",
+    response_type: "code",
+    scope: "openid email profile"
+  ]

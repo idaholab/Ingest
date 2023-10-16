@@ -10,9 +10,10 @@ config :argon2_elixir, t_cost: 1, m_cost: 8
 # Run `mix help test` for more information.
 config :ingest, Ingest.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "monkwer88",
   hostname: "localhost",
   database: "ingest_test#{System.get_env("MIX_TEST_PARTITION")}",
+  port: 5433,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
