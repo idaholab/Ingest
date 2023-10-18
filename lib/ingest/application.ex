@@ -20,12 +20,24 @@ defmodule Ingest.Application do
       IngestWeb.Endpoint,
       # Start a worker by calling: Ingest.Worker.start_link(arg)
       # {Ingest.Worker, arg}
-      {Oidcc.ProviderConfiguration.Worker,
-       %{
-         issuer: Application.get_env(:ingest, :openid_connect_provider)[:issuer],
-         name: __MODULE__.OneID,
-         provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
-       }}
+      Supervisor.child_spec(
+        {Oidcc.ProviderConfiguration.Worker,
+         %{
+           issuer: Application.get_env(:ingest, :openid_connect_oneid)[:issuer],
+           name: __MODULE__.OneID,
+           provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
+         }},
+        id: :oneid
+      ),
+      Supervisor.child_spec(
+        {Oidcc.ProviderConfiguration.Worker,
+         %{
+           issuer: Application.get_env(:ingest, :openid_connect_okta)[:issuer],
+           name: __MODULE__.Okta,
+           provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
+         }},
+        id: :okta
+      )
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

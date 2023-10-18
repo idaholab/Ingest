@@ -21,6 +21,8 @@ defmodule IngestWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/users/log_in/one_id", OidcController, :oneid
+    get "/users/log_in/okta", OidcController, :okta
   end
 
   # Other scopes may use custom stacks.

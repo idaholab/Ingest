@@ -7,7 +7,7 @@ defmodule Ingest.Repo.Migrations.CreateUsersAuthTables do
     create table(:users, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :email, :citext, null: false
-      add :hashed_password, :string, null: false
+      add :hashed_password, :string, null: true
       add :confirmed_at, :naive_datetime
       timestamps()
     end

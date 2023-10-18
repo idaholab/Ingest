@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :ingest, Ingest.Repo,
   username: "postgres",
-  password: "",
+  password: "monkwer88",
   hostname: "localhost",
   port: 5433,
   database: "ingest_dev",
@@ -85,12 +85,22 @@ config :esbuild,
 config :tailwind,
   cacerts_path: "/etc/ssl/CAINLROOT.cer"
 
-config :ingest, :openid_connect_providers,
-  oneid: [
-    discovery_document_uri: "https://accounts.google.com/.well-known/openid-configuration",
-    client_id: "CLIENT_ID",
-    client_secret: "CLIENT_SECRET",
-    redirect_uri: "http://localhost:4000/oauth",
-    response_type: "code",
-    scope: "openid email profile"
-  ]
+config :ingest, :openid_connect_oneid,
+  issuer: "https://identity-preview.inl.gov",
+  client_id: "",
+  client_secret: "",
+  redirect_uri: "http://localhost:4000/users/log_in/one_id",
+  response_type: "code",
+  scope: "openid email profile",
+  ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
+
+config :ingest, :openid_connect_okta,
+  issuer: "https://identity-preview.inl.gov",
+  client_id: "",
+  client_secret: "",
+  redirect_uri: "http://localhost:4000/users/log_in/okta",
+  response_type: "code",
+  scope: "openid email profile",
+  ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
+
+config :ingest, :ca_certfile_path, "/etc/ssl/certs/CAINLROOT.cer"

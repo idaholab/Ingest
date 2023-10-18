@@ -74,6 +74,10 @@ defmodule IngestWeb.UserRegistrationLive do
           <button phx-click="login_oneid">
             <img src="/images/oneid_logo.png" />
           </button>
+
+          <button phx-click="login_okta">
+            <img src="/images/inllogo.png" />
+          </button>
         </div>
       </div>
     </div>
@@ -114,7 +118,7 @@ defmodule IngestWeb.UserRegistrationLive do
   end
 
   def handle_event("login_oneid", _params, socket) do
-    config = Application.get_env(:ingest, :openid_connect_provider)
+    config = Application.get_env(:ingest, :openid_connect_oneid)
 
     with {:ok, redirect_uri} <-
            Oidcc.create_redirect_url(
@@ -122,7 +126,29 @@ defmodule IngestWeb.UserRegistrationLive do
              config[:client_id],
              config[:client_secret],
              %{
-               redirect_uri: config[:redirect_uri]
+               redirect_uri: config[:redirect_uri],
+               scopes: [:openid, :email, :profile]
+             }
+           ) do
+      {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
+    else
+      {:err, message} ->
+        dbg(message)
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("login_okta", _params, socket) do
+    config = Application.get_env(:ingest, :openid_connect_okta)
+
+    with {:ok, redirect_uri} <-
+           Oidcc.create_redirect_url(
+             Ingest.Application.Okta,
+             config[:client_id],
+             config[:client_secret],
+             %{
+               redirect_uri: config[:redirect_uri],
+               scopes: [:openid, :email, :profile]
              }
            ) do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}

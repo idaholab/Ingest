@@ -42,6 +42,12 @@ defmodule Ingest.Accounts.User do
     |> validate_password(opts)
   end
 
+  def oidcc_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:email, :password])
+    |> validate_email(opts)
+  end
+
   defp validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])

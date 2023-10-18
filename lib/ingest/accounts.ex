@@ -80,6 +80,12 @@ defmodule Ingest.Accounts do
     |> Repo.insert()
   end
 
+  def register_user(attrs, :oidcc) do
+    %User{}
+    |> User.oidcc_changeset(attrs)
+    |> Repo.insert()
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
