@@ -40,4 +40,9 @@ defmodule IngestWeb.UserLoginLive do
     form = to_form(%{"email" => email}, as: "user")
     {:ok, assign(socket, form: form), temporary_assigns: [form: form]}
   end
+
+  def handle_params(params, uri, socket) do
+    dbg(params)
+    {:noreply, socket}
+  end
 end

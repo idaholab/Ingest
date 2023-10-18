@@ -51,7 +51,7 @@ defmodule Ingest.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:openid_connect, "~> 0.2.2"}
+      {:oidcc, "~> 3.0.1"}
     ]
   end
 

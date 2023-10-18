@@ -71,12 +71,9 @@ defmodule IngestWeb.UserRegistrationLive do
         </div>
 
         <div class="mt-6 grid grid-cols-2 gap-4">
-          <a
-            href="#"
-            class="flex w-full items-center justify-center gap-3 rounded-md bg-white px-3 py-1.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24292F]"
-          >
+          <button phx-click="login_oneid">
             <img src="/images/oneid_logo.png" />
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -114,6 +111,26 @@ defmodule IngestWeb.UserRegistrationLive do
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset = Accounts.change_user_registration(%User{}, user_params)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
+  end
+
+  def handle_event("login_oneid", _params, socket) do
+    config = Application.get_env(:ingest, :openid_connect_provider)
+
+    with {:ok, redirect_uri} <-
+           Oidcc.create_redirect_url(
+             Ingest.Application.OneID,
+             config[:client_id],
+             config[:client_secret],
+             %{
+               redirect_uri: config[:redirect_uri]
+             }
+           ) do
+      {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
+    else
+      {:err, message} ->
+        dbg(message)
+        {:noreply, socket}
+    end
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
