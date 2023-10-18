@@ -20,6 +20,8 @@ defmodule Ingest.Application do
       IngestWeb.Endpoint,
       # Start a worker by calling: Ingest.Worker.start_link(arg)
       # {Ingest.Worker, arg}
+
+      # Comment out both of these workers if you're not working with an OIDCC provider, dev has sane defaults
       Supervisor.child_spec(
         {Oidcc.ProviderConfiguration.Worker,
          %{
