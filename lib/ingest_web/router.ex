@@ -70,10 +70,10 @@ defmodule IngestWeb.Router do
       on_mount: [{IngestWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
-      live "/dashboard", DashboardLive, :dashboard
-      live "/dashboard/requests", RequestsLive, :requests
-      live "/dashboard/templates", TemplatesLive, :templates
-      live "/dashboard/destinations", DestinationsLive, :destinations
+      live "/dashboard", DashboardLive, :index
+      live "/dashboard/requests", RequestsLive, :index
+      live "/dashboard/templates", TemplatesLive, :index
+      live "/dashboard/destinations", DestinationsLive, :index
     end
   end
 
