@@ -87,11 +87,11 @@ defmodule IngestWeb.OidcController do
             UserAuth.log_in_user(conn, user, %{})
         end
       else
-        {:error, {err, status_code, %{"error" => error}}} ->
+        {:error, {_err, _status_code, %{"error" => error}}} ->
           conn |> put_flash(:error, "unable to get user info #{error}") |> redirect(to: "/")
       end
     else
-      {:error, {err, status_code, %{"error" => error}}} ->
+      {:error, {_err, _status_code, %{"error" => error}}} ->
         conn
         |> put_flash(:error, "unable to get authorization token #{error}")
         |> redirect(to: "/")

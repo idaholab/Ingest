@@ -12,10 +12,7 @@ defmodule IngestWeb.UserRegistrationLive do
         Register for an account
         <:subtitle>
           Already registered?
-          <.link
-            navigate={~p"/users/log_in"}
-            class="font-semibold text-brand hover:underline text-indigo-600"
-          >
+          <.link navigate={~p"/users/log_in"} class="font-semibold text-brand hover:underline">
             Sign in
           </.link>
           to your account now.
@@ -132,8 +129,8 @@ defmodule IngestWeb.UserRegistrationLive do
            ) do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
     else
-      {:err, message} ->
-        {:noreply, socket}
+      {:error, message} ->
+        {:noreply, socket |> put_flash(:error, message)}
     end
   end
 
@@ -152,8 +149,8 @@ defmodule IngestWeb.UserRegistrationLive do
            ) do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
     else
-      {:err, message} ->
-        {:noreply, socket}
+      {:error, message} ->
+        {:noreply, socket |> put_flash(:error, message)}
     end
   end
 

@@ -1,8 +1,6 @@
 defmodule IngestWeb.UserLoginLive do
   use IngestWeb, :live_view
 
-  alias Ingest.Accounts
-
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-sm">
@@ -79,56 +77,8 @@ defmodule IngestWeb.UserLoginLive do
     {:ok, assign(socket, form: form), temporary_assigns: [form: form]}
   end
 
-  # handle the code redirect from the OIDCC provider, use the URI to differentiate
-  def handle_params(%{"code" => code}, uri, socket) do
-    case socket.assigns.live_action do
-      :login_one_id ->
-        config = Application.get_env(:ingest, :openid_connect_oneid)
-
-        with {:ok, token} <-
-               Oidcc.retrieve_token(
-                 code,
-                 Ingest.Application.OneID,
-                 config[:client_id],
-                 config[:client_secret],
-                 %{redirect_uri: config[:redirect_uri]}
-               ) do
-          with {:ok, claims} <-
-                 Oidcc.retrieve_userinfo(
-                   token,
-                   Ingest.Application.OneID,
-                   config[:client_id],
-                   config[:client_secret],
-                   %{expected_subject: "sub"}
-                 ) do
-            user = Accounts.get_user_by_email(claims["email"])
-
-            {:noreply, socket}
-          else
-            {:error, {err, status_code, %{"error" => error}}} ->
-              {:noreply, socket |> put_flash(:error, "unable to get user info #{error}")}
-          end
-        else
-          {:error, {err, status_code, %{"error" => error}}} ->
-            {:noreply, socket |> put_flash(:error, "unable to get authorization token #{error}")}
-        end
-
-      :login_okta ->
-        config = Application.get_env(:ingest, :openid_connect_okta)
-
-        with {:ok, token} =
-               Oidcc.retrieve_token(
-                 code,
-                 Ingest.Application.Okta,
-                 config[:client_id],
-                 config[:client_secret],
-                 %{redirect_uri: config[:redirect_uri]}
-               ) do
-        end
-
-      _ ->
-        {:noreply, socket}
-    end
+  def handle_params(_params, _uri, socket) do
+    {:noreply, socket}
   end
 
   def handle_event("login_oneid", _params, socket) do
@@ -146,7 +96,7 @@ defmodule IngestWeb.UserLoginLive do
            ) do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
     else
-      {:err, :provider_not_ready} ->
+      {:error, :provider_not_ready} ->
         {:noreply, socket}
     end
   end
@@ -166,12 +116,8 @@ defmodule IngestWeb.UserLoginLive do
            ) do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
     else
-      {:err, message} ->
+      {:error, :provider_not_ready} ->
         {:noreply, socket}
     end
-  end
-
-  def handle_params(params, uri, socket) do
-    {:noreply, socket}
   end
 end
