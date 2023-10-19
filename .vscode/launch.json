@@ -13,8 +13,8 @@
             "exitAfterTaskReturns": false,
             "debugAutoInterpretAllModules": false,
             "debugInterpretModulesPatterns": [
-                "Ingest",
-                "IngestWeb"
+                "Ingest.*",
+                "IngestWeb.*"
             ]
         },
         {

@@ -34,7 +34,7 @@ defmodule Sidebar do
                   </a>
                 </li>
                 <li>
-                  <a href="#" class={active("requests", @section)}>
+                  <a href={~p"/dashboard/requests"} class={active("requests", @section)}>
                     <svg
                       class="h-6 w-6 shrink-0"
                       fill="none"
@@ -53,7 +53,7 @@ defmodule Sidebar do
                   </a>
                 </li>
                 <li>
-                  <a href="#" class={active("templates", @section)}>
+                  <a href={~p"/dashboard/templates"} class={active("templates", @section)}>
                     <svg
                       class="h-6 w-6 shrink-0"
                       fill="none"
@@ -72,7 +72,7 @@ defmodule Sidebar do
                   </a>
                 </li>
                 <li>
-                  <a href="#" class={active("destinations", @section)}>
+                  <a href={~p"/dashboard/destinations"} class={active("destinations", @section)}>
                     <svg
                       class="h-6 w-6 shrink-0"
                       fill="none"
@@ -177,7 +177,7 @@ defmodule Sidebar do
             <ul role="list" class="-mx-2 space-y-1">
               <li>
                 <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
-                <a href="#" class={active("dashboard", @section)}>
+                <a href={~p"/dashboard"} class={active("dashboard", @section)}>
                   <svg
                     class="h-6 w-6 shrink-0"
                     fill="none"
@@ -196,7 +196,7 @@ defmodule Sidebar do
                 </a>
               </li>
               <li>
-                <a href="#" class={active("requests", @section)}>
+                <a href={~p"/dashboard/requests"} class={active("requests", @section)}>
                   <svg
                     class="h-6 w-6 shrink-0"
                     fill="none"
@@ -215,7 +215,7 @@ defmodule Sidebar do
                 </a>
               </li>
               <li>
-                <a href="#" class={active("templates", @section)}>
+                <a href={~p"/dashboard/templates"} class={active("templates", @section)}>
                   <svg
                     class="h-6 w-6 shrink-0"
                     fill="none"
@@ -234,7 +234,7 @@ defmodule Sidebar do
                 </a>
               </li>
               <li>
-                <a href="#" class={active("destinations", @section)}>
+                <a href={~p"/dashboard/destinations"} class={active("destinations", @section)}>
                   <svg
                     class="h-6 w-6 shrink-0"
                     fill="none"
