@@ -17,29 +17,29 @@ defmodule Ingest.Application do
       # Start Finch
       {Finch, name: Ingest.Finch},
       # Start the Endpoint (http/https)
-      IngestWeb.Endpoint,
+      IngestWeb.Endpoint
       # Start a worker by calling: Ingest.Worker.start_link(arg)
       # {Ingest.Worker, arg}
 
       # Comment out both of these workers if you're not working with an OIDCC provider, dev has sane defaults
-      Supervisor.child_spec(
-        {Oidcc.ProviderConfiguration.Worker,
-         %{
-           issuer: Application.get_env(:ingest, :openid_connect_oneid)[:issuer],
-           name: __MODULE__.OneID,
-           provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
-         }},
-        id: :oneid
-      ),
-      Supervisor.child_spec(
-        {Oidcc.ProviderConfiguration.Worker,
-         %{
-           issuer: Application.get_env(:ingest, :openid_connect_okta)[:issuer],
-           name: __MODULE__.Okta,
-           provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
-         }},
-        id: :okta
-      )
+      # Supervisor.child_spec(
+      #   {Oidcc.ProviderConfiguration.Worker,
+      #    %{
+      #      issuer: Application.get_env(:ingest, :openid_connect_oneid)[:issuer],
+      #      name: __MODULE__.OneID,
+      #      provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
+      #    }},
+      #   id: :oneid
+      # ),
+      # Supervisor.child_spec(
+      #   {Oidcc.ProviderConfiguration.Worker,
+      #    %{
+      #      issuer: Application.get_env(:ingest, :openid_connect_okta)[:issuer],
+      #      name: __MODULE__.Okta,
+      #      provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
+      #    }},
+      #   id: :okta
+      # )
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

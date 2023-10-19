@@ -133,7 +133,6 @@ defmodule IngestWeb.UserRegistrationLive do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
     else
       {:err, message} ->
-        dbg(message)
         {:noreply, socket}
     end
   end
@@ -154,7 +153,6 @@ defmodule IngestWeb.UserRegistrationLive do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
     else
       {:err, message} ->
-        dbg(message)
         {:noreply, socket}
     end
   end

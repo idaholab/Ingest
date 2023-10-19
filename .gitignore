@@ -37,3 +37,6 @@ npm-debug.log
 
 .idea
 
+.elixir-tools
+.elixir_ls
+.vscode

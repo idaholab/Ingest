@@ -79,10 +79,8 @@ defmodule IngestWeb.UserLoginLive do
     {:ok, assign(socket, form: form), temporary_assigns: [form: form]}
   end
 
-  # handle the code redirect from the OIDCC provider, use the URI to differentiate 
+  # handle the code redirect from the OIDCC provider, use the URI to differentiate
   def handle_params(%{"code" => code}, uri, socket) do
-    dbg("fired")
-
     case socket.assigns.live_action do
       :login_one_id ->
         config = Application.get_env(:ingest, :openid_connect_oneid)
@@ -148,8 +146,7 @@ defmodule IngestWeb.UserLoginLive do
            ) do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
     else
-      {:err, message} ->
-        dbg(message)
+      {:err, :provider_not_ready} ->
         {:noreply, socket}
     end
   end
@@ -170,13 +167,11 @@ defmodule IngestWeb.UserLoginLive do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
     else
       {:err, message} ->
-        dbg(message)
         {:noreply, socket}
     end
   end
 
   def handle_params(params, uri, socket) do
-    dbg(params)
     {:noreply, socket}
   end
 end
