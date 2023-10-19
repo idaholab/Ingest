@@ -10,7 +10,12 @@
             "request": "launch",
             "task": "phx.server",
             "projectDir": "${workspaceRoot}",
-            "exitAfterTaskReturns": false
+            "exitAfterTaskReturns": false,
+            "debugAutoInterpretAllModules": false,
+            "debugInterpretModulesPatterns": [
+                "Ingest",
+                "IngestWeb"
+            ]
         },
         {
             "type": "mix_task",
