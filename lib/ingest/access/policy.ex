@@ -7,7 +7,7 @@ defmodule Ingest.Access.Policy do
   schema "policies" do
     field :attributes, :map
     field :name, :string
-    field :actions, {:array, Ecto.Enum}, values: [:create, :read, :update, :delete]
+    field :actions, {:array, Ecto.Enum}, values: [:create, :read, :update, :delete, :list]
     field :scope, Ecto.Enum, values: [:global, :user, :group]
     field :scope_id, :binary_id
     field :resource_types, {:array, EctoResourceType}

@@ -21,13 +21,13 @@ defmodule Ingest.AccessTest do
       }
 
       assert {:ok, %Policy{} = policy} = Access.create_policy(valid_attrs)
-      assert policies = Access.list_policies([Ingest.Access.Policy], [:update])
+      assert policies = Access.list_policies([Ingest.Access.Policy], actions: [:update])
       assert length(policies) > 0
       assert Enum.at(policies, 0).matcher == :match_all
       assert Enum.at(policies, 0).resource_types == [Ingest.Access.Policy]
 
       # it's not coverage unless you test failure
-      assert policies = Access.list_policies([Ingest.Access.Policy], [:create])
+      assert policies = Access.list_policies([Ingest.Access.Policy], actions: [:create])
       assert length(policies) == 0
     end
 
@@ -119,9 +119,14 @@ defmodule Ingest.AccessTest do
     end
 
     test "create_resource_policy/1 with valid data creates a resource_policy" do
-      valid_attrs = %{resource_id: "7488a646-e31f-11e4-aace-600308960662", resource_type: "some resource_type"}
+      valid_attrs = %{
+        resource_id: "7488a646-e31f-11e4-aace-600308960662",
+        resource_type: "some resource_type"
+      }
 
-      assert {:ok, %ResourcePolicy{} = resource_policy} = Access.create_resource_policy(valid_attrs)
+      assert {:ok, %ResourcePolicy{} = resource_policy} =
+               Access.create_resource_policy(valid_attrs)
+
       assert resource_policy.resource_id == "7488a646-e31f-11e4-aace-600308960662"
       assert resource_policy.resource_type == "some resource_type"
     end
@@ -132,16 +137,25 @@ defmodule Ingest.AccessTest do
 
     test "update_resource_policy/2 with valid data updates the resource_policy" do
       resource_policy = resource_policy_fixture()
-      update_attrs = %{resource_id: "7488a646-e31f-11e4-aace-600308960668", resource_type: "some updated resource_type"}
 
-      assert {:ok, %ResourcePolicy{} = resource_policy} = Access.update_resource_policy(resource_policy, update_attrs)
+      update_attrs = %{
+        resource_id: "7488a646-e31f-11e4-aace-600308960668",
+        resource_type: "some updated resource_type"
+      }
+
+      assert {:ok, %ResourcePolicy{} = resource_policy} =
+               Access.update_resource_policy(resource_policy, update_attrs)
+
       assert resource_policy.resource_id == "7488a646-e31f-11e4-aace-600308960668"
       assert resource_policy.resource_type == "some updated resource_type"
     end
 
     test "update_resource_policy/2 with invalid data returns error changeset" do
       resource_policy = resource_policy_fixture()
-      assert {:error, %Ecto.Changeset{}} = Access.update_resource_policy(resource_policy, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Access.update_resource_policy(resource_policy, @invalid_attrs)
+
       assert resource_policy == Access.get_resource_policy!(resource_policy.id)
     end
 

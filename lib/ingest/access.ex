@@ -8,6 +8,11 @@ defmodule Ingest.Access do
 
   alias Ingest.Access.Policy
 
+  @list_policies_defaults %{
+    scopes: [:global],
+    actions: [:create, :read, :update, :list, :delete]
+  }
+
   @doc """
   Returns the list of policies.
 
@@ -24,7 +29,9 @@ defmodule Ingest.Access do
   @doc """
   Returns a list of policies matching the provided schemas and actions
   """
-  def list_policies(schemas, actions) do
+  def list_policies(schemas, opts \\ []) do
+    %{scopes: scopes, actions: actions} = Enum.into(opts, @list_policies_defaults)
+
     action_query =
       Enum.reduce(actions, Policy, fn action, query ->
         query
@@ -40,6 +47,7 @@ defmodule Ingest.Access do
       end)
 
     where
+    |> where([p], p.scope in ^scopes)
     |> Repo.all()
   end
 
