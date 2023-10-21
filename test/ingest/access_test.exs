@@ -10,7 +10,7 @@ defmodule Ingest.AccessTest do
 
     @invalid_attrs %{attributes: nil, name: nil, actions: nil, resource_types: nil, matcher: nil}
 
-    test "list_policies/2 returns policies matching resources and action" do
+    test "list_global_policies/2 returns policies matching resources and action" do
       valid_attrs = %{
         attributes: %{},
         name: "some name",
@@ -21,13 +21,18 @@ defmodule Ingest.AccessTest do
       }
 
       assert {:ok, %Policy{} = policy} = Access.create_policy(valid_attrs)
-      assert policies = Access.list_policies([Ingest.Access.Policy], actions: [:update])
+
+      assert policies =
+               Access.list_global_policies(schemas: [Ingest.Access.Policy], actions: [:update])
+
       assert length(policies) > 0
       assert Enum.at(policies, 0).matcher == :match_all
       assert Enum.at(policies, 0).resource_types == [Ingest.Access.Policy]
 
       # it's not coverage unless you test failure
-      assert policies = Access.list_policies([Ingest.Access.Policy], actions: [:create])
+      assert policies =
+               Access.list_global_policies(schemas: [Ingest.Access.Policy], actions: [:create])
+
       assert length(policies) == 0
     end
 
