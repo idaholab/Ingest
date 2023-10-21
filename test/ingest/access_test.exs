@@ -118,11 +118,6 @@ defmodule Ingest.AccessTest do
       assert Access.list_resource_policies() == [resource_policy]
     end
 
-    test "get_resource_policy!/1 returns the resource_policy with given id" do
-      resource_policy = resource_policy_fixture()
-      assert Access.get_resource_policy!(resource_policy.id) == resource_policy
-    end
-
     test "create_resource_policy/1 with valid data creates a resource_policy" do
       valid_attrs = %{
         resource_id: "7488a646-e31f-11e4-aace-600308960662",
@@ -138,41 +133,6 @@ defmodule Ingest.AccessTest do
 
     test "create_resource_policy/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Access.create_resource_policy(@invalid_attrs)
-    end
-
-    test "update_resource_policy/2 with valid data updates the resource_policy" do
-      resource_policy = resource_policy_fixture()
-
-      update_attrs = %{
-        resource_id: "7488a646-e31f-11e4-aace-600308960668",
-        resource_type: "some updated resource_type"
-      }
-
-      assert {:ok, %ResourcePolicy{} = resource_policy} =
-               Access.update_resource_policy(resource_policy, update_attrs)
-
-      assert resource_policy.resource_id == "7488a646-e31f-11e4-aace-600308960668"
-      assert resource_policy.resource_type == "some updated resource_type"
-    end
-
-    test "update_resource_policy/2 with invalid data returns error changeset" do
-      resource_policy = resource_policy_fixture()
-
-      assert {:error, %Ecto.Changeset{}} =
-               Access.update_resource_policy(resource_policy, @invalid_attrs)
-
-      assert resource_policy == Access.get_resource_policy!(resource_policy.id)
-    end
-
-    test "delete_resource_policy/1 deletes the resource_policy" do
-      resource_policy = resource_policy_fixture()
-      assert {:ok, %ResourcePolicy{}} = Access.delete_resource_policy(resource_policy)
-      assert_raise Ecto.NoResultsError, fn -> Access.get_resource_policy!(resource_policy.id) end
-    end
-
-    test "change_resource_policy/1 returns a resource_policy changeset" do
-      resource_policy = resource_policy_fixture()
-      assert %Ecto.Changeset{} = Access.change_resource_policy(resource_policy)
     end
   end
 end

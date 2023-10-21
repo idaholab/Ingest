@@ -1,0 +1,2 @@
+defmodule CanDo do
+end
