@@ -30,7 +30,7 @@ defmodule Ingest.Access do
   end
 
   @doc """
-  Returns a list of policies matching the provided schemas and actions
+  Returns a list of policies matching the provided schemas, can be focused to also filter on scopes and actions
   """
   def list_policies(schemas, opts \\ []) do
     %{scopes: scopes, actions: actions} = Enum.into(opts, @list_policies_defaults)
