@@ -13,6 +13,9 @@ defmodule Ingest.Access do
     actions: [:create, :read, :update, :list, :delete]
   }
 
+  # used for sorting results into the right priority for lists
+  @scope_priority [:global, :user, :group]
+
   @doc """
   Returns the list of policies.
 
@@ -46,10 +49,26 @@ defmodule Ingest.Access do
         |> where([p], ^schema in p.resource_types)
       end)
 
-    where
-    |> where([p], p.scope in ^scopes)
-    |> preload(:resource_policies)
-    |> Repo.all()
+    # I know this looks slightly complicated - but all we're doing is sorting the results based on the scope
+    # so that we always start matching on global policies first
+    results =
+      where
+      |> where([p], p.scope in ^scopes)
+      |> preload(:resource_policies)
+      |> Repo.all()
+      |> Enum.group_by(&Map.get(&1, :scope))
+
+    Enum.flat_map(@scope_priority, fn e ->
+      list =
+        results
+        |> Map.get(e)
+
+      if list do
+        list
+      else
+        []
+      end
+    end)
   end
 
   @doc """
