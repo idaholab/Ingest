@@ -16,7 +16,8 @@ defmodule Ingest.AccessTest do
         name: "some name",
         actions: [:update],
         resource_types: [Ingest.Access.Policy],
-        matcher: :match_all
+        matcher: :match_all,
+        scope: :global
       }
 
       assert {:ok, %Policy{} = policy} = Access.create_policy(valid_attrs)
@@ -45,15 +46,16 @@ defmodule Ingest.AccessTest do
         attributes: %{},
         name: "some name",
         actions: [:update],
-        resource_types: ["option1", "option2"],
-        matcher: :match_all
+        resource_types: [Ingest.Access.Policy],
+        matcher: :match_all,
+        scope: :global
       }
 
       assert {:ok, %Policy{} = policy} = Access.create_policy(valid_attrs)
       assert policy.attributes == %{}
       assert policy.name == "some name"
       assert policy.actions == [:update]
-      assert policy.resource_types == ["option1", "option2"]
+      assert policy.resource_types == [Ingest.Access.Policy]
       assert policy.matcher == :match_all
     end
 
@@ -68,15 +70,16 @@ defmodule Ingest.AccessTest do
         attributes: %{},
         name: "some updated name",
         actions: [:delete],
-        resource_types: ["option1"],
-        matcher: :match_one
+        resource_types: [Ingest.Access.Policy],
+        matcher: :match_one,
+        scope: :global
       }
 
       assert {:ok, %Policy{} = policy} = Access.update_policy(policy, update_attrs)
       assert policy.attributes == %{}
       assert policy.name == "some updated name"
       assert policy.actions == [:delete]
-      assert policy.resource_types == ["option1"]
+      assert policy.resource_types == [Ingest.Access.Policy]
       assert policy.matcher == :match_one
     end
 

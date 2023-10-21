@@ -10,6 +10,10 @@ import Config
 config :ingest,
   ecto_repos: [Ingest.Repo]
 
+# Available resource types for CanDo - the permissions layer
+config :ingest, :can_do,
+  resource_types: [Ingest.Projects.Project, Ingest.Requests.Request, Ingest.Requests.Template]
+
 # Configures the endpoint
 config :ingest, IngestWeb.Endpoint,
   url: [host: "localhost"],

@@ -15,7 +15,8 @@ defmodule Ingest.AccessFixtures do
         attributes: %{},
         matcher: :match_one,
         name: "some name",
-        resource_types: ["option1", "option2"]
+        resource_types: [Ingest.Access.Policy],
+        scope: :global
       })
       |> Ingest.Access.create_policy()
 
