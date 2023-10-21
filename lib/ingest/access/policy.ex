@@ -2,6 +2,8 @@ defmodule Ingest.Access.Policy do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
   schema "policies" do
     field :attributes, :map
     field :name, :string
@@ -10,6 +12,9 @@ defmodule Ingest.Access.Policy do
     field :scope_id, :binary_id
     field :resource_types, {:array, EctoResourceType}
     field :matcher, Ecto.Enum, values: [:match_one, :match_none, :match_all]
+
+    many_to_many :resource_policies, Ingest.Access.ResourcePolicy,
+      join_through: "resource_policies"
 
     timestamps()
   end

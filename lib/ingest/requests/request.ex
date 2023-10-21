@@ -6,6 +6,8 @@ defmodule Ingest.Requests.Request do
   alias Ingest.Projects.Project
   alias Ingest.Requests.Template
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
   schema "requests" do
     field :name, :string
     field :public, :boolean, default: false

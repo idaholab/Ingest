@@ -123,4 +123,100 @@ defmodule Ingest.Access do
   def change_policy(%Policy{} = policy, attrs \\ %{}) do
     Policy.changeset(policy, attrs)
   end
+
+  alias Ingest.Access.ResourcePolicy
+
+  @doc """
+  Returns the list of resource_policies.
+
+  ## Examples
+
+      iex> list_resource_policies()
+      [%ResourcePolicy{}, ...]
+
+  """
+  def list_resource_policies do
+    Repo.all(ResourcePolicy)
+  end
+
+  @doc """
+  Gets a single resource_policy.
+
+  Raises `Ecto.NoResultsError` if the Resource policy does not exist.
+
+  ## Examples
+
+      iex> get_resource_policy!(123)
+      %ResourcePolicy{}
+
+      iex> get_resource_policy!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_resource_policy!(id), do: Repo.get!(ResourcePolicy, id)
+
+  @doc """
+  Creates a resource_policy.
+
+  ## Examples
+
+      iex> create_resource_policy(%{field: value})
+      {:ok, %ResourcePolicy{}}
+
+      iex> create_resource_policy(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_resource_policy(attrs \\ %{}) do
+    %ResourcePolicy{}
+    |> ResourcePolicy.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a resource_policy.
+
+  ## Examples
+
+      iex> update_resource_policy(resource_policy, %{field: new_value})
+      {:ok, %ResourcePolicy{}}
+
+      iex> update_resource_policy(resource_policy, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_resource_policy(%ResourcePolicy{} = resource_policy, attrs) do
+    resource_policy
+    |> ResourcePolicy.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a resource_policy.
+
+  ## Examples
+
+      iex> delete_resource_policy(resource_policy)
+      {:ok, %ResourcePolicy{}}
+
+      iex> delete_resource_policy(resource_policy)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_resource_policy(%ResourcePolicy{} = resource_policy) do
+    Repo.delete(resource_policy)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking resource_policy changes.
+
+  ## Examples
+
+      iex> change_resource_policy(resource_policy)
+      %Ecto.Changeset{data: %ResourcePolicy{}}
+
+  """
+  def change_resource_policy(%ResourcePolicy{} = resource_policy, attrs \\ %{}) do
+    ResourcePolicy.changeset(resource_policy, attrs)
+  end
 end

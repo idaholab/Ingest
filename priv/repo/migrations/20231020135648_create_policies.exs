@@ -2,7 +2,8 @@ defmodule Ingest.Repo.Migrations.CreatePolicies do
   use Ecto.Migration
 
   def change do
-    create table(:policies) do
+    create table(:policies, primary_key: false) do
+      add :id, :binary_id, primary_key: true
       add :name, :string
       add :actions, {:array, :string}
       add :resource_types, {:array, :string}
