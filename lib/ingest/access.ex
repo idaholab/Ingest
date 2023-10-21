@@ -48,6 +48,7 @@ defmodule Ingest.Access do
 
     where
     |> where([p], p.scope in ^scopes)
+    |> preload(:resource_policies)
     |> Repo.all()
   end
 

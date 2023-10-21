@@ -14,7 +14,8 @@ defmodule Ingest.Access.Policy do
     field :matcher, Ecto.Enum, values: [:match_one, :match_none, :match_all]
 
     many_to_many :resource_policies, Ingest.Access.ResourcePolicy,
-      join_through: "resource_policies"
+      join_through: "resource_policies",
+      join_keys: [policy_id: :id, resource_id: :resource_id]
 
     timestamps()
   end

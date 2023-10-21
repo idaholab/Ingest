@@ -2,6 +2,7 @@ defmodule Ingest.Access.ResourcePolicy do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key false
   schema "resource_policies" do
     field :resource_id, Ecto.UUID
     field :resource_type, :string
