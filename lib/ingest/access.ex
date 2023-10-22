@@ -9,8 +9,9 @@ defmodule Ingest.Access do
   alias Ingest.Access.Policy
 
   @list_policies_defaults %{
-    schema: Application.compile_env(:ingest, :can_do, :resource_types),
-    actions: [:create, :read, :update, :list, :delete]
+    schemas: Application.compile_env(:ingest, :can_do, :resource_types),
+    actions: [:create, :read, :update, :list, :delete],
+    scopes: [:global]
   }
 
   # used for sorting results into the right priority for lists
@@ -32,8 +33,9 @@ defmodule Ingest.Access do
   @doc """
   Returns a list of policies matching the provided schemas, can be focused to also filter on scopes and actions
   """
-  def list_global_policies(opts \\ []) do
-    %{schemas: schemas, actions: actions} = Enum.into(opts, @list_policies_defaults)
+  def list_policies(opts \\ []) do
+    %{schemas: schemas, actions: actions, scopes: scopes} =
+      Enum.into(opts, @list_policies_defaults)
 
     action_query =
       Enum.reduce(actions, Policy, fn action, query ->
@@ -49,10 +51,26 @@ defmodule Ingest.Access do
         |> where([p], ^schema in p.resource_types)
       end)
 
+    # I know this looks slightly complicated - but all we're doing is sorting the results based on the scope
+    # so that we always start matching on global policies first
     results =
       where
-      |> where([p], p.scope == :global)
+      |> where([p], p.scope in ^scopes)
+      |> preload(:resource_policies)
       |> Repo.all()
+      |> Enum.group_by(&Map.get(&1, :scope))
+
+    Enum.flat_map(@scope_priority, fn e ->
+      list =
+        results
+        |> Map.get(e)
+
+      if list do
+        list
+      else
+        []
+      end
+    end)
   end
 
   @doc """

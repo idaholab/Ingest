@@ -3,6 +3,7 @@ defmodule IngestWeb.RequestsLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:section, "requests"), layout: {IngestWeb.Layouts, :dashboard}}
+    {:ok, socket |> assign(:section, "requests") |> assign(:requests, []),
+     layout: {IngestWeb.Layouts, :dashboard}}
   end
 end

@@ -23,7 +23,7 @@ defmodule Ingest.AccessTest do
       assert {:ok, %Policy{} = policy} = Access.create_policy(valid_attrs)
 
       assert policies =
-               Access.list_global_policies(schemas: [Ingest.Access.Policy], actions: [:update])
+               Access.list_policies(schemas: [Ingest.Access.Policy], actions: [:update])
 
       assert length(policies) > 0
       assert Enum.at(policies, 0).matcher == :match_all
@@ -31,7 +31,7 @@ defmodule Ingest.AccessTest do
 
       # it's not coverage unless you test failure
       assert policies =
-               Access.list_global_policies(schemas: [Ingest.Access.Policy], actions: [:create])
+               Access.list_policies(schemas: [Ingest.Access.Policy], actions: [:create])
 
       assert length(policies) == 0
     end
