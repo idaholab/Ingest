@@ -7,6 +7,7 @@ defmodule IngestWeb.LiveComponents.RequestModal do
 
   alias Ingest.Requests.Request
 
+  # TODO: I've made a good start on this to show you how it should work, but this should be the last form you do, project creation and templates come first
   @impl true
   def render(assigns) do
     ~H"""
@@ -22,35 +23,31 @@ defmodule IngestWeb.LiveComponents.RequestModal do
       </div>
 
       <.modal id="request_modal">
-        <form>
+        <.form for={@request_form}>
           <div class="space-y-12">
             <div class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
               <div>
-                <h2 class="text-base font-semibold leading-7 text-gray-900">Profile</h2>
+                <h2 class="text-base font-semibold leading-7 text-gray-900">New Data Request</h2>
                 <p class="mt-1 text-sm leading-6 text-gray-600">
-                  This information will be displayed publicly so be careful what you share.
+                  Create a new data request which you can share with other users or the public to solicit data and metadata for a project.
                 </p>
               </div>
 
               <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
                 <div class="sm:col-span-4">
-                  <label for="website" class="block text-sm font-medium leading-6 text-gray-900">
-                    Website
-                  </label>
-                  <div class="mt-2">
-                    <div class="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
-                      <span class="flex select-none items-center pl-3 text-gray-500 sm:text-sm">
-                        http://
-                      </span>
-                      <input
-                        type="text"
-                        name="website"
-                        id="website"
-                        class="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                        placeholder="www.example.com"
-                      />
-                    </div>
-                  </div>
+                  <.label
+                    for="status-select"
+                    class="block text-sm font-medium leading-6 text-gray-900"
+                  >
+                    Initial Status
+                  </.label>
+                  <.input
+                    type="select"
+                    name="status-select"
+                    id="status-select"
+                    value={:draft}
+                    options={Ecto.Enum.mappings(Ingest.Requests.Request, :status)}
+                  />
                 </div>
 
                 <div class="col-span-full">
@@ -396,7 +393,7 @@ defmodule IngestWeb.LiveComponents.RequestModal do
               Save
             </button>
           </div>
-        </form>
+        </.form>
       </.modal>
     </div>
     """

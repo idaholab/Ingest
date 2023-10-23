@@ -35,7 +35,12 @@ defmodule Ingest.RequestsTest do
 
     test "update_template/2 with valid data updates the template" do
       template = template_fixture()
-      update_attrs = %{name: "some updated name", description: "some updated description", structure: %{}}
+
+      update_attrs = %{
+        name: "some updated name",
+        description: "some updated description",
+        structure: %{}
+      }
 
       assert {:ok, %Template{} = template} = Requests.update_template(template, update_attrs)
       assert template.name == "some updated name"
@@ -79,12 +84,17 @@ defmodule Ingest.RequestsTest do
     end
 
     test "create_request/1 with valid data creates a request" do
-      valid_attrs = %{name: "some name", public: true, status: "some status", description: "some description"}
+      valid_attrs = %{
+        name: "some name",
+        public: true,
+        status: :draft,
+        description: "some description"
+      }
 
       assert {:ok, %Request{} = request} = Requests.create_request(valid_attrs)
       assert request.name == "some name"
       assert request.public == true
-      assert request.status == "some status"
+      assert request.status == :draft
       assert request.description == "some description"
     end
 
@@ -94,12 +104,18 @@ defmodule Ingest.RequestsTest do
 
     test "update_request/2 with valid data updates the request" do
       request = request_fixture()
-      update_attrs = %{name: "some updated name", public: false, status: "some updated status", description: "some updated description"}
+
+      update_attrs = %{
+        name: "some updated name",
+        public: false,
+        status: :published,
+        description: "some updated description"
+      }
 
       assert {:ok, %Request{} = request} = Requests.update_request(request, update_attrs)
       assert request.name == "some updated name"
       assert request.public == false
-      assert request.status == "some updated status"
+      assert request.status == :published
       assert request.description == "some updated description"
     end
 

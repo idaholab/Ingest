@@ -11,7 +11,7 @@ defmodule Ingest.Requests.Request do
   schema "requests" do
     field :name, :string
     field :public, :boolean, default: false
-    field :status, :string
+    field :status, Ecto.Enum, values: [:draft, :published]
     field :description, :string
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by

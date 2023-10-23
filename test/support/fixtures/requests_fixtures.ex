@@ -30,7 +30,7 @@ defmodule Ingest.RequestsFixtures do
         description: "some description",
         name: "some name",
         public: true,
-        status: "some status"
+        status: :draft
       })
       |> Ingest.Requests.create_request()
 
