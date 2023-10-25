@@ -1,18 +1,22 @@
-defmodule IngestWeb.LiveComponents.ProjectModal do
+defmodule IngestWeb.LiveComponents.ProjectForm do
   @moduledoc """
   Project Modal is the modal for creating/editing Projects. Contains all logic
   needed for the operation.
   """
   use IngestWeb, :live_component
 
-  alias Ingest.Projects.Project
-
   # TODO: I've made a good start on this to show you how it should work, but this should be the last form you do, project creation and templates come first
   @impl true
   def render(assigns) do
     ~H"""
     <div>
-      <.simple_form for={@project_form} phx-change="validate" phx-target={@myself} id="project" @rest>
+      <.simple_form
+        for={@project_form}
+        phx-change="validate"
+        phx-target={@myself}
+        id="project"
+        phx-submit="save"
+      >
         <div class="space-y-12">
           <div class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
             <div>
@@ -31,10 +35,7 @@ defmodule IngestWeb.LiveComponents.ProjectModal do
               </div>
 
               <div class="col-span-full">
-                <.label
-                  for="project-description"
-                  class="block text-sm font-medium leading-6 text-gray-900"
-                >
+                <.label for="project-description">
                   Project Description
                 </.label>
                 <.input type="textarea" field={@project_form[:description]} />
@@ -94,6 +95,21 @@ defmodule IngestWeb.LiveComponents.ProjectModal do
         {:noreply,
          socket
          |> put_flash(:info, "Project updated successfully")
+         |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign_form(socket, changeset)}
+    end
+  end
+
+  defp save_project(socket, :new, project_params) do
+    case Ingest.Projects.create_project(project_params) do
+      {:ok, project} ->
+        notify_parent({:saved, project})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Project created successfully")
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

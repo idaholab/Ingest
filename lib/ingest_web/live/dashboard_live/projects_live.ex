@@ -8,6 +8,8 @@ defmodule IngestWeb.ProjectsLive do
      socket
      |> assign(:section, "projects")
      |> assign(:requests, [])
+     |> stream_configure(:projects, dom_id: &elem(&1, 0).id)
+     |> stream(:projects, Ingest.Projects.list_project_with_count())
      |> apply_action(socket.assigns.live_action, params), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
@@ -19,6 +21,7 @@ defmodule IngestWeb.ProjectsLive do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Project")
+    |> assign(:project, Ingest.Projects.get_project!(id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -32,5 +35,18 @@ defmodule IngestWeb.ProjectsLive do
     socket
     |> assign(:page_title, "Listing Projects")
     |> assign(:project, nil)
+  end
+
+  @impl true
+  def handle_info({IngestWeb.LiveComponents.ProjectForm, {:saved, project}}, socket) do
+    {:noreply, stream_insert(socket, :projects, {project, 0})}
+  end
+
+  @impl true
+  def handle_event("delete", %{"id" => id, "count" => count}, socket) do
+    project = Ingest.Projects.get_project!(id)
+    {:ok, _} = Ingest.Projects.delete_project(project)
+
+    {:noreply, stream_delete(socket, :projects, {project, count})}
   end
 end

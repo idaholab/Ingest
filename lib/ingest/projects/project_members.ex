@@ -3,6 +3,7 @@ defmodule Ingest.Projects.ProjectMembers do
   import Ecto.Changeset
 
   @primary_key false
+  @foreign_key_type :binary_id
   schema "project_members" do
     field :project_id, :binary_id
     field :member_id, :binary_id

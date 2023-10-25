@@ -17,8 +17,14 @@ defmodule Ingest.Projects do
       [%Project{}, ...]
 
   """
-  def list_project do
-    Repo.all(Project)
+  def list_project_with_count do
+    query =
+      from p in Project,
+        left_join: r in assoc(p, :requests),
+        group_by: p.id,
+        select: {p, count(r.id)}
+
+    Repo.all(query)
   end
 
   @doc """

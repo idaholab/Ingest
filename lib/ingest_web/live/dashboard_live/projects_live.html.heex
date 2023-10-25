@@ -22,49 +22,53 @@
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-        <table class="min-w-full divide-y divide-gray-300">
-          <thead>
-            <tr>
-              <th
-                scope="col"
-                class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+        <.table
+          id="projects"
+          rows={@streams.projects}
+          row_click={
+            fn {_id, {project, count}} -> JS.navigate(~p"/dashboard/projects/#{project}") end
+          }
+        >
+          <:col :let={{_id, {project, _count}}} label="Name"><%= project.name %></:col>
+          <:col :let={{_id, {project, _count}}} label="Description">
+            <%= project.description %>
+          </:col>
+          <:col :let={{_id, {_project, count}}} label="Request Count"><%= count %></:col>
+          <:col :let={{_id, {project, _count}}} label="Role">
+            <%= if project.inserted_by == @current_user.id do
+              "Owner"
+            else
+              "Member"
+            end %>
+          </:col>
+          <:action :let={{_id, {project, _count}}}>
+            <div class="sr-only">
+              <.link
+                navigate={~p"/dashboard/projects/#{project}"}
+                class="text-indigo-600 hover:text-indigo-900"
               >
-                Name
-              </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                Description
-              </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                Active Requests
-              </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                Role
-              </th>
-              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
-                <span class="sr-only">Edit</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr>
-              <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                Sapphire Phoenix
-              </td>
-              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                An NA-22 project.
-              </td>
-              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                0
-              </td>
-              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">Owner</td>
-              <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                <a href="#" class="text-indigo-600 hover:text-indigo-900">
-                  Edit<span class="sr-only">, Lindsay Walton</span>
-                </a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                Show
+              </.link>
+            </div>
+            <.link
+              patch={~p"/dashboard/projects/#{project}/edit"}
+              class="text-indigo-600 hover:text-indigo-900"
+            >
+              Edit
+            </.link>
+          </:action>
+          <:action :let={{id, {project, count}}}>
+            <.link
+              class="text-red-600 hover:text-red-900"
+              phx-click={
+                JS.push("delete", value: %{id: project.id, count: count}) |> hide("##{id}")
+              }
+              data-confirm="Are you sure?"
+            >
+              Delete
+            </.link>
+          </:action>
+        </.table>
       </div>
     </div>
   </div>
@@ -79,7 +83,8 @@
   <.live_component
     live_action={@live_action}
     project={@project}
-    module={IngestWeb.LiveComponents.ProjectModal}
+    module={IngestWeb.LiveComponents.ProjectForm}
     id="request-modal-component"
+    patch={~p"/dashboard/projects"}
   />
 </.modal>
