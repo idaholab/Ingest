@@ -129,6 +129,15 @@ defmodule Sidebar do
                     <span class="truncate">Workcation</span>
                   </a>
                 </li>
+                <li>
+                  <a
+                    href="/dashboard/projects"
+                    class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                  >
+                    <.icon name="hero-plus" />
+                    <span class="truncate">More Projects</span>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="mt-auto">
@@ -289,6 +298,15 @@ defmodule Sidebar do
                     W
                   </span>
                   <span class="truncate">Workcation</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/dashboard/projects"
+                  class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                >
+                  <.icon name="hero-plus" />
+                  <span class="truncate">More Projects</span>
                 </a>
               </li>
             </ul>

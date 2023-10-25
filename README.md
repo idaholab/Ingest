@@ -6,13 +6,16 @@ Ingest is desisgned to be the upload point for various data management solutions
 - [asdf](https://asdf-vm.com/) - used for managing Elixir/Erlang/OTP versions so that you can keep this project separate from your main installations
 - [asdf-elixir](https://github.com/asdf-vm/asdf-elixir) and [asdf-erlang](https://github.com/asdf-vm/asdf-erlang)
 - [Mix](https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html) - should be installed if you use asdf
+- Postgres 14+
 - *INL network or ZScaler Only* - you will need to download the CAINLROOT.cer from your certificate manager. This is needed for the common gotchas and getting setup steps below if you work behind a proxy, like INL does via ZScaler and their internal network
 
 ## Installation
 1. Navigate to the root of the project and run `asdf install` - this will install all the toolchain and language dependencies needed locally. Optionally you may install these in the global space
 2. Run `mix deps.get` & `mix deps.compile`
 3. Install the `phx_new` generator - `mix archive.install hex phx_new`
-4. If you're on VSCode you can use the default run configuration to run your application from the editor, or you may start your server by running `mix phx.server` in either your terminal or an iEX instance
+4. Modify the configuration file in `config/dev.exs` - you will at least need to modify the database configuration to point to your local Postgres server.
+5. Run `mix ecto.migrate` - this will run all the required migrations to setup your database.
+6. If you're on VSCode you can use the default run configuration to run your application from the editor, or you may start your server by running `mix phx.server` in either your terminal or an iEX instance
 
 
 ## Common Problems and Solutions
