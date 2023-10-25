@@ -23,7 +23,7 @@ defmodule Ingest.Projects.Project do
   @doc false
   def changeset(project, attrs) do
     project
-    |> cast(attrs, [:name, :description])
+    |> cast(attrs, [:name, :description, :inserted_by])
     |> validate_required([:name, :description])
   end
 end

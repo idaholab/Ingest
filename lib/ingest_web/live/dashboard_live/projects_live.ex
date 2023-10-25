@@ -28,7 +28,7 @@ defmodule IngestWeb.ProjectsLive do
     socket
     |> assign(:page_title, "New Project")
     |> assign(:project_form, %Project{} |> Ecto.Changeset.change() |> to_form())
-    |> assign(:project, %Project{})
+    |> assign(:project, %Project{inserted_by: socket.assigns.current_user.id})
   end
 
   defp apply_action(socket, :index, _params) do

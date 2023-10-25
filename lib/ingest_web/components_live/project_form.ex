@@ -103,7 +103,8 @@ defmodule IngestWeb.LiveComponents.ProjectForm do
   end
 
   defp save_project(socket, :new, project_params) do
-    case Ingest.Projects.create_project(project_params) do
+    case Map.put(project_params, "inserted_by", socket.assigns.current_user.id)
+         |> Ingest.Projects.create_project() do
       {:ok, project} ->
         notify_parent({:saved, project})
 
