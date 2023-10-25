@@ -14,13 +14,14 @@ Ingest is desisgned to be the upload point for various data management solutions
 2. Run `mix deps.get` & `mix deps.compile`
 3. Install the `phx_new` generator - `mix archive.install hex phx_new`
 4. Modify the configuration file in `config/dev.exs` - you will at least need to modify the database configuration to point to your local Postgres server.
-5. Run `mix ecto.migrate` - this will run all the required migrations to setup your database.
+5. Run `mix ecto.reset && mix ecto.migrate` - this will run all the required migrations to setup your database.
 6. If you're on VSCode you can use the default run configuration to run your application from the editor, or you may start your server by running `mix phx.server` in either your terminal or an iEX instance
 
 
 ## Common Problems and Solutions
 - Mix can't find `rebar3` or fails to install `rebar3` via Hex: Download the [rebar3 binary](https://rebar3.org/) for your OS and put in a common location (`/usr/local/bin` for Unix systems). Then use this command to point Hex to `rebar3` - `mix local.rebar rebar3 path/to/rebar`
 - CA Cert problems: Typically you'll see a failed `:httpc` library call and something about an unkown CA authority. The easier solution is to include an environment variable called `HEX_CACERTS_PATH` and set it to your root CA bundle. Another, less secure option, is to set `HEX_UNSAFE_HTTPS` to `1` and turn off SSL completely. Not recommended  
+- More CA Cert Problems - modify the configuration file in `config/dev.exs` - you will see various places referring to your SSL cert store (default /etc/ssl/certs on Unix systems) - change those to point to your certificate bundle
 
 
 ## Editor Setup

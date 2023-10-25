@@ -80,10 +80,10 @@ config :phoenix, :plug_init_mode, :runtime
 config :swoosh, :api_client, false
 
 config :esbuild,
-  cacerts_path: "/etc/ssl/CAINLROOT.cer"
+  cacerts_path: "/etc/ssl/certs/CAINLROOT.cer"
 
 config :tailwind,
-  cacerts_path: "/etc/ssl/CAINLROOT.cer"
+  cacerts_path: "/etc/ssl/certs/CAINLROOT.cer"
 
 config :ingest, :openid_connect_oneid,
   issuer: "https://identity-preview.inl.gov",
