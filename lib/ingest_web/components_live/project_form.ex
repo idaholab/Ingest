@@ -5,7 +5,6 @@ defmodule IngestWeb.LiveComponents.ProjectForm do
   """
   use IngestWeb, :live_component
 
-  # TODO: I've made a good start on this to show you how it should work, but this should be the last form you do, project creation and templates come first
   @impl true
   def render(assigns) do
     ~H"""

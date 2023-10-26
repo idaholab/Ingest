@@ -7,6 +7,7 @@ defmodule Ingest.Projects do
   alias Ingest.Repo
 
   alias Ingest.Projects.Project
+  alias Ingest.Projects.ProjectMembers
 
   @doc """
   Returns the list of project.
@@ -21,6 +22,21 @@ defmodule Ingest.Projects do
     query =
       from p in Project,
         left_join: r in assoc(p, :requests),
+        group_by: p.id,
+        select: {p, count(r.id)}
+
+    Repo.all(query)
+  end
+
+  @doc """
+  List your own projects, either as owner or member, and the count of requests for each
+  """
+  def list_own_projects_with_count(user_id) do
+    query =
+      from p in Project,
+        left_join: pm in assoc(p, :project_members),
+        left_join: r in assoc(p, :requests),
+        where: pm.id == ^user_id or p.inserted_by == ^user_id,
         group_by: p.id,
         select: {p, count(r.id)}
 

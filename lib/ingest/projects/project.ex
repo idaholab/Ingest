@@ -15,7 +15,7 @@ defmodule Ingest.Projects.Project do
 
     many_to_many :project_members, Ingest.Accounts.User,
       join_through: "project_members",
-      join_keys: [project_id: :id, member_id: :user_id]
+      join_keys: [project_id: :id, member_id: :id]
 
     timestamps()
   end

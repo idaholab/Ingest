@@ -7,7 +7,7 @@ defmodule IngestWeb.LiveComponents.RequestModal do
 
   alias Ingest.Requests.Request
 
-  # TODO: I've made a good start on this to show you how it should work, but this should be the last form you do, project creation and templates come first
+  # TODO: Ignore this - look at how project_form.ex works - it's much easier to do things that way than this
   @impl true
   def render(assigns) do
     ~H"""

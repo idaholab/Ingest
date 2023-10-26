@@ -1,13 +1,14 @@
 defmodule Ingest.Projects.ProjectMembers do
+  alias Ingest.Projects.Project
   use Ecto.Schema
   import Ecto.Changeset
 
   @primary_key false
   @foreign_key_type :binary_id
   schema "project_members" do
-    field :project_id, :binary_id
     field :member_id, :binary_id
 
+    belongs_to :project, Project, type: :binary_id, foreign_key: :project_id
     timestamps()
   end
 
