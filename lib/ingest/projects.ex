@@ -8,6 +8,7 @@ defmodule Ingest.Projects do
 
   alias Ingest.Projects.Project
   alias Ingest.Projects.ProjectMembers
+  alias Ingest.Accounts.User
 
   @doc """
   Returns the list of project.
@@ -57,7 +58,7 @@ defmodule Ingest.Projects do
       ** (Ecto.NoResultsError)
 
   """
-  def get_project!(id), do: Repo.get!(Project, id)
+  def get_project!(id), do: Repo.get!(Project, id, preload: [:project_members, :requests])
 
   @doc """
   Creates a project.
@@ -122,5 +123,11 @@ defmodule Ingest.Projects do
   """
   def change_project(%Project{} = project, attrs \\ %{}) do
     Project.changeset(project, attrs)
+  end
+
+  def add_user_to_project(%Project{} = project, %User{} = user) do
+    %ProjectMembers{}
+    |> ProjectMembers.changeset(%{member_id: user.id, project_id: project.id})
+    |> Repo.insert()
   end
 end

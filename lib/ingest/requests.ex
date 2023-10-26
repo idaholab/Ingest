@@ -4,6 +4,8 @@ defmodule Ingest.Requests do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Accounts.User
+  alias Ingest.Projects.Project
   alias Ingest.Repo
 
   alias Ingest.Requests.Template
@@ -145,9 +147,12 @@ defmodule Ingest.Requests do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_request(attrs \\ %{}) do
+  def create_request(attrs \\ %{}, %Template{} = template, %Project{} = project, %User{} = user) do
     %Request{}
     |> Request.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:template, template)
+    |> Ecto.Changeset.put_assoc(:project, project)
+    |> Ecto.Changeset.put_assoc(:user, user)
     |> Repo.insert()
   end
 

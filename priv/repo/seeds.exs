@@ -9,3 +9,42 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+
+alias Ingest.Accounts
+alias Ingest.Projects
+alias Ingest.Requests
+
+{:ok, user} =
+  Accounts.register_user(%{email: "admin@admin.com", password: "xxxxxxxxxxxx"})
+
+{:ok, second_user} =
+  Accounts.register_user(%{email: "user@user.com", password: "xxxxxxxxxxxx"})
+
+{:ok, project} =
+  Projects.create_project(%{
+    name: "Test Project",
+    description: "A testing project",
+    inserted_by: user.id
+  })
+
+{:ok, project_member} = Projects.add_user_to_project(project, second_user)
+
+{:ok, template} =
+  Requests.create_template(%{
+    name: "Test Template",
+    description: "A testing template",
+    structure: %{field: "test"}
+  })
+
+{:ok, request} =
+  Requests.create_request(
+    %{
+      name: "Test Request",
+      description: "A testing request",
+      status: :draft,
+      public: true
+    },
+    template,
+    project,
+    user
+  )
