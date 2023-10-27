@@ -58,7 +58,8 @@ defmodule Ingest.Projects do
       ** (Ecto.NoResultsError)
 
   """
-  def get_project!(id), do: Repo.get!(Project, id, preload: [:project_members, :requests])
+  def get_project!(id),
+    do: Repo.get!(Project, id) |> Repo.preload(:project_members) |> Repo.preload(:requests)
 
   @doc """
   Creates a project.

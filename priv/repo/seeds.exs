@@ -15,10 +15,14 @@ alias Ingest.Projects
 alias Ingest.Requests
 
 {:ok, user} =
-  Accounts.register_user(%{email: "admin@admin.com", password: "xxxxxxxxxxxx"})
+  Accounts.register_user(%{
+    email: "admin@admin.com",
+    password: "xxxxxxxxxxxx",
+    name: "Administrator"
+  })
 
 {:ok, second_user} =
-  Accounts.register_user(%{email: "user@user.com", password: "xxxxxxxxxxxx"})
+  Accounts.register_user(%{email: "user@user.com", password: "xxxxxxxxxxxx", name: "Normal User"})
 
 {:ok, project} =
   Projects.create_project(%{
