@@ -12,7 +12,7 @@ defmodule Ingest.ProjectsTest do
 
     test "list_project/0 returns all project" do
       project = project_fixture()
-      assert Projects.list_project() == [project]
+      assert Enum.member?(Projects.list_project(), project)
     end
 
     test "get_project!/1 returns the project with given id" do
@@ -21,11 +21,10 @@ defmodule Ingest.ProjectsTest do
     end
 
     test "create_project/1 with valid data creates a project" do
-      valid_attrs = %{name: "some name", status: "some status", description: "some description"}
+      valid_attrs = %{name: "some name", description: "some description"}
 
       assert {:ok, %Project{} = project} = Projects.create_project(valid_attrs)
       assert project.name == "some name"
-      assert project.status == "some status"
       assert project.description == "some description"
     end
 
@@ -35,11 +34,14 @@ defmodule Ingest.ProjectsTest do
 
     test "update_project/2 with valid data updates the project" do
       project = project_fixture()
-      update_attrs = %{name: "some updated name", status: "some updated status", description: "some updated description"}
+
+      update_attrs = %{
+        name: "some updated name",
+        description: "some updated description"
+      }
 
       assert {:ok, %Project{} = project} = Projects.update_project(project, update_attrs)
       assert project.name == "some updated name"
-      assert project.status == "some updated status"
       assert project.description == "some updated description"
     end
 

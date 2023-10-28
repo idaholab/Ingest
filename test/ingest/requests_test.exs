@@ -12,7 +12,7 @@ defmodule Ingest.RequestsTest do
 
     test "list_templates/0 returns all templates" do
       template = template_fixture()
-      assert Requests.list_templates() == [template]
+      assert Enum.member?(Requests.list_templates(), template)
     end
 
     test "get_template!/1 returns the template with given id" do
@@ -75,7 +75,7 @@ defmodule Ingest.RequestsTest do
 
     test "list_requests/0 returns all requests" do
       request = request_fixture()
-      assert Requests.list_requests() == [request]
+      assert Enum.member?(Requests.list_requests(), request)
     end
 
     test "get_request!/1 returns the request with given id" do

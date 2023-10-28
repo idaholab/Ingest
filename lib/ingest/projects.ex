@@ -19,6 +19,11 @@ defmodule Ingest.Projects do
       [%Project{}, ...]
 
   """
+  def list_project do
+    Repo.all(Project)
+    |> Repo.preload([:project_members, :requests])
+  end
+
   def list_project_with_count do
     query =
       from p in Project,

@@ -18,5 +18,7 @@ defmodule Ingest.ProjectsFixtures do
       |> Ingest.Projects.create_project()
 
     project
+    |> Ingest.Repo.preload(:project_members)
+    |> Ingest.Repo.preload(:requests)
   end
 end

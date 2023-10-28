@@ -147,6 +147,12 @@ defmodule Ingest.Requests do
       {:error, %Ecto.Changeset{}}
 
   """
+  def create_request(attrs \\ %{}) do
+    %Request{}
+    |> Request.changeset(attrs)
+    |> Repo.insert()
+  end
+
   def create_request(attrs \\ %{}, %Template{} = template, %Project{} = project, %User{} = user) do
     %Request{}
     |> Request.changeset(attrs)
