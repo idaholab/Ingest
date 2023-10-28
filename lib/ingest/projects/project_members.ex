@@ -9,13 +9,14 @@ defmodule Ingest.Projects.ProjectMembers do
   schema "project_members" do
     belongs_to :user, User, type: :binary_id, foreign_key: :member_id
     belongs_to :project, Project, type: :binary_id, foreign_key: :project_id
+    field :role, Ecto.Enum, values: [:member, :maintainer, :owner]
     timestamps()
   end
 
   @doc false
   def changeset(project_member, attrs) do
     project_member
-    |> cast(attrs, [:project_id, :member_id])
+    |> cast(attrs, [:project_id, :member_id, :role])
     |> validate_required([:project_id, :member_id])
   end
 end

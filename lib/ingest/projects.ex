@@ -131,9 +131,9 @@ defmodule Ingest.Projects do
     Project.changeset(project, attrs)
   end
 
-  def add_user_to_project(%Project{} = project, %User{} = user) do
+  def add_user_to_project(%Project{} = project, %User{} = user, role \\ :member) do
     %ProjectMembers{}
-    |> ProjectMembers.changeset(%{member_id: user.id, project_id: project.id})
+    |> ProjectMembers.changeset(%{member_id: user.id, project_id: project.id, role: role})
     |> Repo.insert()
   end
 end
