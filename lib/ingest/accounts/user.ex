@@ -1,4 +1,5 @@
 defmodule Ingest.Accounts.User do
+  alias Ingest.Projects.ProjectMembers
   use Ecto.Schema
   import Ecto.Changeset
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -9,6 +10,8 @@ defmodule Ingest.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
+
+    has_many :project_roles, ProjectMembers, foreign_key: :member_id
 
     timestamps()
   end

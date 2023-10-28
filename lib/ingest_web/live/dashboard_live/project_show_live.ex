@@ -67,11 +67,26 @@ defmodule IngestWeb.ProjectShowLive do
                       </p>
                     </div>
                   </div>
-                  <a href="#">
-                    <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                  <div>
+                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                      <%= Atom.to_string(
+                        Enum.find(member.project_roles, fn project_roles ->
+                          project_roles.project_id == @project.id
+                        end).role
+                      )
+                      |> String.capitalize() %>
+                    </span>
+
+                    <span
+                      data-confirm="Are you sure?"
+                      phx-click="remove_member"
+                      phx-value-member={member.id}
+                      phx-value-project={@project.id}
+                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
+                    >
                       Remove
                     </span>
-                  </a>
+                  </div>
                 </li>
               <% end %>
             </ul>
@@ -127,13 +142,21 @@ defmodule IngestWeb.ProjectShowLive do
   end
 
   @impl true
-  def mount(%{"id" => id}, session, socket) do
-    {:ok, socket |> assign(:section, "projects") |> assign(:project, Projects.get_project!(id)),
-     layout: {IngestWeb.Layouts, :dashboard}}
+  def mount(_params, session, socket) do
+    {:ok, socket |> assign(:section, "projects"), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
-  @imple true
-  def handle_params(unsigned_params, uri, socket) do
-    {:noreply, socket}
+  @impl true
+  def handle_params(%{"id" => id}, uri, socket) do
+    {:noreply, socket |> assign(:project, Projects.get_project!(id))}
+  end
+
+  @impl true
+  def handle_event("remove_member", %{"member" => member, "project" => project}, socket) do
+    {_count, _pm} =
+      Projects.get_member_project(member, project)
+      |> Projects.remove_project_member()
+
+    {:noreply, socket |> assign(:project, Projects.get_project!(project))}
   end
 end

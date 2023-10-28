@@ -64,7 +64,10 @@ defmodule Ingest.Projects do
 
   """
   def get_project!(id),
-    do: Repo.get!(Project, id) |> Repo.preload(:project_members) |> Repo.preload(:requests)
+    do:
+      Repo.get!(Project, id)
+      |> Repo.preload(project_members: :project_roles)
+      |> Repo.preload(:requests)
 
   @doc """
   Creates a project.
@@ -135,5 +138,21 @@ defmodule Ingest.Projects do
     %ProjectMembers{}
     |> ProjectMembers.changeset(%{member_id: user.id, project_id: project.id, role: role})
     |> Repo.insert()
+  end
+
+  def get_member_project(member_id, project_id) do
+    query =
+      from pm in ProjectMembers,
+        where: pm.member_id == ^member_id and pm.project_id == ^project_id
+
+    Repo.one!(query)
+  end
+
+  def remove_project_member(%ProjectMembers{} = pm) do
+    query =
+      from p in ProjectMembers,
+        where: p.member_id == ^pm.member_id and p.project_id == ^pm.project_id
+
+    Repo.delete_all(query)
   end
 end
