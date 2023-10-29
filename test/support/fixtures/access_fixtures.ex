@@ -12,7 +12,7 @@ defmodule Ingest.AccessFixtures do
       attrs
       |> Enum.into(%{
         actions: [:create, :read],
-        attributes: %{},
+        attributes: [],
         matcher: :match_one,
         name: "some name",
         resource_types: [Ingest.Access.Policy],

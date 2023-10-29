@@ -5,7 +5,7 @@ defmodule Ingest.Access.Policy do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "policies" do
-    field :attributes, :map
+    field :attributes, {:array, :string}
     field :name, :string
     field :actions, {:array, Ecto.Enum}, values: [:create, :read, :update, :delete, :list]
     field :scope, Ecto.Enum, values: [:global, :user, :group]

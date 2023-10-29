@@ -12,7 +12,7 @@ defmodule Ingest.AccessTest do
 
     test "list_global_policies/2 returns policies matching resources and action" do
       valid_attrs = %{
-        attributes: %{},
+        attributes: [],
         name: "some name",
         actions: [:update],
         resource_types: [Ingest.Access.Policy],
@@ -48,7 +48,7 @@ defmodule Ingest.AccessTest do
 
     test "create_policy/1 with valid data creates a policy" do
       valid_attrs = %{
-        attributes: %{},
+        attributes: [],
         name: "some name",
         actions: [:update],
         resource_types: [Ingest.Access.Policy],
@@ -57,7 +57,7 @@ defmodule Ingest.AccessTest do
       }
 
       assert {:ok, %Policy{} = policy} = Access.create_policy(valid_attrs)
-      assert policy.attributes == %{}
+      assert policy.attributes == []
       assert policy.name == "some name"
       assert policy.actions == [:update]
       assert policy.resource_types == [Ingest.Access.Policy]
@@ -72,7 +72,7 @@ defmodule Ingest.AccessTest do
       policy = policy_fixture()
 
       update_attrs = %{
-        attributes: %{},
+        attributes: [],
         name: "some updated name",
         actions: [:delete],
         resource_types: [Ingest.Access.Policy],
@@ -81,7 +81,7 @@ defmodule Ingest.AccessTest do
       }
 
       assert {:ok, %Policy{} = policy} = Access.update_policy(policy, update_attrs)
-      assert policy.attributes == %{}
+      assert policy.attributes == []
       assert policy.name == "some updated name"
       assert policy.actions == [:delete]
       assert policy.resource_types == [Ingest.Access.Policy]

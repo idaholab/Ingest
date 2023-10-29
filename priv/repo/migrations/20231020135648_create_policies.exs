@@ -9,7 +9,7 @@ defmodule Ingest.Repo.Migrations.CreatePolicies do
       add :resource_types, {:array, :string}
       add :scope, :string
       add :scope_id, :binary_id
-      add :attributes, :map
+      add :attributes, {:array, :string}
       add :matcher, :string
 
       timestamps()
