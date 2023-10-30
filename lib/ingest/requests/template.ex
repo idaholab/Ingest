@@ -19,6 +19,6 @@ defmodule Ingest.Requests.Template do
   def changeset(template, attrs) do
     template
     |> cast(attrs, [:name, :description, :structure])
-    |> validate_required([:name, :structure])
+    |> validate_required([:name])
   end
 end

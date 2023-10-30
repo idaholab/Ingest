@@ -1,4 +1,4 @@
-defmodule IngestWeb.LiveComponents.ProjectForm do
+defmodule IngestWeb.LiveComponents.TemplateForm do
   @moduledoc """
   Project Modal is the modal for creating/editing Projects. Contains all logic
   needed for the operation.
@@ -10,37 +10,37 @@ defmodule IngestWeb.LiveComponents.ProjectForm do
     ~H"""
     <div>
       <.simple_form
-        for={@project_form}
+        for={@template_form}
         phx-change="validate"
         phx-target={@myself}
-        id="project"
+        id="template"
         phx-submit="save"
       >
         <div class="space-y-12">
           <div class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
             <div>
-              <h2 class="text-base font-semibold leading-7 text-gray-900">New Project</h2>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">New Metadata Template</h2>
               <p class="mt-1 text-sm leading-6 text-gray-600">
-                Create a new Project. A Project is a logical grouping of data requests and will be represented in how the data is sent to the configured data destination.
+                Create a new Metadata Template. A Metadata Template is a form designed to enforce metadata collection at the time of data uploads.
               </p>
             </div>
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
               <div class="sm:col-span-4">
                 <.label for="status-select" class="block text-sm font-medium leading-6 text-gray-900">
-                  Project Name
+                  Template Name
                 </.label>
-                <.input type="text" field={@project_form[:name]} />
+                <.input type="text" field={@template_form[:name]} />
               </div>
 
               <div class="col-span-full">
-                <.label for="project-description">
-                  Project Description
+                <.label for="template-description">
+                  Template Description
                 </.label>
-                <.input type="textarea" field={@project_form[:description]} />
+                <.input type="textarea" field={@template_form[:description]} />
 
                 <p class="mt-3 text-sm leading-6 text-gray-600">
-                  Write a few sentences about your project.
+                  Write a few sentences about your template.
                 </p>
               </div>
             </div>
@@ -61,8 +61,8 @@ defmodule IngestWeb.LiveComponents.ProjectForm do
   end
 
   @impl true
-  def update(%{project: project} = assigns, socket) do
-    changeset = Ingest.Projects.change_project(project)
+  def update(%{template: template} = assigns, socket) do
+    changeset = Ingest.Requests.change_template(template)
 
     {:ok,
      socket
@@ -71,44 +71,27 @@ defmodule IngestWeb.LiveComponents.ProjectForm do
   end
 
   @impl true
-  def handle_event("validate", %{"project" => project_params}, socket) do
+  def handle_event("validate", %{"template" => template_params}, socket) do
     changeset =
-      socket.assigns.project
-      |> Ingest.Projects.change_project(project_params)
+      socket.assigns.template
+      |> Ingest.Requests.change_template(template_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
   end
 
-  def handle_event("save", %{"project" => project_params}, socket) do
-    save_project(socket, socket.assigns.live_action, project_params)
+  def handle_event("save", %{"template" => template_params}, socket) do
+    save_template(socket, socket.assigns.live_action, template_params)
   end
 
-  defp save_project(socket, :edit, project_params) do
-    case Ingest.Projects.update_project(socket.assigns.project, project_params) do
-      {:ok, project} ->
-        notify_parent({:saved, project})
-
+  defp save_template(socket, :new, template_params) do
+    case template_params
+         |> Ingest.Requests.create_template() do
+      {:ok, template} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Project updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_form(socket, changeset)}
-    end
-  end
-
-  defp save_project(socket, :new, project_params) do
-    case Map.put(project_params, "inserted_by", socket.assigns.current_user.id)
-         |> Ingest.Projects.create_project() do
-      {:ok, project} ->
-        notify_parent({:saved, project})
-
-        {:noreply,
-         socket
-         |> put_flash(:info, "Project created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> put_flash(:info, "Template created successfully")
+         |> redirect(to: ~p"/dashboard/templates/#{template.id}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -118,6 +101,4 @@ defmodule IngestWeb.LiveComponents.ProjectForm do
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :project_form, to_form(changeset))
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

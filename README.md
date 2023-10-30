@@ -26,7 +26,7 @@ Ingest is desisgned to be the upload point for various data management solutions
 
 ## Editor Setup
 We recommend that you use either VSCode or Neovim for Elixir. 
-[Setup for VSCode](https://fly.io/phoenix-files/setup-vscode-for-elixir-development/)
+[Setup for VSCode](https://fly.io/phoenix-files/setup-vscode-for-elixir-development/) (Make sure you also install the Credo extension)
 [Setup for NeoVim](https://elixirforum.com/t/neovim-elixir-setup-configuration-from-scratch-guide/46310)
 
 ## Running

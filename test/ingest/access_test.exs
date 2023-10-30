@@ -25,7 +25,7 @@ defmodule Ingest.AccessTest do
       assert policies =
                Access.list_policies(schemas: [Ingest.Access.Policy], actions: [:update])
 
-      assert length(policies) > 0
+      assert !Enum.empty?(policies)
       assert Enum.at(policies, 0).matcher == :match_all
       assert Enum.at(policies, 0).resource_types == [Ingest.Access.Policy]
 
@@ -33,7 +33,7 @@ defmodule Ingest.AccessTest do
       assert policies =
                Access.list_policies(schemas: [Ingest.Access.Policy], actions: [:create])
 
-      assert length(policies) == 0
+      assert Enum.empty?(policies)
     end
 
     test "list_policies/0 returns all policies" do
