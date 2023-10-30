@@ -85,7 +85,7 @@ defmodule IngestWeb.LiveComponents.TemplateForm do
   end
 
   defp save_template(socket, :new, template_params) do
-    case template_params
+    case Map.put(template_params, "inserted_by", socket.assigns.current_user.id)
          |> Ingest.Requests.create_template() do
       {:ok, template} ->
         {:noreply,

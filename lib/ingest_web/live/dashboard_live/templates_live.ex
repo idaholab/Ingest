@@ -40,7 +40,10 @@ defmodule IngestWeb.TemplatesLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:section, "templates") |> assign(:templates, []),
+    {:ok,
+     socket
+     |> assign(:section, "templates")
+     |> assign(:templates, Ingest.Requests.list_own_templates(socket.assigns.current_user)),
      layout: {IngestWeb.Layouts, :dashboard}}
   end
 

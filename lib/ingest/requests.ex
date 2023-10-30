@@ -23,6 +23,14 @@ defmodule Ingest.Requests do
     Repo.all(Template)
   end
 
+  def list_own_templates(%User{} = user) do
+    query =
+      from t in Template,
+        where: t.inserted_by == ^user.id
+
+    Repo.all(query)
+  end
+
   @doc """
   Gets a single template.
 
