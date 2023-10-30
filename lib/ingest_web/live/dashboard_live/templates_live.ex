@@ -19,6 +19,65 @@ defmodule IngestWeb.TemplatesLive do
         </.link>
       </div>
 
+      <div :if={@templates && !Enum.empty?(@templates)} class="px-4 sm:px-6 lg:px-8">
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="text-base font-semibold leading-6 text-gray-900">Metadata Templates</h1>
+            <p class="mt-2 text-sm text-gray-700">
+              A list of all the templates you own or are a part of. Metadata Templates are forms that enforce metadata collection at time of file upload.
+            </p>
+          </div>
+          <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <div class="mt-6">
+              <.link patch={~p"/dashboard/templates/new"}>
+                <button
+                  type="button"
+                  class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  <.icon name="hero-plus" /> New Template
+                </button>
+              </.link>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 flow-root">
+          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <.table
+                id="templates"
+                rows={@streams.templates}
+                row_click={
+                  fn {_id, template} -> JS.navigate(~p"/dashboard/templates/#{template}") end
+                }
+              >
+                <:col :let={{_id, template}} label="Name"><%= template.name %></:col>
+                <:col :let={{_id, template}} label="Description">
+                  <%= template.description %>
+                </:col>
+
+                <:action :let={{_id, template}}>
+                  <.link
+                    navigate={~p"/dashboard/templates/#{template}"}
+                    class="text-indigo-600 hover:text-indigo-900"
+                  >
+                    Show
+                  </.link>
+                </:action>
+                <:action :let={{id, template}}>
+                  <.link
+                    class="text-red-600 hover:text-red-900"
+                    phx-click={JS.push("delete", value: %{id: template.id}) |> hide("##{id}")}
+                    data-confirm="Are you sure?"
+                  >
+                    Delete
+                  </.link>
+                </:action>
+              </.table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <.modal
         :if={@live_action in [:new]}
         id="template_modal"
@@ -43,8 +102,11 @@ defmodule IngestWeb.TemplatesLive do
     {:ok,
      socket
      |> assign(:section, "templates")
-     |> assign(:templates, Ingest.Requests.list_own_templates(socket.assigns.current_user)),
-     layout: {IngestWeb.Layouts, :dashboard}}
+     |> assign(:templates, Ingest.Requests.list_own_templates(socket.assigns.current_user))
+     |> stream(
+       :templates,
+       Ingest.Requests.list_own_templates(socket.assigns.current_user)
+     ), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
   @impl true
@@ -63,5 +125,13 @@ defmodule IngestWeb.TemplatesLive do
     socket
     |> assign(:page_title, "Listing templates")
     |> assign(:template, nil)
+  end
+
+  @impl true
+  def handle_event("delete", %{"id" => id}, socket) do
+    template = Ingest.Requests.get_template!(id)
+    {:ok, _} = Ingest.Requests.delete_template(template)
+
+    {:noreply, stream_delete(socket, :templates, template)}
   end
 end
