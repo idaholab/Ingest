@@ -33,7 +33,7 @@ defmodule IngestWeb.ProjectsLive do
               id="projects"
               rows={@streams.projects}
               row_click={
-                fn {_id, {project, count}} -> JS.navigate(~p"/dashboard/projects/#{project}") end
+                fn {_id, {project, _count}} -> JS.navigate(~p"/dashboard/projects/#{project}") end
               }
             >
               <:col :let={{_id, {project, _count}}} label="Name"><%= project.name %></:col>

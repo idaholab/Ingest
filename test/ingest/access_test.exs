@@ -20,7 +20,7 @@ defmodule Ingest.AccessTest do
         scope: :global
       }
 
-      assert {:ok, %Policy{} = policy} = Access.create_policy(valid_attrs)
+      assert {:ok, %Policy{} = _policy} = Access.create_policy(valid_attrs)
 
       assert policies =
                Access.list_policies(schemas: [Ingest.Access.Policy], actions: [:update])

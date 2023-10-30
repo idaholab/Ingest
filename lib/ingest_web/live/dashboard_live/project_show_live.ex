@@ -25,12 +25,12 @@ defmodule IngestWeb.ProjectShowLive do
             <:col :let={request} label="Name"><%= request.name %></:col>
             <:col label="Uploads">10</:col>
 
-            <:action :let={request}>
+            <:action :let={_request}>
               <.link class="text-indigo-600 hover:text-indigo-900">
                 Edit
               </.link>
             </:action>
-            <:action :let={request}>
+            <:action :let={_request}>
               <.link data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">
                 Delete
               </.link>
@@ -142,12 +142,12 @@ defmodule IngestWeb.ProjectShowLive do
   end
 
   @impl true
-  def mount(_params, session, socket) do
+  def mount(_params, _session, socket) do
     {:ok, socket |> assign(:section, "projects"), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
   @impl true
-  def handle_params(%{"id" => id}, uri, socket) do
+  def handle_params(%{"id" => id}, _uri, socket) do
     {:noreply, socket |> assign(:project, Projects.get_project!(id))}
   end
 

@@ -27,7 +27,7 @@ defmodule IngestWeb.LiveComponents.ProjectForm do
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
               <div class="sm:col-span-4">
-                <.label for="status-select" class="block text-sm font-medium leading-6 text-gray-900">
+                <.label for="status-select">
                   Project Name
                 </.label>
                 <.input type="text" field={@project_form[:name]} />
