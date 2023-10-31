@@ -10,7 +10,7 @@ Ingest is desisgned to be the upload point for various data management solutions
 - *INL network or ZScaler Only* - you will need to download the CAINLROOT.cer from your certificate manager. This is needed for the common gotchas and getting setup steps below if you work behind a proxy, like INL does via ZScaler and their internal network
 
 ## Installation
-1. Navigate to the root of the project and run `asdf install` - this will install all the toolchain and language dependencies needed locally. Optionally you may install these in the global space
+1. Navigate to the root of the project and run `asdf install` - this will install all the toolchain and language dependencies needed locally. (In order for VSCode's Elixir plugin to work you must also set the global erlang and elixir versions via `asdf global {erlang/elixir} {latest/version in .tool-versions}`)
 2. Run `mix deps.get` & `mix deps.compile`
 3. Install the `phx_new` generator - `mix archive.install hex phx_new`
 4. Modify the configuration file in `config/dev.exs` - you will at least need to modify the database configuration to point to your local Postgres server.
