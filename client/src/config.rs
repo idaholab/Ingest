@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct ClientConfiguration {
     pub hardware_id: Option<Uuid>,
 }
