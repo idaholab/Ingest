@@ -7,6 +7,7 @@ use tray_icon::{
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
 use crate::errors::ClientError;
+use chrono::Local;
 use std::path::Path;
 
 #[tokio::main]
@@ -32,7 +33,9 @@ async fn main() -> Result<(), ClientError> {
 
     let event_loop = EventLoopBuilder::new().build().unwrap();
     let menu = Menu::new();
-    menu.append(&MenuItem::new("Menu item #2", true, None));
+    let mut menu_status = MenuItem::new("Connected", false, None);
+    menu.append(&menu_status);
+    menu.append(&MenuItem::new("Reconnect", true, None));
 
     #[cfg(not(target_os = "linux"))]
     let mut tray_icon = Some(
@@ -48,7 +51,9 @@ async fn main() -> Result<(), ClientError> {
     let tray_channel = TrayIconEvent::receiver();
 
     let _ = event_loop.run(move |_event, event_loop| {
+        let time = Local::now();
         event_loop.set_control_flow(ControlFlow::Poll);
+        menu_status.set_text(format!("Connected - {}", time.format("%Y-%m-%d %H:%M:%S")));
 
         if let Ok(event) = tray_channel.try_recv() {
             println!("{event:?}");
