@@ -1,2 +1,3 @@
 /client/target/
 /client/.idea
+.ingest_client_config.yml
