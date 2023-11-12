@@ -9,6 +9,8 @@ pub enum ClientError {
     IO(#[from] io::Error),
     #[error("yaml parse error: {0}")]
     Yaml(#[from] serde_yaml::Error),
+    #[error("webserver error: {0}")]
+    Webserver(#[from] hyper::Error),
     #[error("unknown client error")]
     Unknown,
 }

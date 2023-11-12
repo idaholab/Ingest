@@ -4,9 +4,10 @@ use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ClientConfiguration {
     pub hardware_id: Option<Uuid>,
+    pub ingest_server: Option<String>,
 }
 
 pub fn get_configuration() -> Result<ClientConfiguration, ClientError> {
@@ -16,6 +17,11 @@ pub fn get_configuration() -> Result<ClientConfiguration, ClientError> {
         .build()?;
 
     let mut config = settings.try_deserialize::<ClientConfiguration>()?;
+
+    match config.ingest_server {
+        None => config.ingest_server = Some(String::from("http://localhost:4000")),
+        Some(_) => {}
+    }
 
     match config.hardware_id {
         // if we don't have a hardware id set, then we need to generate and write one for this client

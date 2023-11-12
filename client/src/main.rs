@@ -1,5 +1,7 @@
 mod config;
 mod errors;
+mod webserver;
+
 use tray_icon::{
     menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
     TrayIconBuilder, TrayIconEvent,
@@ -7,6 +9,7 @@ use tray_icon::{
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
 use crate::errors::ClientError;
+use crate::webserver::boot_webserver;
 use chrono::Local;
 use std::path::Path;
 
@@ -18,6 +21,7 @@ async fn main() -> Result<(), ClientError> {
     let icon = load_icon(Path::new("icon.png"));
 
     #[cfg(target_os = "linux")]
+    // on linux we have to start up gtk and the system try in a separate thread
     std::thread::spawn(|| {
         use tray_icon::menu::Menu;
 
@@ -36,6 +40,9 @@ async fn main() -> Result<(), ClientError> {
     let mut menu_status = MenuItem::new("Connected", false, None);
     menu.append(&menu_status);
     menu.append(&MenuItem::new("Reconnect", true, None));
+
+    // we will spin up a separate thread for the websocket connections and axum webserver here
+    tokio::spawn(async move { boot_webserver(client_config.clone()).await });
 
     #[cfg(not(target_os = "linux"))]
     let mut tray_icon = Some(
