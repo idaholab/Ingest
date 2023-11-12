@@ -25,7 +25,7 @@ impl PageVariables {
     fn new(config: ClientConfiguration) -> Self {
         PageVariables {
             register_url: format!(
-                "{}/hardware_register?hardware_id={}" // eventually we should add dynamic port and callbacks
+                "{}/dashboard/destinations/register_client?client_id={}", // eventually we should add dynamic port and callbacks
                 config.ingest_server.unwrap_or(String::new()),
                 config.hardware_id.unwrap_or(Uuid::new_v4())
             ),

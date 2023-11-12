@@ -1,4 +1,9 @@
 defmodule Ingest.Requests.Request do
+  @moduledoc """
+  This represents the full data request object. Consisting of a template, a project, and
+  eventually a destination - this is the full package and root object when users are uploading
+  files to the Ingest system.
+  """
   use Ecto.Schema
   import Ecto.Changeset
 
