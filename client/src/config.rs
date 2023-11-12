@@ -8,6 +8,7 @@ use uuid::Uuid;
 pub struct ClientConfiguration {
     pub hardware_id: Option<Uuid>,
     pub ingest_server: Option<String>,
+    pub token: Option<String>,
 }
 
 pub fn get_configuration() -> Result<ClientConfiguration, ClientError> {
