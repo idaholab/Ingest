@@ -4,6 +4,7 @@ defmodule IngestWeb.DestinationsLive do
   such as the Project Alexandria storage for NA-22 data or INL HPC, and the shared/owned Ingest Clients known by
   the user. This is the entry point for managing your data destinations prior to hooking them up to a data request.
   """
+  alias Ingest.Destinations.Client
   use IngestWeb, :live_view
 
   @impl true
@@ -16,7 +17,14 @@ defmodule IngestWeb.DestinationsLive do
         show
         on_cancel={JS.patch(~p"/dashboard/destinations")}
       >
-        hi
+        <.live_component
+          client={@client}
+          module={IngestWeb.LiveComponents.RegisterClientForm}
+          id="register-client-modal-component"
+          patch={~p"/dashboard/destinations/"}
+          current_user={@current_user}
+          live_action={@live_action}
+        />
       </.modal>
     </div>
     """
@@ -35,7 +43,8 @@ defmodule IngestWeb.DestinationsLive do
   defp apply_action(socket, :register_client, %{"client_id" => client_id}) do
     socket
     |> assign(:page_title, "Register")
-    |> assign(:project, nil)
+    |> assign(:client_form, %Client{} |> Ecto.Changeset.change() |> to_form())
+    |> assign(:client, %Client{owner_id: socket.assigns.current_user.id, id: client_id})
   end
 
   # need to cover the index action TODO: find a better way of streamlining this

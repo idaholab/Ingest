@@ -99,6 +99,6 @@ defmodule IngestWeb.LiveComponents.TemplateForm do
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :project_form, to_form(changeset))
+    assign(socket, :template_form, to_form(changeset))
   end
 end
