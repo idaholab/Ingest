@@ -25,7 +25,7 @@ defmodule Ingest.Destinations.Client do
   @doc false
   def changeset(client, attrs) do
     client
-    |> cast(attrs, [:name, :owner_id])
-    |> validate_required([:name, :owner_id])
+    |> cast(attrs, [:name, :owner_id, :token])
+    |> validate_required([:name, :owner_id, :token])
   end
 end

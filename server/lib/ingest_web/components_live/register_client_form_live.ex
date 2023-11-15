@@ -89,13 +89,20 @@ defmodule IngestWeb.LiveComponents.RegisterClientForm do
   end
 
   defp save_client(socket, client_params) do
-    case Map.put(client_params, "inserted_by", socket.assigns.current_user.id)
+    token = Phoenix.Token.sign(socket, "client_auth", %{_id: socket.assigns.current_user.id})
+
+    case Map.put(client_params, "owner_id", socket.assigns.current_user.id)
+         |> Map.put(
+           "token",
+           token
+         )
          |> Ingest.Destinations.create_client() do
       {:ok, client} ->
         {:noreply,
          socket
          |> put_flash(:info, "Client registered successfully")
-         |> redirect(to: ~p"/dashboard/destinations")}
+         # redirect out to the client again with the newly minted and saved token for registration
+         |> redirect(external: "http://localhost:8097/callback?token=#{token}")}
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}

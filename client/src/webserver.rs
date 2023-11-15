@@ -1,5 +1,6 @@
 use crate::config::ClientConfiguration;
 use crate::errors::ClientError;
+use axum::extract::State;
 use axum::response::Html;
 use axum::routing::get;
 use axum::Router;
@@ -7,6 +8,7 @@ use handlebars::Handlebars;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::sync::Arc;
 use uuid::Uuid;
 
 #[derive(RustEmbed)]
@@ -19,6 +21,11 @@ struct Templates;
 // don't plan on using this UI for anything more than registration and possible status
 struct PageVariables {
     register_url: String,
+}
+
+struct PageState<'a> {
+    config: ClientConfiguration,
+    handlebars: handlebars::Handlebars<'a>,
 }
 
 impl PageVariables {
@@ -34,38 +41,22 @@ impl PageVariables {
 }
 
 pub async fn boot_webserver(config: ClientConfiguration) -> Result<(), ClientError> {
-    let app = Router::new().route(
-        "/",
-        get(|| async move {
-            // pull in the handlebars templates and get them registered - we're using rust-embed to make
-            // sure they're in our binary so we don't have to do anything weird with packaging - we could
-            // do this outside of the function but in case we wanted to add an updated status we need
-            // to do this each time as Handlebars::Registry isn't Send for some godawful reason
-            let mut reg = Handlebars::new();
+    let mut reg = Handlebars::new();
 
-            // because the embedded webserver is such an essential part of the system, we're fine crashing
-            // and burning on failure here, fail fast and hard
-            reg.register_embed_templates::<Templates>()
-                .expect("unable to load embedded templates for webserver");
+    // because the embedded webserver is such an essential part of the system, we're fine crashing
+    // and burning on failure here, fail fast and hard
+    reg.register_embed_templates::<Templates>()
+        .expect("unable to load embedded templates for webserver");
 
-            // our app needs basically three routes - the register gives a redirect, a home route,
-            // and a callback route that the central server sends the user back to with a token to be exchanged/stored
-            // for authentication purposes and the websocket connection,
-            let vars = PageVariables::new(config.clone());
-            let register_page = reg
-                .render("register.hbs", &json!(vars))
-                .expect("unable to render webserver template");
+    let state = Arc::new(PageState {
+        config,
+        handlebars: reg,
+    });
 
-            let main_page = reg
-                .render("main.hbs", &json!(vars))
-                .expect("unable to render webserver template");
-
-            match config.token {
-                None => Html(register_page),
-                Some(_) => Html(main_page),
-            }
-        }),
-    );
+    let app = Router::new()
+        .route("/", get(main))
+        .route("/callback", get(callback))
+        .with_state(state);
 
     // 8097 because hopefully nothing else is running on that port TODO: make port dynamic
     axum::Server::bind(&"0.0.0.0:8097".parse().unwrap())
@@ -73,4 +64,32 @@ pub async fn boot_webserver(config: ClientConfiguration) -> Result<(), ClientErr
         .await?;
 
     Ok(())
+}
+
+async fn main<'a>(State(state): State<Arc<PageState<'a>>>) -> Html<String> {
+    let vars = PageVariables::new(state.config.clone());
+    let register_page = state
+        .handlebars
+        .render("register.hbs", &json!(vars))
+        .expect("unable to render webserver template");
+
+    let main_page = state
+        .handlebars
+        .render("main.hbs", &json!(vars))
+        .expect("unable to render webserver template");
+
+    match state.config.token {
+        None => Html(register_page),
+        Some(_) => Html(main_page),
+    }
+}
+
+async fn callback<'a>(State(state): State<Arc<PageState<'a>>>) -> Html<String> {
+    let vars = PageVariables::new(state.config.clone());
+    let callback_page = state
+        .handlebars
+        .render("callback.hbs", &json!(vars))
+        .expect("unable to render webserver template");
+
+    Html(callback_page)
 }
