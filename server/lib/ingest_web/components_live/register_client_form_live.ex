@@ -97,12 +97,16 @@ defmodule IngestWeb.LiveComponents.RegisterClientForm do
          |> put_flash(:info, "Client registered successfully")
          |> redirect(to: ~p"/dashboard/destinations")}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
     end
   end
 
-  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :client_form, to_form(changeset))
+  defp assign_form(socket, changeset) do
+    assign(
+      socket,
+      :client_form,
+      to_form(changeset |> Ecto.Changeset.change(%{id: socket.assigns.client.id}))
+    )
   end
 end
