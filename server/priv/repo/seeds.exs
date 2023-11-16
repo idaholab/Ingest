@@ -36,6 +36,7 @@ alias Ingest.Requests
 {:ok, template} =
   Requests.create_template(%{
     name: "Test Template",
+    inserted_by: user.id,
     description: "A testing template",
     structure: %{field: "test"}
   })
