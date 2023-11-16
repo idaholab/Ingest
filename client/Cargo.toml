@@ -21,6 +21,7 @@ rust-embed = "8.0.0"
 handlebars = { version = "4.5.0", features = ["rust-embed"] }
 hyper = "0.14.27"
 serde_json = "1.0.108"
+tokio-tungstenite = "0.20.1"
 
 [dependencies.uuid]
 version = "1.5.0"

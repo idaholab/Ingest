@@ -20,7 +20,7 @@ pub fn get_configuration() -> Result<ClientConfiguration, ClientError> {
     let mut config = settings.try_deserialize::<ClientConfiguration>()?;
 
     match config.ingest_server {
-        None => config.ingest_server = Some(String::from("http://localhost:4000")),
+        None => config.ingest_server = Some(String::from("localhost:4000")),
         Some(_) => {}
     }
 
@@ -30,15 +30,23 @@ pub fn get_configuration() -> Result<ClientConfiguration, ClientError> {
             let hardware_id = Uuid::new_v4();
             config.hardware_id = Some(hardware_id);
 
-            let file = OpenOptions::new()
-                .create(true)
-                .write(true)
-                .truncate(true)
-                .open(".ingest_client_config.yml")?;
-            serde_yaml::to_writer(file, &config)?;
+            config.write_to_host()?;
         }
         Some(_) => {}
     }
 
     Ok(config)
+}
+
+impl ClientConfiguration {
+    pub fn write_to_host(&self) -> Result<(), ClientError> {
+        let file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(".ingest_client_config.yml")?;
+
+        serde_yaml::to_writer(file, self)?;
+        Ok(())
+    }
 }

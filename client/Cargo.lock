@@ -482,6 +482,7 @@ dependencies = [
  "sqlx",
  "thiserror",
  "tokio",
+ "tokio-tungstenite",
  "tray-icon",
  "uuid",
  "winit",

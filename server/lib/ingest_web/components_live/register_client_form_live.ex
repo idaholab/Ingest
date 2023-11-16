@@ -97,7 +97,7 @@ defmodule IngestWeb.LiveComponents.RegisterClientForm do
            token
          )
          |> Ingest.Destinations.create_client() do
-      {:ok, client} ->
+      {:ok, _client} ->
         {:noreply,
          socket
          |> put_flash(:info, "Client registered successfully")
