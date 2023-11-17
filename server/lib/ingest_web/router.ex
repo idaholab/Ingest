@@ -1,5 +1,4 @@
 defmodule IngestWeb.Router do
-  alias IngestWeb.TemplateBuilderLive
   use IngestWeb, :router
 
   import IngestWeb.UserAuth
