@@ -1,9 +1,10 @@
-use crate::config::ClientConfiguration;
+use crate::config::{get_configuration, ClientConfiguration};
 use crate::errors::ClientError;
 use axum::extract::{Query, State};
 use axum::response::Html;
 use axum::routing::get;
 use axum::Router;
+use futures_util::StreamExt;
 use handlebars::Handlebars;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
@@ -35,8 +36,8 @@ impl PageVariables {
     fn new(config: ClientConfiguration) -> Self {
         PageVariables {
             register_url: format!(
-                "{}/dashboard/destinations/register_client?client_id={}", // eventually we should add dynamic port and callbacks
-                config.ingest_server.unwrap_or(String::new()),
+                "http://{}/dashboard/destinations/register_client?client_id={}", // eventually we should add dynamic port and callbacks
+                config.ingest_server.unwrap_or_default(),
                 config.hardware_id.unwrap_or(Uuid::new_v4())
             ),
             error_message: None,
@@ -45,7 +46,8 @@ impl PageVariables {
     }
 }
 
-pub async fn boot_webserver(config: ClientConfiguration) -> Result<(), ClientError> {
+pub async fn boot_webserver() -> Result<(), ClientError> {
+    let config = get_configuration()?;
     let mut reg = Handlebars::new();
 
     // because the embedded webserver is such an essential part of the system, we're fine crashing

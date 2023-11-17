@@ -13,4 +13,6 @@ pub enum ClientError {
     Webserver(#[from] hyper::Error),
     #[error("unknown client error")]
     Unknown,
+    #[error("tokio thread error: {0}")]
+    TokioThread(#[from] tokio::task::JoinError),
 }

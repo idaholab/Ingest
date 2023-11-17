@@ -22,6 +22,8 @@ handlebars = { version = "4.5.0", features = ["rust-embed"] }
 hyper = "0.14.27"
 serde_json = "1.0.108"
 tokio-tungstenite = "0.20.1"
+futures = "0.3.29"
+futures-util = "0.3.29"
 
 [dependencies.uuid]
 version = "1.5.0"

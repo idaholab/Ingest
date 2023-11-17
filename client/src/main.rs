@@ -1,4 +1,5 @@
 mod config;
+mod connection;
 mod errors;
 mod webserver;
 
@@ -8,10 +9,15 @@ use tray_icon::{
 };
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
+use crate::connection::make_connection_thread;
 use crate::errors::ClientError;
 use crate::webserver::boot_webserver;
 use chrono::Local;
 use std::path::Path;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+
+pub struct Connected(bool);
 
 #[tokio::main]
 async fn main() -> Result<(), ClientError> {
@@ -37,12 +43,19 @@ async fn main() -> Result<(), ClientError> {
 
     let event_loop = EventLoopBuilder::new().build().unwrap();
     let menu = Menu::new();
-    let mut menu_status = MenuItem::new("Connected", false, None);
-    menu.append(&menu_status);
-    menu.append(&MenuItem::new("Reconnect", true, None));
+    let menu_status = MenuItem::new("Connected", false, None);
+    menu.append(&menu_status)
+        .expect("unable to register menu item");
+    menu.append(&MenuItem::new("Reconnect", true, None))
+        .expect("unable to register menu item");
 
-    // we will spin up a separate thread for the websocket connections and axum webserver here
-    tokio::spawn(async move { boot_webserver(client_config.clone()).await });
+    let connected_semaphore = Arc::new(RwLock::new(Connected(false)));
+
+    // we will spin up separate threads for the websocket connections and axum webserver here
+    // note that the connection thread _might_ die here if the token isn't available or is invalid
+    // that's ok - the webserver thread can spin this up or the user can spin this up via the menu
+    tokio::spawn(async move { boot_webserver().await });
+    tokio::spawn(async move { make_connection_thread(connected_semaphore).await });
 
     #[cfg(not(target_os = "linux"))]
     let mut tray_icon = Some(
