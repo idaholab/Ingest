@@ -27,15 +27,15 @@ defmodule IngestWeb.TemplateBuilderLive do
         <div>
           <ul role="list" class="divide-y divide-gray-100 ">
             <li class="flex items-center justify-between gap-x-6 py-5 active active:bg-green-100 bg-green-100 px-1">
-              <div class="min-w-0">
+              <div class="min-w-0 px-2">
                 <div class="flex items-start gap-x-3">
                   <p class="text-sm font-semibold leading-6 text-gray-900">Name</p>
                 </div>
-                <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-                  <div class="grid grid-cols-2">
-                    <p class="whitespace-nowrap text-sm">Text</p>
+                <div class="mt-1 flex gap-x-2 text-xs leading-5 text-gray-500">
+                  <div class="grid grid-cols-3">
+                    <p class="whitespace-nowrap text-sm col-span-2">Text</p>
 
-                    <p class="whitespace-nowrap">
+                    <p class="whitespace-nowrap items-right">
                       <span class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
                         Required
                       </span>
@@ -87,7 +87,6 @@ defmodule IngestWeb.TemplateBuilderLive do
                     aria-labelledby="options-menu-0-button"
                     tabindex="-1"
                   >
-                    <!-- Active: "bg-gray-50", Not Active: "" -->
                     <a
                       href="#"
                       class="block px-3 py-1 text-sm leading-6 text-gray-900"
@@ -122,49 +121,12 @@ defmodule IngestWeb.TemplateBuilderLive do
           </ul>
         </div>
         <div class="col-span-2 bg-gray-800 p-8 ">
-          <!--
-    This example requires some changes to your config:
-
-    ```
-    // tailwind.config.js
-    module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-    }
-    ```
-    -->
           <form>
             <div class="space-y-12">
               <div class="border-b border-white/10 pb-12">
-                <h2 class="text-base font-semibold leading-7 text-white">Name</h2>
-                <p class="mt-1 text-sm leading-6 text-gray-400">
+                <p class="mt-1 text-md leading-6 text-gray-400">
                   Choose your field type and options.
                 </p>
-
-                <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                  <div class="sm:col-span-3">
-                    <label for="country" class="block text-sm font-medium leading-6 text-white">
-                      Type
-                    </label>
-                    <div class="mt-2">
-                      <select
-                        id="country"
-                        name="country"
-                        autocomplete="country-name"
-                        class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 [&_*]:text-black"
-                      >
-                        <option>Text</option>
-                        <option>Dropdown</option>
-                        <option>Large Text</option>
-                        <option>Checkbox</option>
-                        <option>Number</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
 
                 <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                   <div class="sm:col-span-4">
@@ -179,7 +141,6 @@ defmodule IngestWeb.TemplateBuilderLive do
                           id="username"
                           autocomplete="username"
                           class="flex-1 border-0 bg-transparent py-1.5 pl-1 text-white focus:ring-0 sm:text-sm sm:leading-6"
-                          placeholder="janesmith"
                         />
                       </div>
                     </div>
@@ -203,6 +164,153 @@ defmodule IngestWeb.TemplateBuilderLive do
                     </p>
                   </div>
                 </div>
+
+                <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                  <div class="sm:col-span-3">
+                    <label for="country" class="block text-sm font-medium leading-6 text-white">
+                      Type
+                    </label>
+                    <div class="mt-2">
+                      <select
+                        id="country"
+                        name="country"
+                        autocomplete="country-name"
+                        class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 [&_*]:text-black"
+                      >
+                        <option>Text</option>
+                        <option>Dropdown</option>
+                        <option>Large Text</option>
+                        <option>Checkbox</option>
+                        <option>Number</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sm:col-span-4 py-5">
+                  <label for="username" class="block text-sm font-medium leading-6 text-white">
+                    File Extensions
+                  </label>
+                  <div class="mt-2">
+                    <div class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                      <input
+                        type="text"
+                        name="username"
+                        id="username"
+                        autocomplete="username"
+                        class="flex-1 border-0 bg-transparent py-1.5 pl-1 text-white focus:ring-0 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+                  </div>
+                  <p class="mt-3 text-sm leading-6 text-gray-400">
+                    Comma-seperated values. Example: .csv,.pdf,.html
+                  </p>
+                </div>
+
+                <fieldset>
+                  <legend class="text-base font-semibold leading-6 text-white">
+                    Applicability
+                  </legend>
+
+                  <div class="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-3 sm:gap-x-4">
+                    <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
+                    <label class="relative flex cursor-pointer rounded-lg border  bg-gray-800 p-4 shadow-sm focus:outline-none">
+                      <input
+                        type="radio"
+                        name="project-type"
+                        value="Newsletter"
+                        class="sr-only"
+                        aria-labelledby="project-type-0-label"
+                        aria-describedby="project-type-0-description-0 project-type-0-description-1"
+                      />
+                      <span class="flex flex-1">
+                        <span class="flex flex-col">
+                          <span id="project-type-0-label" class="block text-sm font-medium text-white">
+                            Field-per-batch
+                          </span>
+                          <span
+                            id="project-type-0-description-0"
+                            class="mt-1 flex items-center text-sm text-white"
+                          >
+                            Show field only once per group of uploads.
+                          </span>
+                        </span>
+                      </span>
+                      <!-- Not Checked: "invisible" -->
+                      <svg
+                        class="h-5 w-5 text-white"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <!--
+        Active: "border", Not Active: "border-2"
+        Checked: "border-indigo-600", Not Checked: "border-transparent"
+      -->
+                      <span
+                        class="pointer-events-none absolute -inset-px rounded-lg border-2"
+                        aria-hidden="true"
+                      >
+                      </span>
+                    </label>
+                    <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
+                    <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none">
+                      <input
+                        type="radio"
+                        name="project-type"
+                        value="Existing Customers"
+                        class="sr-only"
+                        aria-labelledby="project-type-1-label"
+                        aria-describedby="project-type-1-description-0 project-type-1-description-1"
+                      />
+                      <span class="flex flex-1">
+                        <span class="flex flex-col">
+                          <span
+                            id="project-type-1-label"
+                            class="block text-sm font-medium text-gray-900"
+                          >
+                            Field-per-file
+                          </span>
+                          <span
+                            id="project-type-1-description-0"
+                            class="mt-1 flex items-center text-sm text-gray-500"
+                          >
+                            Show field once for each file that matches the desired extensions.
+                          </span>
+                        </span>
+                      </span>
+                      <!-- Not Checked: "invisible" -->
+                      <svg
+                        class="h-5 w-5 text-indigo-600"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <!--
+        Active: "border", Not Active: "border-2"
+        Checked: "border-indigo-600", Not Checked: "border-transparent"
+      -->
+                      <span
+                        class="pointer-events-none absolute -inset-px rounded-lg border-2"
+                        aria-hidden="true"
+                      >
+                      </span>
+                    </label>
+                    <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
+                  </div>
+                </fieldset>
               </div>
 
               <div class="border-b border-white/10 pb-12">
