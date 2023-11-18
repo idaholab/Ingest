@@ -16,11 +16,23 @@ use chrono::Local;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use tracing::Level;
+use tracing_subscriber::FmtSubscriber;
 
 pub struct Connected(bool);
 
 #[tokio::main]
 async fn main() -> Result<(), ClientError> {
+    // a builder for `FmtSubscriber`.
+    let subscriber = FmtSubscriber::builder()
+        // all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
+        // will be written to stdout.
+        .with_max_level(Level::TRACE)
+        // completes the builder.
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+
     // First let's pull in the current configuration - this will automatically create a hardware_id
     // if one does not exist for this client
     let client_config = config::get_configuration()?;
@@ -50,11 +62,12 @@ async fn main() -> Result<(), ClientError> {
         .expect("unable to register menu item");
 
     let connected_semaphore = Arc::new(RwLock::new(Connected(false)));
+    let webserver_semaphore = connected_semaphore.clone();
 
     // we will spin up separate threads for the websocket connections and axum webserver here
     // note that the connection thread _might_ die here if the token isn't available or is invalid
     // that's ok - the webserver thread can spin this up or the user can spin this up via the menu
-    tokio::spawn(async move { boot_webserver().await });
+    tokio::spawn(async move { boot_webserver(webserver_semaphore).await });
     tokio::spawn(async move { make_connection_thread(connected_semaphore).await });
 
     #[cfg(not(target_os = "linux"))]

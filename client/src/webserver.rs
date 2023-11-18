@@ -1,16 +1,19 @@
 use crate::config::{get_configuration, ClientConfiguration};
+use crate::connection::make_connection_thread;
 use crate::errors::ClientError;
+use crate::Connected;
 use axum::extract::{Query, State};
 use axum::response::Html;
 use axum::routing::get;
 use axum::Router;
-use futures_util::StreamExt;
 use handlebars::Handlebars;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
 use std::sync::Arc;
+use tokio::sync::RwLock;
+use tracing::info;
 use uuid::Uuid;
 
 #[derive(RustEmbed)]
@@ -25,11 +28,13 @@ struct PageVariables {
     register_url: String,
     error_message: Option<String>,
     success_message: Option<String>,
+    connected: Option<bool>,
 }
 
 struct PageState<'a> {
     config: ClientConfiguration,
     handlebars: handlebars::Handlebars<'a>,
+    connected: Arc<RwLock<Connected>>,
 }
 
 impl PageVariables {
@@ -42,11 +47,12 @@ impl PageVariables {
             ),
             error_message: None,
             success_message: None,
+            connected: None,
         }
     }
 }
 
-pub async fn boot_webserver() -> Result<(), ClientError> {
+pub async fn boot_webserver(semaphore: Arc<RwLock<Connected>>) -> Result<(), ClientError> {
     let config = get_configuration()?;
     let mut reg = Handlebars::new();
 
@@ -58,6 +64,7 @@ pub async fn boot_webserver() -> Result<(), ClientError> {
     let state = Arc::new(PageState {
         config,
         handlebars: reg,
+        connected: semaphore,
     });
 
     let app = Router::new()
@@ -74,7 +81,16 @@ pub async fn boot_webserver() -> Result<(), ClientError> {
 }
 
 async fn main<'a>(State(state): State<Arc<PageState<'a>>>) -> Html<String> {
-    let vars = PageVariables::new(state.config.clone());
+    let mut vars = PageVariables::new(state.config.clone());
+    vars.connected = Some(state.connected.read().await.0);
+
+    // if disconnected - let's book up a thread and run the connection
+    if !state.connected.read().await.0 {
+        info!("websocket wasn't connected on refresh, connecting");
+        let semaphore = state.connected.clone();
+        tokio::spawn(async move { make_connection_thread(semaphore).await });
+    }
+
     let register_page = state
         .handlebars
         .render("register.hbs", &json!(vars))
