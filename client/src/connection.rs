@@ -2,12 +2,12 @@ use crate::config::get_configuration;
 use crate::errors::ClientError;
 use crate::Connected;
 use futures_util::{StreamExt, TryStreamExt};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tokio::sync::RwLock;
 use tokio_tungstenite::tungstenite::{Error, Message};
 use tracing::error;
 
-pub async fn make_connection_thread(semaphore: Arc<RwLock<Connected>>) -> Result<(), ClientError> {
+pub async fn make_connection_thread(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientError> {
     let thread_semaphore = semaphore.clone();
     let handle = tokio::spawn(async move { make_connection(thread_semaphore).await });
 
@@ -15,13 +15,13 @@ pub async fn make_connection_thread(semaphore: Arc<RwLock<Connected>>) -> Result
     let result = handle.await?;
 
     // the write-lock will be dropped once the function goes out of scope
-    let mut connected = semaphore.write().await;
+    let mut connected = semaphore.lock().unwrap();
     *connected = Connected(false);
 
     result
 }
 
-async fn make_connection(semaphore: Arc<RwLock<Connected>>) -> Result<(), ClientError> {
+async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientError> {
     // we pull the config in yet again because we may have restarted this thread after the token
     // was written to the config in a different thread
     let config = get_configuration()?;
@@ -38,7 +38,7 @@ async fn make_connection(semaphore: Arc<RwLock<Connected>>) -> Result<(), Client
 
     // indicate status, has to be in own scope so we drop the write lock immediately
     {
-        let mut connected = semaphore.write().await;
+        let mut connected = semaphore.lock().unwrap();
         *connected = Connected(true);
     }
 

@@ -11,7 +11,7 @@ use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tokio::sync::RwLock;
 use tracing::info;
 use uuid::Uuid;
@@ -34,7 +34,7 @@ struct PageVariables {
 struct PageState<'a> {
     config: ClientConfiguration,
     handlebars: handlebars::Handlebars<'a>,
-    connected: Arc<RwLock<Connected>>,
+    connected: Arc<Mutex<Connected>>,
 }
 
 impl PageVariables {
@@ -52,7 +52,7 @@ impl PageVariables {
     }
 }
 
-pub async fn boot_webserver(semaphore: Arc<RwLock<Connected>>) -> Result<(), ClientError> {
+pub async fn boot_webserver(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientError> {
     let config = get_configuration()?;
     let mut reg = Handlebars::new();
 
@@ -82,10 +82,10 @@ pub async fn boot_webserver(semaphore: Arc<RwLock<Connected>>) -> Result<(), Cli
 
 async fn main<'a>(State(state): State<Arc<PageState<'a>>>) -> Html<String> {
     let mut vars = PageVariables::new(state.config.clone());
-    vars.connected = Some(state.connected.read().await.0);
+    vars.connected = Some(state.connected.lock().unwrap().0);
 
     // if disconnected - let's book up a thread and run the connection
-    if !state.connected.read().await.0 {
+    if !state.connected.lock().unwrap().0 {
         info!("websocket wasn't connected on refresh, connecting");
         let semaphore = state.connected.clone();
         tokio::spawn(async move { make_connection_thread(semaphore).await });

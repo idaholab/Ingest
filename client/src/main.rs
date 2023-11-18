@@ -14,9 +14,12 @@ use crate::errors::ClientError;
 use crate::webserver::boot_webserver;
 use chrono::Local;
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use tokio::runtime::Handle;
 use tokio::sync::RwLock;
 use tracing::Level;
+use tracing_subscriber::fmt::format;
 use tracing_subscriber::FmtSubscriber;
 
 pub struct Connected(bool);
@@ -38,6 +41,18 @@ async fn main() -> Result<(), ClientError> {
     let client_config = config::get_configuration()?;
     let icon = load_icon(Path::new("icon.png"));
 
+    // we have to use a standard mutex so we can do a blocking read in the event loop - it's a pain in the ass
+    let semaphore = Arc::new(Mutex::new(Connected(false)));
+    let webserver_semaphore = semaphore.clone();
+    let connected_semaphore = semaphore.clone();
+
+    // we will spin up separate threads for the websocket connections and axum webserver here
+    // note that the connection thread _might_ die here if the token isn't available or is invalid
+    // that's ok - the webserver thread can spin this up or the user can spin this up via the menu
+    tokio::spawn(async move { boot_webserver(webserver_semaphore).await });
+    tokio::spawn(async move { make_connection_thread(connected_semaphore).await });
+
+    // now let's setup the system tray and get the event loop running
     #[cfg(target_os = "linux")]
     // on linux we have to start up gtk and the system try in a separate thread
     std::thread::spawn(|| {
@@ -55,20 +70,12 @@ async fn main() -> Result<(), ClientError> {
 
     let event_loop = EventLoopBuilder::new().build().unwrap();
     let menu = Menu::new();
-    let menu_status = MenuItem::new("Connected", false, None);
+    let menu_status = MenuItem::new("Disconnected", false, None);
+    let menu_reconnect = MenuItem::new("Reconnect", true, None);
     menu.append(&menu_status)
         .expect("unable to register menu item");
-    menu.append(&MenuItem::new("Reconnect", true, None))
+    menu.append(&menu_reconnect)
         .expect("unable to register menu item");
-
-    let connected_semaphore = Arc::new(RwLock::new(Connected(false)));
-    let webserver_semaphore = connected_semaphore.clone();
-
-    // we will spin up separate threads for the websocket connections and axum webserver here
-    // note that the connection thread _might_ die here if the token isn't available or is invalid
-    // that's ok - the webserver thread can spin this up or the user can spin this up via the menu
-    tokio::spawn(async move { boot_webserver(webserver_semaphore).await });
-    tokio::spawn(async move { make_connection_thread(connected_semaphore).await });
 
     #[cfg(not(target_os = "linux"))]
     let mut tray_icon = Some(
@@ -86,13 +93,27 @@ async fn main() -> Result<(), ClientError> {
     let _ = event_loop.run(move |_event, event_loop| {
         let time = Local::now();
         event_loop.set_control_flow(ControlFlow::Poll);
-        menu_status.set_text(format!("Connected - {}", time.format("%Y-%m-%d %H:%M:%S")));
+
+        {
+            if semaphore.lock().unwrap().0 {
+                menu_status.set_text(format!("Connected - {}", time.to_rfc2822()));
+            } else {
+                menu_status.set_text("Disconnected");
+            }
+        }
 
         if let Ok(event) = tray_channel.try_recv() {
             println!("{event:?}");
         }
 
         if let Ok(event) = menu_channel.try_recv() {
+            let new_semaphore = semaphore.clone();
+            {
+                if event.id == menu_reconnect.id() && !semaphore.lock().unwrap().0 {
+                    tokio::spawn(async move { make_connection_thread(new_semaphore).await });
+                }
+            }
+
             println!("{event:?}");
         }
     });
