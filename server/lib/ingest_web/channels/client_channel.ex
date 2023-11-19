@@ -1,9 +1,10 @@
 defmodule IngestWeb.ClientChannel do
+  alias Ingest.Destinations
   use IngestWeb, :channel
 
   @impl true
-  def join("client:lobby", payload, socket) do
-    if authorized?(payload) do
+  def join("client:" <> client_id, payload, socket) do
+    if authorized?(client_id, socket.assigns.current_user) do
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
@@ -25,8 +26,9 @@ defmodule IngestWeb.ClientChannel do
     {:noreply, socket}
   end
 
-  # Add authorization logic here as required.
-  defp authorized?(_payload) do
-    true
+  # checks to see that the user_id contains the client_id the socket
+  # is attempting to join on
+  defp authorized?(client_id, user_id) do
+    Destinations.get_client_for_user(client_id, user_id) != nil
   end
 end

@@ -41,7 +41,7 @@ defmodule IngestWeb.ClientSocket do
       {:ok, user_id} ->
         {:ok, assign(socket, :current_user, user_id)}
 
-      {:error, reason} ->
+      {:error, _reason} ->
         :error
     end
   end

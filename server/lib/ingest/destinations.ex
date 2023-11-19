@@ -37,6 +37,10 @@ defmodule Ingest.Destinations do
   """
   def get_client!(id), do: Repo.get!(Client, id)
 
+  def get_client_for_user(client_id, user_id) do
+    Repo.get_by(Client, id: client_id, owner_id: user_id)
+  end
+
   @doc """
   Creates a client.
 

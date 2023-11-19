@@ -1,11 +1,14 @@
 defmodule IngestWeb.ClientChannelTest do
   use IngestWeb.ChannelCase
+  import Ingest.DestinationsFixtures
 
   setup do
-    {:ok, _, socket} =
+    client = client_fixture()
+
+    {:ok, reply, socket} =
       IngestWeb.UserSocket
-      |> socket("user_id", %{some: :assign})
-      |> subscribe_and_join(IngestWeb.ClientChannel, "client:lobby")
+      |> socket("user_id", %{current_user: client.owner_id})
+      |> subscribe_and_join(IngestWeb.ClientChannel, "client:#{client.id}")
 
     %{socket: socket}
   end
