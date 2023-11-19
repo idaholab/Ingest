@@ -13,7 +13,7 @@ config :ingest, Ingest.Repo,
   password: "monkwer88",
   hostname: "localhost",
   database: "ingest_test#{System.get_env("MIX_TEST_PARTITION")}",
-  port: 5433,
+  port: 5432,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 

@@ -21,12 +21,22 @@ defmodule Ingest.RequestsTest do
     end
 
     test "create_template/1 with valid data creates a template" do
-      valid_attrs = %{name: "some name", description: "some description", structure: %{}}
+      {:ok, user} =
+        Ingest.Accounts.register_user(%{
+          email: unique_user_email(),
+          password: "xxxxxxxxxxxx",
+          name: "Administrator"
+        })
+
+      valid_attrs = %{
+        name: "some name",
+        description: "some description",
+        inserted_by: user.id
+      }
 
       assert {:ok, %Template{} = template} = Requests.create_template(valid_attrs)
       assert template.name == "some name"
       assert template.description == "some description"
-      assert template.structure == %{}
     end
 
     test "create_template/1 with invalid data returns error changeset" do
@@ -38,14 +48,12 @@ defmodule Ingest.RequestsTest do
 
       update_attrs = %{
         name: "some updated name",
-        description: "some updated description",
-        structure: %{}
+        description: "some updated description"
       }
 
       assert {:ok, %Template{} = template} = Requests.update_template(template, update_attrs)
       assert template.name == "some updated name"
       assert template.description == "some updated description"
-      assert template.structure == %{}
     end
 
     test "update_template/2 with invalid data returns error changeset" do

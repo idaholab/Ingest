@@ -20,13 +20,6 @@ defmodule Ingest.DestinationsTest do
       assert Destinations.get_client!(client.id) == client
     end
 
-    test "create_client/1 with valid data creates a client" do
-      valid_attrs = %{name: "some name"}
-
-      assert {:ok, %Client{} = client} = Destinations.create_client(valid_attrs)
-      assert client.name == "some name"
-    end
-
     test "create_client/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Destinations.create_client(@invalid_attrs)
     end

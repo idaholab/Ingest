@@ -3,17 +3,25 @@ defmodule Ingest.RequestsFixtures do
   This module defines test helpers for creating
   entities via the `Ingest.Requests` context.
   """
+  def unique_user_email, do: "user#{System.unique_integer()}@example.com"
 
   @doc """
   Generate a template.
   """
   def template_fixture(attrs \\ %{}) do
+    {:ok, user} =
+      Ingest.Accounts.register_user(%{
+        email: unique_user_email(),
+        password: "xxxxxxxxxxxx",
+        name: "Administrator"
+      })
+
     {:ok, template} =
       attrs
       |> Enum.into(%{
         description: "some description",
         name: "some name",
-        structure: %{}
+        inserted_by: user.id
       })
       |> Ingest.Requests.create_template()
 
