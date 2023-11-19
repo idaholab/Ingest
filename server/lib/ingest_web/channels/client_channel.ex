@@ -1,4 +1,9 @@
 defmodule IngestWeb.ClientChannel do
+  @moduledoc """
+  ClientChannel controls all aspects of the client interaction with the Phoenix server apart from the transfers.
+  This allows users to interact with the central server and modify/view things on their client without us having to
+  build a cross-platform UI for the Rust client.
+  """
   alias Ingest.Destinations
   use IngestWeb, :channel
 
@@ -9,6 +14,15 @@ defmodule IngestWeb.ClientChannel do
     else
       {:error, %{reason: "unauthorized"}}
     end
+  end
+
+  @impl true
+  def handle_in("dir_update", %{"directories" => dirs}, socket) do
+    # for right now we're just going to shove whatever the client tells us into cachex for the dir
+    # eventually we will need to pull the original, diff and update only the dirs we want, but I'm lazy rn
+    Cachex.put(:clients, "dir:#{socket.assigns.client_id}", dirs)
+
+    {:reply, :ok, socket}
   end
 
   # Channels can be used in a request/response fashion

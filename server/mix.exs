@@ -54,6 +54,7 @@ defmodule Ingest.MixProject do
       {:oidcc, git: "https://github.com/erlef/oidcc.git", tag: "v3.1.0-beta.1"},
       {:jose, "~> 1.11"},
       {:ecto_psql_extras, "~> 0.6"},
+      {:cachex, "~> 3.6.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

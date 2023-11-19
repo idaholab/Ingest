@@ -7,10 +7,18 @@ defmodule IngestWeb.ClientChannelTest do
 
     {:ok, reply, socket} =
       IngestWeb.UserSocket
-      |> socket("user_id", %{current_user: client.owner_id})
+      |> socket("user_id", %{current_user: client.owner_id, client_id: client.id})
       |> subscribe_and_join(IngestWeb.ClientChannel, "client:#{client.id}")
 
     %{socket: socket}
+  end
+
+  test "dir_update updates the cached entry", %{socket: socket} do
+    ref = push(socket, "dir_update", %{"directories" => [%{"~/" => %{"test.pdf" => "57"}}]})
+    assert_reply ref, :ok
+
+    {:ok, results} = Cachex.get(:clients, "dir:#{socket.assigns.client_id}")
+    assert match?([%{"~/" => %{"test.pdf" => "57"}}], results)
   end
 
   test "ping replies with status ok", %{socket: socket} do

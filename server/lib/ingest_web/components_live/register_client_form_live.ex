@@ -89,7 +89,11 @@ defmodule IngestWeb.LiveComponents.RegisterClientForm do
   end
 
   defp save_client(socket, client_params) do
-    token = Phoenix.Token.sign(socket, "client_auth", %{_id: socket.assigns.current_user.id})
+    token =
+      Phoenix.Token.sign(socket, "client_auth", %{
+        _id: socket.assigns.current_user.id,
+        client_id: socket.assigns.client_form.id
+      })
 
     case Map.put(client_params, "owner_id", socket.assigns.current_user.id)
          |> Map.put(

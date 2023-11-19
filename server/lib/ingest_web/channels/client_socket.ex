@@ -38,8 +38,8 @@ defmodule IngestWeb.ClientSocket do
   @impl true
   def connect(%{"token" => token}, socket, _connect_info) do
     case Phoenix.Token.verify(socket, "client_auth", token) do
-      {:ok, user_id} ->
-        {:ok, assign(socket, :current_user, user_id)}
+      {:ok, %{"client_id" => client_id, "_id" => user_id}} ->
+        {:ok, socket |> assign(:current_user, user_id) |> assign(:client_id, client_id)}
 
       {:error, _reason} ->
         :error

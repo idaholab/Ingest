@@ -16,6 +16,8 @@ defmodule Ingest.Application do
       {Phoenix.PubSub, name: Ingest.PubSub},
       # Start Finch
       {Finch, name: Ingest.Finch},
+      Supervisor.child_spec({Cachex, name: :server}, id: :cachex_server),
+      Supervisor.child_spec({Cachex, name: :clients}, id: :cachex_clients),
       # Start the Endpoint (http/https)
       IngestWeb.Endpoint
       # Start a worker by calling: Ingest.Worker.start_link(arg)
