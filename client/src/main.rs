@@ -15,11 +15,7 @@ use crate::webserver::boot_webserver;
 use chrono::Local;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
-use std::thread;
-use tokio::runtime::Handle;
-use tokio::sync::RwLock;
 use tracing::Level;
-use tracing_subscriber::fmt::format;
 use tracing_subscriber::FmtSubscriber;
 
 pub struct Connected(bool);
@@ -72,9 +68,7 @@ async fn main() -> Result<(), ClientError> {
     let menu = Menu::new();
     let menu_status = MenuItem::new("Disconnected", false, None);
     let menu_reconnect = MenuItem::new("Reconnect", true, None);
-    menu.append(&menu_status)
-        .expect("unable to register menu item");
-    menu.append(&menu_reconnect)
+    menu.append_items(&[&menu_status, &menu_reconnect])
         .expect("unable to register menu item");
 
     #[cfg(not(target_os = "linux"))]
@@ -107,9 +101,9 @@ async fn main() -> Result<(), ClientError> {
         }
 
         if let Ok(event) = menu_channel.try_recv() {
-            let new_semaphore = semaphore.clone();
             {
                 if event.id == menu_reconnect.id() && !semaphore.lock().unwrap().0 {
+                    let new_semaphore = semaphore.clone();
                     tokio::spawn(async move { make_connection_thread(new_semaphore).await });
                 }
             }

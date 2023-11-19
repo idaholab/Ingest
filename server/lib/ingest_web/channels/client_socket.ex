@@ -12,6 +12,8 @@ defmodule IngestWeb.ClientSocket do
   #
   # channel "room:*", IngestWeb.RoomChannel
   #
+
+  channel "client:lobby", IngestWeb.ClientChannel
   # To create a channel file, use the mix task:
   #
   #     mix phx.gen.channel Room

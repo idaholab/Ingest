@@ -3,8 +3,7 @@ use crate::errors::ClientError;
 use crate::Connected;
 use futures_util::{StreamExt, TryStreamExt};
 use std::sync::{Arc, Mutex};
-use tokio::sync::RwLock;
-use tokio_tungstenite::tungstenite::{Error, Message};
+use tokio_tungstenite::tungstenite::Message;
 use tracing::error;
 
 pub async fn make_connection_thread(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientError> {
