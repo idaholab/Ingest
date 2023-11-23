@@ -44,7 +44,7 @@ defmodule Ingest.Requests.TemplateField do
   embedded_schema do
     field :label, :string
     field :help_text, :string
-    field :type, Ecto.Enum, values: [:select, :text, :number, :textarea, :checkbox]
+    field :type, Ecto.Enum, values: [:select, :text, :number, :textarea, :checkbox, :date]
     field :select_options, {:array, :string}
     field :required, :boolean
     field :per_file, :boolean
@@ -60,7 +60,7 @@ defmodule Ingest.Requests.TemplateField do
       :select_options,
       :required,
       :per_file,
-      :file_extension
+      :file_extensions
     ])
     |> validate_required([:label, :type])
   end
