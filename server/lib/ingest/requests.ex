@@ -4,6 +4,7 @@ defmodule Ingest.Requests do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Requests.TemplateField
   alias Ingest.Accounts.User
   alias Ingest.Projects.Project
   alias Ingest.Repo
@@ -110,6 +111,10 @@ defmodule Ingest.Requests do
   """
   def change_template(%Template{} = template, attrs \\ %{}) do
     Template.changeset(template, attrs)
+  end
+
+  def change_template_field(%TemplateField{} = field, attrs \\ %{}) do
+    TemplateField.changeset(field, attrs)
   end
 
   alias Ingest.Requests.Request
