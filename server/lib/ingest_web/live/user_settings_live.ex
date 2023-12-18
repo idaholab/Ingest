@@ -99,8 +99,9 @@ defmodule IngestWeb.UserSettingsLive do
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:trigger_submit, false)
+      |> assign(:section, "settings")
 
-    {:ok, socket}
+    {:ok, socket, layout: {IngestWeb.Layouts, :dashboard}}
   end
 
   def handle_event("validate_email", params, socket) do

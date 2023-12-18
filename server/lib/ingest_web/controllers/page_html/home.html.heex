@@ -1,4 +1,5 @@
 <.flash_group flash={@flash} />
+
 <div class="bg-gray-900">
   <main>
     <!-- Hero section -->
@@ -32,10 +33,92 @@
           fill="url(#983e3e4c-de6d-4c3f-8d64-b9761d1534cc)"
         />
       </svg>
+      <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end text-white bg-gray-900">
+        <%= if @current_user do %>
+          <li class="text-[0.8125rem] leading-6 text-white-900">
+            <%= @current_user.email %>
+          </li>
+          <li>
+            <.link
+              href={~p"/users/settings"}
+              class="text-[0.8125rem] leading-6 text-white-900 font-semibold hover:text-white-700"
+            >
+              Settings
+            </.link>
+          </li>
+          <li>
+            <.link
+              href={~p"/users/log_out"}
+              method="delete"
+              class="text-[0.8125rem] leading-6 text-white-900 font-semibold hover:text-white-700"
+            >
+              Log out
+            </.link>
+          </li>
+        <% else %>
+          <li>
+            <.link
+              href={~p"/users/register"}
+              class="text-[0.8125rem] leading-6 text-white-900 font-semibold hover:text-white-700"
+            >
+              Register
+            </.link>
+          </li>
+          <li>
+            <.link
+              href={~p"/users/log_in"}
+              class="text-[0.8125rem] leading-6 text-white-900 font-semibold hover:text-white-700"
+            >
+              Log in
+            </.link>
+          </li>
+        <% end %>
+      </ul>
       <div
         class="absolute left-[calc(50%-4rem)] top-10 -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:left-48 lg:top-[calc(50%-30rem)] xl:left-[calc(50%-24rem)]"
         aria-hidden="true"
       >
+        <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end text-white bg-gray-900">
+          <%= if @current_user do %>
+            <li class="text-[0.8125rem] leading-6 text-white-900">
+              <%= @current_user.email %>
+            </li>
+            <li>
+              <.link
+                href={~p"/users/settings"}
+                class="text-[0.8125rem] leading-6 text-white-900 font-semibold hover:text-white-700"
+              >
+                Settings
+              </.link>
+            </li>
+            <li>
+              <.link
+                href={~p"/users/log_out"}
+                method="delete"
+                class="text-[0.8125rem] leading-6 text-white-900 font-semibold hover:text-white-700"
+              >
+                Log out
+              </.link>
+            </li>
+          <% else %>
+            <li>
+              <.link
+                href={~p"/users/register"}
+                class="text-[0.8125rem] leading-6 text-white-900 font-semibold hover:text-white-700"
+              >
+                Register
+              </.link>
+            </li>
+            <li>
+              <.link
+                href={~p"/users/log_in"}
+                class="text-[0.8125rem] leading-6 text-white-900 font-semibold hover:text-white-700"
+              >
+                Log in
+              </.link>
+            </li>
+          <% end %>
+        </ul>
         <div
           class="aspect-[1108/632] w-[69.25rem] bg-gradient-to-r from-[#80caff] to-[#4f46e5] opacity-20"
           style="clip-path: polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)"
