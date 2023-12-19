@@ -39,8 +39,9 @@ defmodule IngestWeb.TemplateBuilderLive do
           <li
             :for={field <- @fields}
             id={field.id}
-            phx-click={JS.navigate(~p"/dashboard/templates/#{@template.id}/fields/#{field.id}")}
+            phx-click={JS.patch(~p"/dashboard/templates/#{@template.id}/fields/#{field.id}")}
             class={active(field.id, @field)}
+            data-id={field.id}
           >
             <div>
               <div class="min-w-0 px-2 flex flex-row drag-ghost:opacity-0">
@@ -314,6 +315,22 @@ defmodule IngestWeb.TemplateBuilderLive do
   @impl true
   def handle_params(_params, _uri, socket) do
     {:noreply, socket |> assign(:field, nil)}
+  end
+
+  def handle_event("reposition", params, socket) do
+    %{"id" => id, "new" => new, "old" => old} = params
+    # Put your logic here to deal with the changes to the list order
+    # and persist the data
+    field = Enum.find(socket.assigns.fields, fn f -> f.id == id end)
+
+    list =
+      List.delete_at(socket.assigns.fields, old)
+      |> List.insert_at(new, field)
+      |> Enum.map(fn f -> Map.from_struct(f) end)
+
+    Requests.update_template(socket.assigns.template, %{fields: list})
+
+    {:noreply, socket}
   end
 
   defp active(current, field) do

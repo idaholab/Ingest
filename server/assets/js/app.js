@@ -31,6 +31,10 @@ Hooks.FormBuilderFields = {
         var sortable = Sortable.create(this.el, {
             dragClass: "drag-item",
             ghostClass: "drag-ghost",
+            onEnd: e => {
+                let params = { old: e.oldIndex, new: e.newIndex, ...e.item.dataset }
+                this.pushEventTo(this.el, "reposition", params)
+            }
         })
     }
 }
