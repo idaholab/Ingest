@@ -53,8 +53,18 @@ defmodule IngestWeb.TemplateBuilderLive do
                 </div>
                 <div>
                   <p class="whitespace-nowrap items-right">
-                    <span class="inline-flex items-center rounded-md bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">
+                    <span
+                      :if={field.per_file}
+                      class="inline-flex items-center rounded-md bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700"
+                    >
                       Per File
+                    </span>
+
+                    <span
+                      :if={!field.per_file}
+                      class="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700"
+                    >
+                      Per Batch
                     </span>
                     |
                     <span
@@ -90,36 +100,12 @@ defmodule IngestWeb.TemplateBuilderLive do
       </div>
 
       <div :if={@field} class=" bg-gray-800 p-8 basis-2/3">
-        <form>
+        <.form for={@field_form} phx-change="validate" id="field" phx-submit="save">
           <div class="space-y-12">
             <div class="border-b border-white/10 pb-12">
               <p class="mt-1 text-md leading-6 text-gray-400">
                 Choose your field type and options.
               </p>
-
-              <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                <div class="sm:col-span-4">
-                  <label for="username" class="block text-sm font-medium leading-6 text-white">
-                    Label
-                  </label>
-                  <div class="mt-2">
-                    <.input type="text" @dark={true} field={@field_form[:label]} />
-                  </div>
-                </div>
-
-                <div class="col-span-full">
-                  <label for="about" class="block text-sm font-medium leading-6 text-white">
-                    Help Text
-                  </label>
-                  <div class="mt-2">
-                    <.input type="textarea" @dark={true} field={@field_form[:help_text]} />
-                  </div>
-
-                  <p class="mt-3 text-sm leading-6 text-gray-400">
-                    Optional: write a few setences to describe the information you're requesting.
-                  </p>
-                </div>
-              </div>
 
               <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                 <div class="sm:col-span-3">
@@ -129,7 +115,6 @@ defmodule IngestWeb.TemplateBuilderLive do
                   <div class="mt-2">
                     <.input
                       type="select"
-                      @dark={true}
                       field={@field_form[:type]}
                       id="label"
                       options={[:select, :text, :number, :textarea, :checkbox, :date]}
@@ -138,12 +123,36 @@ defmodule IngestWeb.TemplateBuilderLive do
                 </div>
               </div>
 
+              <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                <div class="sm:col-span-4">
+                  <label for="username" class="block text-sm font-medium leading-6 text-white">
+                    Label
+                  </label>
+                  <div class="mt-2">
+                    <.input type="text" field={@field_form[:label]} />
+                  </div>
+                </div>
+
+                <div class="col-span-full">
+                  <label for="about" class="block text-sm font-medium leading-6 text-white">
+                    Help Text
+                  </label>
+                  <div class="mt-2">
+                    <.input type="textarea" field={@field_form[:help_text]} />
+                  </div>
+
+                  <p class="mt-3 text-sm leading-6 text-gray-400">
+                    Optional: write a few setences to describe the information you're requesting.
+                  </p>
+                </div>
+              </div>
+
               <div class="sm:col-span-4 py-5">
                 <label for="username" class="block text-sm font-medium leading-6 text-white">
                   File Extensions
                 </label>
                 <div class="mt-2">
-                  <.input type="combobox" @dark={true} field={@field_form[:file_extensions]} />
+                  <.input type="combobox" field={@field_form[:file_extensions]} />
                 </div>
                 <p class="mt-3 text-sm leading-6 text-gray-400">
                   Comma-seperated values. Example: .csv,.pdf,.html - Leave blank for all file types
@@ -151,125 +160,30 @@ defmodule IngestWeb.TemplateBuilderLive do
               </div>
 
               <fieldset>
-                <legend class="text-base font-semibold leading-6 text-white">
-                  Applicability
-                </legend>
-
-                <div class="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-3 sm:gap-x-4">
-                  <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
-                  <label class="relative flex cursor-pointer rounded-lg border  bg-gray-800 p-4 shadow-sm focus:outline-none">
-                    <input
-                      type="radio"
-                      name="project-type"
-                      value="Newsletter"
-                      class="sr-only"
-                      aria-labelledby="project-type-0-label"
-                      aria-describedby="project-type-0-description-0 project-type-0-description-1"
-                    />
-                    <span class="flex flex-1">
-                      <span class="flex flex-col">
-                        <span id="project-type-0-label" class="block text-sm font-medium text-white">
-                          Field-per-batch
-                        </span>
-                        <span
-                          id="project-type-0-description-0"
-                          class="mt-1 flex items-center text-sm text-white"
-                        >
-                          Show field only once per group of uploads.
-                        </span>
-                      </span>
-                    </span>
-                    <!-- Not Checked: "invisible" -->
-                    <svg
-                      class="h-5 w-5 text-white"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-
-                    <span
-                      class="pointer-events-none absolute -inset-px rounded-lg border-2"
-                      aria-hidden="true"
-                    >
-                    </span>
+                <div class="sm:col-span-4 py-5">
+                  <label for="username" class="block text-sm font-medium leading-6 text-white">
+                    Applicability - Field per File
                   </label>
-                  <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none">
-                    <input
-                      type="radio"
-                      name="project-type"
-                      value="Existing Customers"
-                      class="sr-only"
-                      aria-labelledby="project-type-1-label"
-                      aria-describedby="project-type-1-description-0 project-type-1-description-1"
-                    />
-                    <span class="flex flex-1">
-                      <span class="flex flex-col">
-                        <span
-                          id="project-type-1-label"
-                          class="block text-sm font-medium text-gray-900"
-                        >
-                          Field-per-file
-                        </span>
-                        <span
-                          id="project-type-1-description-0"
-                          class="mt-1 flex items-center text-sm text-gray-500"
-                        >
-                          Show field once for each file that matches the desired extensions.
-                        </span>
-                      </span>
-                    </span>
-                    <!-- Not Checked: "invisible" -->
-                    <svg
-                      class="h-5 w-5 text-indigo-600"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+                  <div class="mt-2">
+                    <.input type="checkbox" field={@field_form[:per_file]} />
+                  </div>
+                  <p class="mt-3 text-sm leading-6 text-gray-400">
+                    By default a field shows up only once per batch of uploads. Check this box to insure this field shows up once for each file uploaded.
+                  </p>
+                </div>
 
-                    <span
-                      class="pointer-events-none absolute -inset-px rounded-lg border-2"
-                      aria-hidden="true"
-                    >
-                    </span>
+                <div class="sm:col-span-4 py-3">
+                  <label for="username" class="block text-sm font-medium leading-6 text-white">
+                    Required
                   </label>
+                  <div class="mt-2">
+                    <.input type="checkbox" field={@field_form[:required]} />
+                  </div>
+                  <p class="mt-3 text-sm leading-6 text-gray-400">
+                    Whether or not a user is required to fill the field before submitting.
+                  </p>
                 </div>
               </fieldset>
-            </div>
-
-            <div class="border-b border-white/10 pb-12">
-              <h2 class="text-base font-semibold leading-7 text-white">Preview</h2>
-              <p class="mt-1 text-sm leading-6 text-gray-400">
-                This is how the field will appear on the final form
-              </p>
-              <div class="sm:col-span-4">
-                <label for="username" class="block text-sm font-medium leading-6 text-white">
-                  Label
-                </label>
-                <div class="mt-2">
-                  <div class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
-                    <input
-                      type="text"
-                      name="username"
-                      id="username"
-                      autocomplete="username"
-                      class="flex-1 border-0 bg-transparent py-1.5 pl-1 text-white focus:ring-0 sm:text-sm sm:leading-6"
-                      placeholder="janesmith"
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -277,12 +191,13 @@ defmodule IngestWeb.TemplateBuilderLive do
             <button type="button" class="text-sm font-semibold leading-6 text-white">Cancel</button>
             <button
               type="submit"
+              phx-disable-with="Saving..."
               class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
             >
               Save
             </button>
           </div>
-        </form>
+        </.form>
       </div>
     </div>
     """
@@ -317,6 +232,7 @@ defmodule IngestWeb.TemplateBuilderLive do
     {:noreply, socket |> assign(:field, nil)}
   end
 
+  @impl true
   def handle_event("reposition", params, socket) do
     %{"id" => id, "new" => new, "old" => old} = params
     # Put your logic here to deal with the changes to the list order
@@ -331,6 +247,51 @@ defmodule IngestWeb.TemplateBuilderLive do
     Requests.update_template(socket.assigns.template, %{fields: list})
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("validate", %{"template_field" => field_params}, socket) do
+    %{"file_extensions" => file_extensions} = field_params
+
+    field_params =
+      field_params |> Map.replace("file_extensions", file_extensions |> String.split(","))
+
+    changeset =
+      socket.assigns.field
+      |> Ingest.Requests.change_template_field(field_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, socket |> assign(:field_form, to_form(changeset))}
+  end
+
+  @impl true
+  def handle_event("save", %{"template_field" => field_params}, socket) do
+    %{"file_extensions" => file_extensions} = field_params
+
+    field_params =
+      field_params |> Map.replace("file_extensions", file_extensions |> String.split(","))
+
+    fields =
+      Enum.map(socket.assigns.fields, fn f ->
+        field = Map.from_struct(f)
+
+        if field.id == socket.assigns.field.id do
+          field_params
+          |> Map.put("id", socket.assigns.field.id)
+        else
+          field
+        end
+      end)
+
+    case Ingest.Requests.update_template(socket.assigns.template, %{fields: fields}) do
+      {:ok, template} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Template fields saved successfully")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, socket |> assign(:field_form, to_form(socket.assigns.field))}
+    end
   end
 
   defp active(current, field) do
