@@ -9,20 +9,6 @@ defmodule IngestWeb.TemplateBuilderLive do
     <div>
       <div class="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
         <h3 class="text-base font-semibold leading-6 text-gray-900">Form Builder</h3>
-        <div class="mt-3 flex sm:ml-4 sm:mt-0">
-          <button
-            type="button"
-            class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-          >
-            Back
-          </button>
-          <button
-            type="button"
-            class="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Save
-          </button>
-        </div>
       </div>
     </div>
 
@@ -216,14 +202,13 @@ defmodule IngestWeb.TemplateBuilderLive do
 
   @impl true
   def handle_params(%{"field_id" => field_id}, _uri, socket) do
-    field = Enum.find(socket.assigns.template.fields, fn field -> field.id == field_id end)
+    template = Requests.get_template!(socket.assigns.template.id)
+    field = Enum.find(template.fields, fn field -> field.id == field_id end)
 
     {:noreply,
      socket
-     |> assign(
-       :field,
-       field
-     )
+     |> assign(:field, field)
+     |> assign(:template, template)
      |> assign(:field_form, to_form(Requests.change_template_field(field)))}
   end
 
@@ -287,6 +272,10 @@ defmodule IngestWeb.TemplateBuilderLive do
       {:ok, template} ->
         {:noreply,
          socket
+         |> push_patch(
+           to:
+             ~p"/dashboard/templates/#{socket.assigns.template.id}/fields/#{socket.assigns.field.id}"
+         )
          |> put_flash(:info, "Template fields saved successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->

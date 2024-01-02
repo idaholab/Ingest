@@ -25,7 +25,7 @@ defmodule Ingest.Requests.Template do
   def changeset(%Template{} = template, attrs) do
     template
     |> cast(attrs, [:name, :description, :inserted_by])
-    |> cast_embed(:fields, required: false)
+    |> cast_embed(:fields, required: false, on_replace: :delete_if_exists)
     |> validate_required([:name, :inserted_by])
   end
 end
