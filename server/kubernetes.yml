@@ -1,0 +1,47 @@
+# 1-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingest-deployment
+spec:
+  replicas: 2
+  strategy: 
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: ingest
+  template:
+    metadata:
+      labels:
+        app: ingest
+    spec:
+      containers:
+        - name: ingest
+          image: "{{IMAGE_ID}}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4000
+          env:
+            - name: DATABASE_URL
+              value: "{{DATABASE_URL}}"
+            - name: SECRET_KEY_BASE
+              value: "{{SECRET_KEY_BASE}}"
+            - name: PORT
+              value: "4000"
+
+---
+# 2-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingest-service
+spec:
+  selector:
+    app: ingest
+  ports:
+    - port: 4000
+      targetPort: 4000
+      name: http
