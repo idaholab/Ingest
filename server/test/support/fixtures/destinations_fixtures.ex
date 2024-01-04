@@ -29,4 +29,20 @@ defmodule Ingest.DestinationsFixtures do
 
     client
   end
+
+  @doc """
+  Generate a destination.
+  """
+  def destination_fixture(attrs \\ %{}) do
+    {:ok, destination} =
+      attrs
+      |> Enum.into(%{
+        config: %{},
+        name: "some name",
+        type: "some type"
+      })
+      |> Ingest.Destinations.create_destination()
+
+    destination
+  end
 end

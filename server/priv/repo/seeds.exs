@@ -13,6 +13,7 @@
 alias Ingest.Accounts
 alias Ingest.Projects
 alias Ingest.Requests
+alias Ingest.Destinations
 
 {:ok, user} =
   Accounts.register_user(%{
@@ -103,3 +104,9 @@ alias Ingest.Requests
     project,
     user
   )
+
+{:ok, destination} =
+  Destinations.create_destination_for_user(user, %{
+    name: "Test Destination",
+    type: :passive
+  })

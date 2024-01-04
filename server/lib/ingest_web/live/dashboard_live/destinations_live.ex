@@ -56,9 +56,7 @@ defmodule IngestWeb.DestinationsLive do
                 }
               >
                 <:col :let={{_id, destination}} label="Name"><%= destination.name %></:col>
-                <:col :let={{_id, destination}} label="Description">
-                  <%= destination.description %>
-                </:col>
+                <:col :let={{_id, destination}} label="Type"><%= destination.type %></:col>
 
                 <:action :let={{_id, destination}}>
                   <.link
@@ -82,7 +80,7 @@ defmodule IngestWeb.DestinationsLive do
           </div>
         </div>
       </div>
-
+      <!--
       <.modal
         :if={@live_action in [:new]}
         id="destination_modal"
@@ -98,13 +96,24 @@ defmodule IngestWeb.DestinationsLive do
           current_user={@current_user}
         />
       </.modal>
+      -->
     </div>
     """
   end
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:section, "destinations"), layout: {IngestWeb.Layouts, :dashboard}}
+    {:ok,
+     socket
+     |> assign(
+       :destinations,
+       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+     )
+     |> stream(
+       :destinations,
+       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+     )
+     |> assign(:section, "destinations"), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
   @impl true

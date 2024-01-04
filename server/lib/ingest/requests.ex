@@ -25,11 +25,7 @@ defmodule Ingest.Requests do
   end
 
   def list_own_templates(%User{} = user) do
-    query =
-      from t in Template,
-        where: t.inserted_by == ^user.id
-
-    Repo.all(query)
+    Repo.all(from t in Template, where: t.inserted_by == ^user.id)
   end
 
   @doc """

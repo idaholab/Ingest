@@ -7,6 +7,7 @@ defmodule Ingest.Destinations do
   alias Ingest.Repo
 
   alias Ingest.Destinations.Client
+  alias Ingest.Accounts.User
 
   @doc """
   Returns the list of clients.
@@ -104,5 +105,112 @@ defmodule Ingest.Destinations do
   """
   def change_client(%Client{} = client, attrs \\ %{}) do
     Client.changeset(client, attrs)
+  end
+
+  alias Ingest.Destinations.Destination
+
+  @doc """
+  Returns the list of destinations.
+
+  ## Examples
+
+      iex> list_destinations()
+      [%Destination{}, ...]
+
+  """
+  def list_destinations do
+    Repo.all(Destination)
+  end
+
+  def list_own_destinations(%User{} = user) do
+    Repo.all(from d in Destination, where: d.inserted_by == ^user.id)
+  end
+
+  @doc """
+  Gets a single destination.
+
+  Raises `Ecto.NoResultsError` if the Destination does not exist.
+
+  ## Examples
+
+      iex> get_destination!(123)
+      %Destination{}
+
+      iex> get_destination!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_destination!(id), do: Repo.get!(Destination, id)
+
+  @doc """
+  Creates a destination.
+
+  ## Examples
+
+      iex> create_destination(%{field: value})
+      {:ok, %Destination{}}
+
+      iex> create_destination(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_destination(attrs \\ %{}) do
+    %Destination{}
+    |> Destination.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def create_destination_for_user(%User{} = user, attrs \\ %{}) do
+    %Destination{}
+    |> Destination.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:user, user)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a destination.
+
+  ## Examples
+
+      iex> update_destination(destination, %{field: new_value})
+      {:ok, %Destination{}}
+
+      iex> update_destination(destination, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_destination(%Destination{} = destination, attrs) do
+    destination
+    |> Destination.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a destination.
+
+  ## Examples
+
+      iex> delete_destination(destination)
+      {:ok, %Destination{}}
+
+      iex> delete_destination(destination)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_destination(%Destination{} = destination) do
+    Repo.delete(destination)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking destination changes.
+
+  ## Examples
+
+      iex> change_destination(destination)
+      %Ecto.Changeset{data: %Destination{}}
+
+  """
+  def change_destination(%Destination{} = destination, attrs \\ %{}) do
+    Destination.changeset(destination, attrs)
   end
 end
