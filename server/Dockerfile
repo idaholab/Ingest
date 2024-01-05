@@ -15,10 +15,10 @@ ARG ELIXIR_VERSION=1.15.6
 ARG OTP_VERSION=26.0.2
 ARG DEBIAN_VERSION=bullseye-20230612-slim
 
-ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
+ARG BUILDER_IMAGE="hexpm/elixir:1.15.6-erlang-26.0.2-debian-bullseye-20230612-slim"
 ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 
-FROM ${BUILDER_IMAGE} as builder
+FROM hexpm/elixir:1.15.6-erlang-26.0.2-debian-bullseye-20230612-slim as builder
 
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
@@ -85,7 +85,7 @@ RUN chown nobody /app
 ENV MIX_ENV="prod"
 
 # Only copy the final release from the build stage
-COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/ingest ./
+COPY --from=builder --chown=nobody:root /app/_build/prod/rel/ingest ./
 
 USER nobody
 
