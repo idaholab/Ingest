@@ -81,6 +81,8 @@ defmodule IngestWeb.Router do
       live "/dashboard/templates/:id/fields/:field_id", TemplateBuilderLive, :field
 
       live "/dashboard/destinations", DestinationsLive, :index
+      live "/dashboard/destinations/new", DestinationsLive, :new
+      live "/dashboard/destinations/:id", DestinationsLive, :edit
       live "/dashboard/destinations/register_client", DestinationsLive, :register_client
 
       live "/dashboard/projects", ProjectsLive, :index

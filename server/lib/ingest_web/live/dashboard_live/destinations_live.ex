@@ -4,6 +4,7 @@ defmodule IngestWeb.DestinationsLive do
   such as the Project Alexandria storage for NA-22 data or INL HPC, and the shared/owned Ingest Clients known by
   the user. This is the entry point for managing your data destinations prior to hooking them up to a data request.
   """
+  alias Ingest.Destinations.Destination
   alias Ingest.Destinations.Client
   use IngestWeb, :live_view
 
@@ -60,10 +61,10 @@ defmodule IngestWeb.DestinationsLive do
 
                 <:action :let={{_id, destination}}>
                   <.link
-                    navigate={~p"/dashboard/destinations/#{destination}"}
+                    patch={~p"/dashboard/destinations/#{destination}"}
                     class="text-indigo-600 hover:text-indigo-900"
                   >
-                    Show
+                    Edit
                   </.link>
                 </:action>
                 <:action :let={{id, destination}}>
@@ -80,23 +81,21 @@ defmodule IngestWeb.DestinationsLive do
           </div>
         </div>
       </div>
-      <!--
       <.modal
-        :if={@live_action in [:new]}
+        :if={@live_action in [:new, :edit]}
         id="destination_modal"
         show
         on_cancel={JS.patch(~p"/dashboard/destinations")}
       >
         <.live_component
           live_action={@live_action}
-          destination_form={@destination_form}
           destination={@destination}
-          module={IngestWeb.LiveComponents.destinationForm()}
+          module={IngestWeb.LiveComponents.DestinationForm}
           id="destination-modal-component"
           current_user={@current_user}
+          patch={~p"/dashboard/destinations"}
         />
       </.modal>
-      -->
     </div>
     """
   end
@@ -121,6 +120,25 @@ defmodule IngestWeb.DestinationsLive do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
+  defp apply_action(socket, :edit, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Edit Destination")
+    |> assign(:destination, Ingest.Destinations.get_destination!(id))
+  end
+
+  defp apply_action(socket, :new, _params) do
+    socket
+    |> assign(:page_title, "New Destination")
+    |> assign(:destination_form, %Destination{} |> Ecto.Changeset.change() |> to_form())
+    |> assign(:destination, %Destination{inserted_by: socket.assigns.current_user.id})
+  end
+
+  defp apply_action(socket, :index, _params) do
+    socket
+    |> assign(:page_title, "Listing Destinations")
+    |> assign(:destination, nil)
+  end
+
   defp apply_action(socket, :register_client, %{"client_id" => client_id}) do
     socket
     |> assign(:page_title, "Register")
@@ -132,5 +150,18 @@ defmodule IngestWeb.DestinationsLive do
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Data Destinations")
+  end
+
+  @impl true
+  def handle_info({IngestWeb.LiveComponents.DestinationForm, {:saved, project}}, socket) do
+    {:noreply, stream_insert(socket, :destinations, project)}
+  end
+
+  @impl true
+  def handle_event("delete", %{"id" => id}, socket) do
+    destination = Ingest.Destinations.get_destination!(id)
+    {:ok, _} = Ingest.Destinations.delete_destination(destination)
+
+    {:noreply, stream_delete(socket, :destinations, destination)}
   end
 end
