@@ -31,6 +31,85 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                 </.label>
                 <.input type="text" field={@destination_form[:name]} />
               </div>
+
+              <div class="sm:col-span-4">
+                <.label for="project-type">
+                  Project Type
+                </.label>
+                <.input
+                  type="select"
+                  field={@destination_form[:type]}
+                  options={[:passive, :s3, :azure]}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div
+            :if={@type == "s3"}
+            class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3"
+          >
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">AWS S3 Credentials</h2>
+              <p class="mt-1 text-sm leading-6 text-gray-600">
+                Your AWS S3 credentials as well as the default location that Ingest should send that data to.
+              </p>
+            </div>
+
+            <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
+              <div class="sm:col-span-4">
+                <.inputs_for :let={config} field={@destination_form[:s3_config]}>
+                  <.label for="status-select">
+                    API Key
+                  </.label>
+                  <.input type="text" field={config[:api_key]} />
+
+                  <.label for="status-select">
+                    API Secret
+                  </.label>
+                  <.input type="text" field={config[:api_secret]} />
+
+                  <.label for="status-select">
+                    Bucket
+                  </.label>
+                  <.input type="text" field={config[:bucket]} />
+
+                  <.label for="status-select">
+                    Default Path
+                  </.label>
+                  <.input type="text" field={config[:path]} />
+                </.inputs_for>
+              </div>
+            </div>
+          </div>
+
+          <div
+            :if={@type == "azure"}
+            class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3"
+          >
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">
+                Azure Data Lake Credentials
+              </h2>
+              <p class="mt-1 text-sm leading-6 text-gray-600">
+                Your Azure credentials as well as the default location that Ingest should send that data to.
+              </p>
+            </div>
+
+            <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
+              <div class="sm:col-span-4">
+                <.inputs_for :let={config} field={@destination_form[:azure_config]}>
+                  <.label for="status-select">
+                    Connection String
+                  </.label>
+                  <.input type="text" field={config[:connection_string]} />
+
+                  <.label for="status-select">
+                    Path
+                  </.label>
+                  <.input type="text" field={config[:path]} />
+                </.inputs_for>
+              </div>
             </div>
           </div>
         </div>
@@ -54,6 +133,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
     {:ok,
      socket
+     |> assign(:type, Atom.to_string(destination.type))
      |> assign(assigns)
      |> assign_form(changeset)}
   end
@@ -65,7 +145,8 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
       |> Ingest.Destinations.change_destination(destination_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, assign_form(socket, changeset)}
+    {:noreply,
+     assign_form(socket |> assign(:type, Map.get(destination_params, "type")), changeset)}
   end
 
   def handle_event("save", %{"destination" => destination_params}, socket) do

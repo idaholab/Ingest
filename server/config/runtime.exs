@@ -63,6 +63,13 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :ingest, Ingest.Vault,
+    ciphers: [
+      default:
+        {Cloak.Ciphers.AES.GCM,
+         tag: "AES.GCM.V1", key: Base.decode64!("YN8t8i7eqbjrWKNdIdotnpST7DEKh/2+NWjcKdPoLus=")}
+    ]
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

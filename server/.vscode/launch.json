@@ -14,7 +14,8 @@
             "debugAutoInterpretAllModules": false,
             "debugInterpretModulesPatterns": [
                 "Ingest.*",
-                "IngestWeb.*"
+                "IngestWeb.*",
+                "Cloak.Ecto.Type"
             ]
         },
         {

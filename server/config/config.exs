@@ -63,6 +63,15 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :ingest, Ingest.Vault,
+  ciphers: [
+    default: {
+      Cloak.Ciphers.AES.GCM,
+      # CHANGE THIS KEY IN PRODUCTION, THIS HAS BEEN COMMITTED AND IS A TEST KEY ONLY
+      tag: "AES.GCM.V1", key: Base.decode64!("YN8t8i7eqbjrWKNdIdotnpST7DEKh/2+NWjcKdPoLus=")
+    }
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

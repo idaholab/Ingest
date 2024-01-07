@@ -4,6 +4,8 @@ defmodule Ingest.Destinations do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Destinations.AzureConfig
+  alias Ingest.Destinations.S3Config
   alias Ingest.Repo
 
   alias Ingest.Destinations.Client
@@ -212,5 +214,13 @@ defmodule Ingest.Destinations do
   """
   def change_destination(%Destination{} = destination, attrs \\ %{}) do
     Destination.changeset(destination, attrs)
+  end
+
+  def change_s3_config(%S3Config{} = s3_config, attrs \\ %{}) do
+    S3Config.changeset(s3_config, attrs)
+  end
+
+  def change_azure_config(%S3Config{} = azure_config, attrs \\ %{}) do
+    AzureConfig.changeset(azure_config, attrs)
   end
 end

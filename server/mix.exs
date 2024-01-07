@@ -55,6 +55,7 @@ defmodule Ingest.MixProject do
       {:jose, "~> 1.11"},
       {:ecto_psql_extras, "~> 0.6"},
       {:cachex, "~> 3.6.0"},
+      {:cloak_ecto, "~> 1.2.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

@@ -39,10 +39,10 @@ defmodule Ingest.Destinations.S3Config do
   import Ecto.Changeset
 
   embedded_schema do
-    field :api_key, :string
-    field :api_secret, :string
-    field :bucket, :string
-    field :path, :string
+    field :api_key, Ingest.Encrypted.Binary
+    field :api_secret, Ingest.Encrypted.Binary
+    field :bucket, Ingest.Encrypted.Binary
+    field :path, Ingest.Encrypted.Binary
   end
 
   @doc false
@@ -61,8 +61,8 @@ defmodule Ingest.Destinations.AzureConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :connection_string, :string
-    field :path, :string
+    field :connection_string, Ingest.Encrypted.Binary
+    field :path, Ingest.Encrypted.Binary
   end
 
   @doc false
