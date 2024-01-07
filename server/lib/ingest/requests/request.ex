@@ -7,6 +7,7 @@ defmodule Ingest.Requests.Request do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Ingest.Destinations.Destination
   alias Ingest.Accounts.User
   alias Ingest.Projects.Project
   alias Ingest.Requests.Template
@@ -22,8 +23,9 @@ defmodule Ingest.Requests.Request do
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
 
     # even though these say "belongs_to" it really represents a one-to-one or many-to-one association
-    belongs_to :template, Template, type: :binary_id, foreign_key: :template_id
-    belongs_to :project, Project, type: :binary_id, foreign_key: :project_id
+    many_to_many :templates, Template, join_through: "request_templates"
+    many_to_many :projects, Project, join_through: "request_projects"
+    many_to_many :destinations, Destination, join_through: "request_destinations"
 
     timestamps()
   end

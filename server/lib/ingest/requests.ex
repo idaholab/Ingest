@@ -162,11 +162,16 @@ defmodule Ingest.Requests do
     |> Repo.insert()
   end
 
-  def create_request(attrs \\ %{}, %Template{} = template, %Project{} = project, %User{} = user) do
+  def create_request(
+        attrs \\ %{},
+        [%Template{}] = templates,
+        [%Project{}] = projects,
+        %User{} = user
+      ) do
     %Request{}
     |> Request.changeset(attrs)
-    |> Ecto.Changeset.put_assoc(:template, template)
-    |> Ecto.Changeset.put_assoc(:project, project)
+    |> Ecto.Changeset.put_assoc(:templates, templates)
+    |> Ecto.Changeset.put_assoc(:projects, projects)
     |> Ecto.Changeset.put_assoc(:user, user)
     |> Repo.insert()
   end

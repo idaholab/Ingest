@@ -100,8 +100,8 @@ alias Ingest.Destinations
       status: :draft,
       public: true
     },
-    template,
-    project,
+    [template],
+    [project],
     user
   )
 
