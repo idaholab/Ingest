@@ -1,8 +1,7 @@
-# 1-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ingest-deployment
+  name: ingest
 spec:
   replicas: 2
   strategy: 
@@ -18,19 +17,83 @@ spec:
       labels:
         app: ingest
     spec:
+      initContainers:
+        - name: ingest-init
+          image: "groundnuty/k8s-wait-for"
+          args:
+            - "job"
+            - "ingest-dbmigration-#{Build.BuildNumber}#"
       containers:
         - name: ingest
-          image: "{{IMAGE_ID}}"
+          image: "#{AcrRegistry}#/#{AcrPath}#:#{Build.BuildNumber}#"
           imagePullPolicy: Always
           ports:
             - containerPort: 4000
           env:
             - name: DATABASE_URL
-              value: "{{DATABASE_URL}}"
+              value: "#{DatabaseUrl}#"
             - name: SECRET_KEY_BASE
-              value: "{{SECRET_KEY_BASE}}"
+              value: "#{SecretKeyBase}#"
             - name: PORT
               value: "4000"
+            - name: PHX_HOST
+              value: "#{Host}#"
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ingest-dbmigration-#{Build.BuildNumber}#
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      containers:
+        - name: ingest-dbmigration
+          image: "#{AcrRegistry}#/#{Acr.MigrationPath}#:#{Build.BuildNumber}#"
+          env:
+            - name: DATABASE_URL
+              value: '#{DatabaseUrl}#'
+            - name: SECRET_KEY_BASE
+              value: "#{SecretKeyBase}#"
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 10.60.1.7
+          - 10.60.1.8
+        searches:
+          - inel.gov
+          - inl.gov
+      restartPolicy: Never
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: JobWatcher
+rules:
+  - apiGroups:
+      - ""
+      - "batch"
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: JobWatcher
+subjects:
+  - kind: ServiceAccount
+    name: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: JobWatcher
 
 ---
 # 2-service.yaml
@@ -42,6 +105,7 @@ spec:
   selector:
     app: ingest
   ports:
-    - port: 4000
+    - port: 80
       targetPort: 4000
       name: http
+      protocol: TCP
