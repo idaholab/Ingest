@@ -11,7 +11,10 @@ defmodule Ingest.Projects.Project do
     field :description, :string
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
-    has_many :requests, Request
+
+    many_to_many :requests, Request,
+      join_through: "request_projects",
+      join_keys: [project_id: :id, request_id: :id]
 
     many_to_many :project_members, Ingest.Accounts.User,
       join_through: "project_members",

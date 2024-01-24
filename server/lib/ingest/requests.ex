@@ -128,6 +128,10 @@ defmodule Ingest.Requests do
     Repo.all(Request)
   end
 
+  def list_own_requests(%User{} = user) do
+    Repo.all(from r in Request, where: r.inserted_by == ^user.id)
+  end
+
   @doc """
   Gets a single request.
 
