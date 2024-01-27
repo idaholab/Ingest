@@ -33,7 +33,7 @@ defmodule Ingest.Requests.Request do
   @doc false
   def changeset(request, attrs) do
     request
-    |> cast(attrs, [:name, :description, :status, :public])
-    |> validate_required([:name, :description, :status, :public])
+    |> cast(attrs, [:name, :description, :status, :public, :inserted_by])
+    |> validate_required([:name, :description])
   end
 end

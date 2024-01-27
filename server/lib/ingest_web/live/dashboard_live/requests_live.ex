@@ -1,6 +1,5 @@
 defmodule IngestWeb.RequestsLive do
   use IngestWeb, :live_view
-  alias Ingest.Requests
 
   @impl true
   def render(assigns) do
@@ -52,6 +51,9 @@ defmodule IngestWeb.RequestsLive do
                 <:col :let={{_id, request}} label="Description">
                   <%= request.description %>
                 </:col>
+
+                <:col :let={{_id, request}} label="Status"><%= request.status %></:col>
+                <:col :let={{_id, request}} label="Public?"><%= request.public %></:col>
 
                 <:action :let={{_id, request}}>
                   <.link

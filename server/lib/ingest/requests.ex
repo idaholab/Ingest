@@ -8,6 +8,7 @@ defmodule Ingest.Requests do
   alias Ingest.Accounts.User
   alias Ingest.Projects.Project
   alias Ingest.Repo
+  alias Ingest.Destinations.Destination
 
   alias Ingest.Requests.Template
 
@@ -146,7 +147,12 @@ defmodule Ingest.Requests do
       ** (Ecto.NoResultsError)
 
   """
-  def get_request!(id), do: Repo.get!(Request, id)
+  def get_request!(id),
+    do:
+      Repo.get!(Request, id)
+      |> Repo.preload(:templates)
+      |> Repo.preload(:projects)
+      |> Repo.preload(:destinations)
 
   @doc """
   Creates a request.
@@ -170,12 +176,14 @@ defmodule Ingest.Requests do
         attrs \\ %{},
         [%Template{}] = templates,
         [%Project{}] = projects,
+        [%Destination{}] = destinations,
         %User{} = user
       ) do
     %Request{}
     |> Request.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:templates, templates)
     |> Ecto.Changeset.put_assoc(:projects, projects)
+    |> Ecto.Changeset.put_assoc(:destinations, destinations)
     |> Ecto.Changeset.put_assoc(:user, user)
     |> Repo.insert()
   end

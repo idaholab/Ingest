@@ -92,6 +92,12 @@ alias Ingest.Destinations
     ]
   })
 
+{:ok, destination} =
+  Destinations.create_destination_for_user(user, %{
+    name: "Test Destination",
+    type: :passive
+  })
+
 {:ok, request} =
   Requests.create_request(
     %{
@@ -102,11 +108,6 @@ alias Ingest.Destinations
     },
     [template],
     [project],
+    [destination],
     user
   )
-
-{:ok, destination} =
-  Destinations.create_destination_for_user(user, %{
-    name: "Test Destination",
-    type: :passive
-  })

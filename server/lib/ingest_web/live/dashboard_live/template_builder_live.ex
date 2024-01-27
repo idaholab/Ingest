@@ -269,7 +269,7 @@ defmodule IngestWeb.TemplateBuilderLive do
       end)
 
     case Ingest.Requests.update_template(socket.assigns.template, %{fields: fields}) do
-      {:ok, template} ->
+      {:ok, _template} ->
         {:noreply,
          socket
          |> push_patch(
@@ -278,7 +278,7 @@ defmodule IngestWeb.TemplateBuilderLive do
          )
          |> put_flash(:info, "Template fields saved successfully")}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = _changeset} ->
         {:noreply, socket |> assign(:field_form, to_form(socket.assigns.field))}
     end
   end

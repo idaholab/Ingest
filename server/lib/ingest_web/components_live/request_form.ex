@@ -86,7 +86,8 @@ defmodule IngestWeb.LiveComponents.RequestForm do
 
   defp save_request(socket, :new, request_params) do
     case Map.put(request_params, "inserted_by", socket.assigns.current_user.id)
-         |> Ingest.Requests.create_request([], [], socket.assigns.current_user.id) do
+         |> Map.put("status", :draft)
+         |> Ingest.Requests.create_request() do
       {:ok, request} ->
         {:noreply,
          socket
