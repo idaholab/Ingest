@@ -223,4 +223,27 @@ defmodule Ingest.Destinations do
   def change_azure_config(%S3Config{} = azure_config, attrs \\ %{}) do
     AzureConfig.changeset(azure_config, attrs)
   end
+
+  @defaults %{exclude: []}
+  def search(search_term, opts \\ []) do
+    %{exclude: exclude} = Enum.into(opts, @defaults)
+
+    query =
+      from(d in Destination,
+        where:
+          fragment(
+            "searchable @@ websearch_to_tsquery(?)",
+            ^search_term
+          ) and d.id not in ^Enum.map(exclude, fn d -> d.id end),
+        order_by: {
+          :desc,
+          fragment(
+            "ts_rank_cd(searchable, websearch_to_tsquery(?), 4)",
+            ^search_term
+          )
+        }
+      )
+
+    Repo.all(query)
+  end
 end

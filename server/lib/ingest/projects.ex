@@ -156,14 +156,17 @@ defmodule Ingest.Projects do
     Repo.delete_all(query)
   end
 
-  def search(search_term) do
+  @defaults %{exclude: []}
+  def search(search_term, opts \\ []) do
+    %{exclude: exclude} = Enum.into(opts, @defaults)
+
     query =
       from(p in Project,
         where:
           fragment(
             "searchable @@ websearch_to_tsquery(?)",
             ^search_term
-          ),
+          ) and p.id not in ^Enum.map(exclude, fn p -> p.id end),
         order_by: {
           :desc,
           fragment(

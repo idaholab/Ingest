@@ -261,4 +261,48 @@ defmodule Ingest.Requests do
             d.request_id == type(^request.id, :binary_id)
     )
   end
+
+  def update_request_projects(%Request{} = request, projects) do
+    request
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:projects, projects)
+    |> Repo.update()
+  end
+
+  def update_request_templates(%Request{} = request, templates) do
+    request
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:templates, templates)
+    |> Repo.update()
+  end
+
+  def update_request_destinations(%Request{} = request, destinations) do
+    request
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:destinations, destinations)
+    |> Repo.update()
+  end
+
+  @defaults %{exclude: []}
+  def search_templates(search_term, opts \\ []) do
+    %{exclude: exclude} = Enum.into(opts, @defaults)
+
+    query =
+      from(t in Template,
+        where:
+          fragment(
+            "searchable @@ websearch_to_tsquery(?)",
+            ^search_term
+          ) and t.id not in ^Enum.map(exclude, fn d -> d.id end),
+        order_by: {
+          :desc,
+          fragment(
+            "ts_rank_cd(searchable, websearch_to_tsquery(?), 4)",
+            ^search_term
+          )
+        }
+      )
+
+    Repo.all(query)
+  end
 end
