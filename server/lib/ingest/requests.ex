@@ -234,4 +234,31 @@ defmodule Ingest.Requests do
   def change_request(%Request{} = request, attrs \\ %{}) do
     Request.changeset(request, attrs)
   end
+
+  def remove_destination(%Request{} = request, %Destination{} = destination) do
+    Repo.delete_all(
+      from d in "request_destinations",
+        where:
+          d.destination_id == type(^destination.id, :binary_id) and
+            d.request_id == type(^request.id, :binary_id)
+    )
+  end
+
+  def remove_project(%Request{} = request, %Project{} = project) do
+    Repo.delete_all(
+      from d in "request_projects",
+        where:
+          d.project_id == type(^project.id, :binary_id) and
+            d.request_id == type(^request.id, :binary_id)
+    )
+  end
+
+  def remove_template(%Request{} = request, %Template{} = template) do
+    Repo.delete_all(
+      from d in "request_templates",
+        where:
+          d.template_id == type(^template.id, :binary_id) and
+            d.request_id == type(^request.id, :binary_id)
+    )
+  end
 end

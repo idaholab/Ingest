@@ -80,15 +80,31 @@ defmodule IngestWeb.RequestShowLive do
             </div>
           </div>
 
-          <.table id="projects" rows={@request.projects}>
-            <:col :let={project} label="Name"><%= project.name %></:col>
+          <.table id="projects" rows={@streams.projects}>
+            <:col :let={{id, project}} label="Name"><%= project.name %></:col>
 
-            <:action :let={_request}>
-              <.link data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">
+            <:action :let={{id, project}}>
+              <.link
+                data-confirm="Are you sure?"
+                phx-click="remove_project"
+                phx-value-id={project.id}
+                class="text-red-600 hover:text-red-900"
+              >
                 Delete
               </.link>
             </:action>
           </.table>
+
+          <div class="relative flex justify-center mt-10">
+            <.link patch={~p"/dashboard/requests/#{@request.id}/search/projects"}>
+              <button
+                type="button"
+                class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                <.icon name="hero-plus" /> Add Project
+              </button>
+            </.link>
+          </div>
         </div>
         <!-- STATUS -->
         <div class="pr-5 pl-5 border-r-2">
@@ -127,11 +143,16 @@ defmodule IngestWeb.RequestShowLive do
             </div>
           </div>
 
-          <.table id="requests" rows={@request.templates}>
-            <:col :let={template} label="Name"><%= template.name %></:col>
+          <.table id="requests" rows={@streams.templates}>
+            <:col :let={{_id, template}} label="Name"><%= template.name %></:col>
 
-            <:action :let={_request}>
-              <.link data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">
+            <:action :let={{id, template}}>
+              <.link
+                data-confirm="Are you sure?"
+                phx-click="remove_template"
+                phx-value-id={template.id}
+                class="text-red-600 hover:text-red-900"
+              >
                 Delete
               </.link>
             </:action>
@@ -152,12 +173,14 @@ defmodule IngestWeb.RequestShowLive do
 
           <div>
             <ul role="list" class="divide-y divide-gray-100">
-              <%= for destination <- @request.destinations do %>
-                <li class="flex items-center justify-between gap-x-6 py-5">
+              <%= for {id, destination} <- @streams.destinations do %>
+                <li id={id} class="flex items-center justify-between gap-x-6 py-5">
                   <div class="flex min-w-0 gap-x-4">
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
                       <span class="font-medium leading-none text-white">
-                        S3
+                        <span :if={destination.type == :s3}>S3</span>
+                        <span :if={destination.type == :azure}>AZ</span>
+                        <span :if={destination.type == :passive}>P</span>
                       </span>
                     </span>
                     <div class="min-w-0 flex-auto">
@@ -176,9 +199,12 @@ defmodule IngestWeb.RequestShowLive do
 
                     <span
                       data-confirm="Are you sure?"
-                      phx-click="remove_member"
-                      phx-value-member={destination.id}
-                      phx-value-project={@request.id}
+                      phx-click="remove_destination"
+                      phx-value-id={destination.id}
+                      phx-click={
+                        JS.push("remove_destination", value: %{id: destination.id})
+                        |> hide("##{destination.id}")
+                      }
                       class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
                     >
                       Remove
@@ -206,10 +232,10 @@ defmodule IngestWeb.RequestShowLive do
                     />
                   </svg>
                   <h2 class="mt-2 text-base font-semibold leading-6 text-gray-900">
-                    Add team members
+                    Share Data Request
                   </h2>
                   <p class="mt-1 text-sm text-gray-500">
-                    As the owner of this project, you can manage team members and their  permissions.
+                    As the owner of this request, you can send direct invitations to upload data.
                   </p>
                 </div>
                 <form action="#" class="mt-6 flex">
@@ -234,6 +260,20 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
       </div>
+      <.modal
+        :if={@live_action in [:search_projects, :search_destinations, :search_templates]}
+        id="search_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/requests/#{@request.id}")}
+      >
+        <.live_component
+          live_action={@live_action}
+          request={@request}
+          module={IngestWeb.LiveComponents.SearchForm}
+          id="search-modal-component"
+          current_user={@current_user}
+        />
+      </.modal>
     </div>
     """
   end
@@ -245,6 +285,37 @@ defmodule IngestWeb.RequestShowLive do
 
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
-    {:noreply, socket |> assign(:request, Requests.get_request!(id))}
+    request = Requests.get_request!(id)
+
+    {:noreply,
+     socket
+     |> assign(:request, request)
+     |> stream(:templates, request.templates)
+     |> stream(:destinations, request.destinations)
+     |> stream(:projects, request.projects)}
+  end
+
+  @impl true
+  def handle_event("remove_destination", %{"id" => id}, socket) do
+    destination = Ingest.Destinations.get_destination!(id)
+    {1, _} = Ingest.Requests.remove_destination(socket.assigns.request, destination)
+
+    {:noreply, stream_delete(socket, :destinations, destination)}
+  end
+
+  @impl true
+  def handle_event("remove_project", %{"id" => id}, socket) do
+    project = Ingest.Projects.get_project!(id)
+    {1, _} = Ingest.Requests.remove_project(socket.assigns.request, project)
+
+    {:noreply, stream_delete(socket, :projects, project)}
+  end
+
+  @impl true
+  def handle_event("remove_template", %{"id" => id}, socket) do
+    template = Ingest.Requests.get_template!(id)
+    {1, _} = Ingest.Requests.remove_template(socket.assigns.request, template)
+
+    {:noreply, stream_delete(socket, :templates, template)}
   end
 end

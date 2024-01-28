@@ -12,6 +12,20 @@ defmodule Ingest.Repo.Migrations.CreateTemplates do
       timestamps()
     end
 
+    # we add a searchable field and assign a weight to it - allows for full-text search
+    execute """
+      ALTER TABLE templates
+        ADD COLUMN searchable tsvector
+        GENERATED ALWAYS AS (
+          setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
+          setweight(to_tsvector('english', coalesce(description, '')), 'B')
+        ) STORED;
+    """
+
+    execute """
+      CREATE INDEX templates_searchable_idx ON templates USING gin(searchable);
+    """
+
     create index(:templates, [:inserted_by])
   end
 end

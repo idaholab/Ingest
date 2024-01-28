@@ -25,7 +25,10 @@ defmodule Ingest.Requests.Request do
     # even though these say "belongs_to" it really represents a one-to-one or many-to-one association
     many_to_many :templates, Template, join_through: "request_templates"
     many_to_many :projects, Project, join_through: "request_projects"
-    many_to_many :destinations, Destination, join_through: "request_destinations"
+
+    many_to_many :destinations, Destination,
+      join_through: "request_destinations",
+      join_keys: [request_id: :id, destination_id: :id]
 
     timestamps()
   end

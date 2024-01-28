@@ -155,4 +155,24 @@ defmodule Ingest.Projects do
 
     Repo.delete_all(query)
   end
+
+  def search(search_term) do
+    query =
+      from(p in Project,
+        where:
+          fragment(
+            "searchable @@ websearch_to_tsquery(?)",
+            ^search_term
+          ),
+        order_by: {
+          :desc,
+          fragment(
+            "ts_rank_cd(searchable, websearch_to_tsquery(?), 4)",
+            ^search_term
+          )
+        }
+      )
+
+    Repo.all(query)
+  end
 end

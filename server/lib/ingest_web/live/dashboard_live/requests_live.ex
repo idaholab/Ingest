@@ -14,16 +14,16 @@ defmodule IngestWeb.RequestsLive do
           type="button"
           class="mt-5 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          <.icon name="hero-plus" /> New request
+          <.icon name="hero-plus" /> New Request
         </.link>
       </div>
 
       <div :if={@requests && !Enum.empty?(@requests)} class="px-4 sm:px-6 lg:px-8">
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
-            <h1 class="text-base font-semibold leading-6 text-gray-900">Metadata requests</h1>
+            <h1 class="text-base font-semibold leading-6 text-gray-900">Data Requests</h1>
             <p class="mt-2 text-sm text-gray-700">
-              A list of all the requests you own or are a part of. Metadata requests are forms that enforce metadata collection at time of file upload.
+              A list of all the data requests you have created or have access to. A data request is a combination of projects, templates, and destinations to make a cohesive request for data.
             </p>
           </div>
           <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -33,7 +33,7 @@ defmodule IngestWeb.RequestsLive do
                   type="button"
                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  <.icon name="hero-plus" /> New request
+                  <.icon name="hero-plus" /> New Request
                 </button>
               </.link>
             </div>

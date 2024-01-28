@@ -12,5 +12,17 @@ defmodule Ingest.Repo.Migrations.CreateDestinations do
 
       timestamps()
     end
+
+    execute """
+      ALTER TABLE destinations
+        ADD COLUMN searchable tsvector
+        GENERATED ALWAYS AS (
+          setweight(to_tsvector('english', coalesce(name, '')), 'A')
+        ) STORED;
+    """
+
+    execute """
+      CREATE INDEX destinations_searchable_idx ON destinations USING gin(searchable);
+    """
   end
 end
