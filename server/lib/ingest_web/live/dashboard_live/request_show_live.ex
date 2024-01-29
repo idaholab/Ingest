@@ -254,18 +254,168 @@ defmodule IngestWeb.RequestShowLive do
         <div>
           <h1 class="text-2xl"><%= @request.name %></h1>
           <p><%= @request.description %></p>
-          <.form phx-change="toggle_public" id="public">
-            <div class="grid grid-cols-1 gap-x-8 gap-y-10  pb-12 md:grid-cols-3">
-              <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2 mt-10">
-                <div class="sm:col-span-full">
-                  <.label for="status-select">
-                    Request Public
-                  </.label>
-                  <.input type="checkbox" name="value" value={@request.public} />
+          <!-- PUBLIC/PRIVATE -->
+          <div class="mt-20">
+            <label id="listbox-label" class="sr-only">Change published status</label>
+            <div class="relative">
+              <div class="inline-flex divide-x divide-white-700 rounded-md shadow-sm">
+                <div class={
+                  if @request.status == :published do
+                    "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
+                  else
+                    "inline-flex items-center gap-x-1.5 rounded-l-md bg-indigo-600 px-3 py-2 text-white shadow-sm"
+                  end
+                }>
+                  <svg
+                    class="-ml-0.5 h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  <p :if={@request.status == :draft} class="text-sm font-semibold">Draft</p>
+                  <p :if={@request.status == :published} class="text-sm font-semibold">Published</p>
                 </div>
+                <button
+                  :if={
+                    @request.projects != [] && @request.destinations != [] && @request.templates != []
+                  }
+                  phx-click={JS.toggle(to: "#publish_dropdown", in: "opacity-100", out: "opacity-0")}
+                  type="button"
+                  class={
+                    if @request.status == :published do
+                      "inline-flex items-center rounded-l-none rounded-r-md bg-green-600 p-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                    else
+                      "inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                    end
+                  }
+                  aria-haspopup="listbox"
+                  aria-expanded="true"
+                  aria-labelledby="listbox-label"
+                >
+                  <span class="sr-only">Change published status</span>
+                  <svg
+                    class="h-5 w-5 text-white"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                <button
+                  :if={
+                    @request.projects == [] || @request.destinations == [] || @request.templates == []
+                  }
+                  disable
+                  type="button"
+                  class="inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 cursor-not-allowed p-2 hover:bg-indigo-700 "
+                  aria-haspopup="listbox"
+                  aria-expanded="true"
+                  aria-labelledby="listbox-label"
+                >
+                  <span class="sr-only">Change published status</span>
+                  <svg
+                    class="h-5 w-5 text-white"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
               </div>
+
+              <ul
+                phx-click-away={
+                  JS.toggle(to: "#publish_dropdown", in: "opacity-100", out: "opacity-0")
+                }
+                id="publish_dropdown"
+                class=" hidden absolute left-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                tabindex="-1"
+                role="listbox"
+                aria-labelledby="listbox-label"
+                aria-activedescendant="listbox-option-0"
+              >
+                <li
+                  class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                  id="listbox-option-0"
+                  role="option"
+                  phx-click="set_draft"
+                >
+                  <div class="flex flex-col cursor-pointer">
+                    <div class="flex justify-between">
+                      <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                      <p class="font-normal">Draft</p>
+
+                      <span :if={@request.status == :draft}>
+                        <svg
+                          class="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <p class="mt-2">
+                      Disable uploads for this request.
+                    </p>
+                  </div>
+                </li>
+                <li
+                  class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                  id="listbox-option-0"
+                  role="option"
+                  phx-click="set_published"
+                >
+                  <div class="flex flex-col cursor-pointer">
+                    <div class="flex justify-between">
+                      <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                      <p class="font-normal">Published</p>
+
+                      <span :if={@request.status == :published}>
+                        <svg
+                          class="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <p class="mt-2">
+                      This job posting can be viewed by anyone who has the link.
+                    </p>
+                  </div>
+                </li>
+              </ul>
             </div>
-          </.form>
+          </div>
         </div>
 
         <div class="mx-auto max-w-lg ">
@@ -293,14 +443,6 @@ defmodule IngestWeb.RequestShowLive do
               </p>
             </div>
             <form action="#" class="mt-6 flex">
-              <label for="email" class="sr-only">Email address</label>
-              <input
-                type="email"
-                name="email"
-                id="email"
-                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                placeholder="Enter an email"
-              />
               <button
                 type="submit"
                 class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -315,17 +457,148 @@ defmodule IngestWeb.RequestShowLive do
               >
                 Copy Link
               </button>
-              <button
-                type="submit"
-                class="ml-4 flex-shrink-0 rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Preview
-              </button>
+
+              <div class="pl-4">
+                <label id="listbox-label" class="sr-only">Change published status</label>
+                <div class="relative">
+                  <div class="inline-flex divide-x divide-white-700 rounded-md shadow-sm">
+                    <div class={
+                      if @request.public do
+                        "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
+                      else
+                        "inline-flex items-center gap-x-1.5 rounded-l-md bg-indigo-600 px-3 py-2 text-white shadow-sm"
+                      end
+                    }>
+                      <svg
+                        class="-ml-0.5 h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <p :if={!@request.public} class="text-sm font-semibold">Private</p>
+                      <p :if={@request.public} class="text-sm font-semibold">
+                        Public
+                      </p>
+                    </div>
+                    <button
+                      phx-click={
+                        JS.toggle(to: "#public_dropdown", in: "opacity-100", out: "opacity-0")
+                      }
+                      type="button"
+                      class={
+                        if @request.public do
+                          "inline-flex items-center rounded-l-none rounded-r-md bg-green-600 p-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                        else
+                          "inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                        end
+                      }
+                      aria-haspopup="listbox"
+                      aria-expanded="true"
+                      aria-labelledby="listbox-label"
+                    >
+                      <span class="sr-only">Change published status</span>
+                      <svg
+                        class="h-5 w-5 text-white"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <ul
+                    phx-click-away={
+                      JS.toggle(to: "#public_dropdown", in: "opacity-100", out: "opacity-0")
+                    }
+                    id="public_dropdown"
+                    class=" hidden absolute left-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                    tabindex="-1"
+                    role="listbox"
+                    aria-labelledby="listbox-label"
+                    aria-activedescendant="listbox-option-0"
+                  >
+                    <li
+                      class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                      id="listbox-option-0"
+                      role="option"
+                      phx-click="set_private"
+                    >
+                      <div class="flex flex-col cursor-pointer">
+                        <div class="flex justify-between">
+                          <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                          <p class="font-normal">Private</p>
+
+                          <span :if={!@request.public}>
+                            <svg
+                              class="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <p class="mt-2">
+                          Only registered users can upload data.
+                        </p>
+                      </div>
+                    </li>
+                    <li
+                      class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                      id="listbox-option-0"
+                      role="option"
+                      phx-click="set_public"
+                    >
+                      <div class="flex flex-col cursor-pointer">
+                        <div class="flex justify-between">
+                          <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                          <p class="font-normal">Public</p>
+
+                          <span :if={@request.public}>
+                            <svg
+                              class="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <p class="mt-2">
+                          Allow all uploads to a request.
+                        </p>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </form>
           </div>
         </div>
       </div>
-      <div class="grid grid-cols-2">
+      <div class="grid grid-cols-2 mt-15">
         <!-- PROJECTS -->
         <div class="pr-5 border-r-2">
           <div class="relative mt-10">
@@ -358,7 +631,7 @@ defmodule IngestWeb.RequestShowLive do
             <.link patch={~p"/dashboard/requests/#{@request.id}/search/projects"}>
               <button
                 type="button"
-                class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                class="inline-flex items-center rounded-md bg-white-600 px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-gray-500 hover:text-white border-1 border-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
               >
                 <.icon name="hero-plus" /> Add Project
               </button>
@@ -380,9 +653,7 @@ defmodule IngestWeb.RequestShowLive do
           <div class="relative flex justify-center">
             <.icon name="hero-check-circle" class="text-green-600 w-40 h-40" />
           </div>
-          <div class="relative flex justify-center">
-            <p class="text-xs">Click to change <.icon name="hero-arrow-up" /></p>
-          </div>
+
           <div class="relative flex justify-center">
             <p>Request Published and Acting Normally</p>
           </div>
@@ -421,7 +692,7 @@ defmodule IngestWeb.RequestShowLive do
             <.link patch={~p"/dashboard/requests/#{@request.id}/search/templates"}>
               <button
                 type="button"
-                class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                class="inline-flex items-center rounded-md bg-white-600 hover:text-white text-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 <.icon name="hero-plus" /> Add Template
               </button>
@@ -488,7 +759,7 @@ defmodule IngestWeb.RequestShowLive do
               <.link patch={~p"/dashboard/requests/#{@request.id}/search/destinations"}>
                 <button
                   type="button"
-                  class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  class="inline-flex items-center rounded-md bg-white-600 px-3 py-2 text-sm text-black hover:text-white font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
                   <.icon name="hero-plus" /> Add Destination
                 </button>
@@ -523,6 +794,11 @@ defmodule IngestWeb.RequestShowLive do
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
     request = Requests.get_request!(id)
+
+    # set back to draft if there are not enough parts - not a catch all, but works most of the time if they remove something
+    if request.templates == [] || request.destinations == [] || request.projects == [] do
+      Requests.update_request(request, %{status: :draft})
+    end
 
     {:noreply,
      socket
@@ -559,6 +835,46 @@ defmodule IngestWeb.RequestShowLive do
 
     {:noreply,
      stream_delete(socket, :templates, template)
+     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  @impl true
+  def handle_event("set_published", _params, socket) do
+    {:ok, request} = Requests.update_request(socket.assigns.request, %{status: :published})
+
+    {:noreply,
+     socket
+     |> assign(:request, Requests.get_request!(request.id))
+     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  @impl true
+  def handle_event("set_draft", _params, socket) do
+    {:ok, request} = Requests.update_request(socket.assigns.request, %{status: :draft})
+
+    {:noreply,
+     socket
+     |> assign(:request, Requests.get_request!(request.id))
+     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  @impl true
+  def handle_event("set_public", _params, socket) do
+    {:ok, request} = Requests.update_request(socket.assigns.request, %{public: true})
+
+    {:noreply,
+     socket
+     |> assign(:request, Requests.get_request!(request.id))
+     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  @impl true
+  def handle_event("set_private", _params, socket) do
+    {:ok, request} = Requests.update_request(socket.assigns.request, %{public: false})
+
+    {:noreply,
+     socket
+     |> assign(:request, Requests.get_request!(request.id))
      |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
   end
 end
