@@ -53,7 +53,6 @@ defmodule IngestWeb.RequestsLive do
                 </:col>
 
                 <:col :let={{_id, request}} label="Status"><%= request.status %></:col>
-                <:col :let={{_id, request}} label="Public?"><%= request.public %></:col>
 
                 <:action :let={{_id, request}}>
                   <.link
