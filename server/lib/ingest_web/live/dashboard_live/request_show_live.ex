@@ -409,7 +409,7 @@ defmodule IngestWeb.RequestShowLive do
                       </span>
                     </div>
                     <p class="mt-2">
-                      This job posting can be viewed by anyone who has the link.
+                      Enable this request for data uploads.
                     </p>
                   </div>
                 </li>
@@ -442,7 +442,7 @@ defmodule IngestWeb.RequestShowLive do
                 As the owner of this request, you can send direct invitations to upload data.
               </p>
             </div>
-            <form action="#" class="mt-6 flex">
+            <form action="#" class="mt-12 flex text-center">
               <button
                 type="submit"
                 class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -457,143 +457,6 @@ defmodule IngestWeb.RequestShowLive do
               >
                 Copy Link
               </button>
-
-              <div class="pl-4">
-                <label id="listbox-label" class="sr-only">Change published status</label>
-                <div class="relative">
-                  <div class="inline-flex divide-x divide-white-700 rounded-md shadow-sm">
-                    <div class={
-                      if @request.public do
-                        "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
-                      else
-                        "inline-flex items-center gap-x-1.5 rounded-l-md bg-indigo-600 px-3 py-2 text-white shadow-sm"
-                      end
-                    }>
-                      <svg
-                        class="-ml-0.5 h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                      <p :if={!@request.public} class="text-sm font-semibold">Private</p>
-                      <p :if={@request.public} class="text-sm font-semibold">
-                        Public
-                      </p>
-                    </div>
-                    <button
-                      phx-click={
-                        JS.toggle(to: "#public_dropdown", in: "opacity-100", out: "opacity-0")
-                      }
-                      type="button"
-                      class={
-                        if @request.public do
-                          "inline-flex items-center rounded-l-none rounded-r-md bg-green-600 p-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-gray-50"
-                        else
-                          "inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
-                        end
-                      }
-                      aria-haspopup="listbox"
-                      aria-expanded="true"
-                      aria-labelledby="listbox-label"
-                    >
-                      <span class="sr-only">Change published status</span>
-                      <svg
-                        class="h-5 w-5 text-white"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <ul
-                    phx-click-away={
-                      JS.toggle(to: "#public_dropdown", in: "opacity-100", out: "opacity-0")
-                    }
-                    id="public_dropdown"
-                    class=" hidden absolute left-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                    tabindex="-1"
-                    role="listbox"
-                    aria-labelledby="listbox-label"
-                    aria-activedescendant="listbox-option-0"
-                  >
-                    <li
-                      class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
-                      id="listbox-option-0"
-                      role="option"
-                      phx-click="set_private"
-                    >
-                      <div class="flex flex-col cursor-pointer">
-                        <div class="flex justify-between">
-                          <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                          <p class="font-normal">Private</p>
-
-                          <span :if={!@request.public}>
-                            <svg
-                              class="h-5 w-5"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                fill-rule="evenodd"
-                                d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                                clip-rule="evenodd"
-                              />
-                            </svg>
-                          </span>
-                        </div>
-                        <p class="mt-2">
-                          Only registered users can upload data.
-                        </p>
-                      </div>
-                    </li>
-                    <li
-                      class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
-                      id="listbox-option-0"
-                      role="option"
-                      phx-click="set_public"
-                    >
-                      <div class="flex flex-col cursor-pointer">
-                        <div class="flex justify-between">
-                          <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                          <p class="font-normal">Public</p>
-
-                          <span :if={@request.public}>
-                            <svg
-                              class="h-5 w-5"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                fill-rule="evenodd"
-                                d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                                clip-rule="evenodd"
-                              />
-                            </svg>
-                          </span>
-                        </div>
-                        <p class="mt-2">
-                          Allow all uploads to a request.
-                        </p>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
             </form>
           </div>
         </div>

@@ -47,7 +47,6 @@ defmodule Ingest.Requests.TemplateField do
     field :type, Ecto.Enum, values: [:select, :text, :number, :textarea, :checkbox, :date]
     field :select_options, {:array, :string}
     field :required, :boolean
-    field :per_file, :boolean
     field :file_extensions, {:array, :string}
   end
 
@@ -59,7 +58,6 @@ defmodule Ingest.Requests.TemplateField do
       :type,
       :select_options,
       :required,
-      :per_file,
       :file_extensions
     ])
     |> validate_required([:label, :type])

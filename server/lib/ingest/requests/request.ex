@@ -16,7 +16,6 @@ defmodule Ingest.Requests.Request do
   @foreign_key_type :binary_id
   schema "requests" do
     field :name, :string
-    field :public, :boolean, default: false
     field :status, Ecto.Enum, values: [:draft, :published]
     field :description, :string
 
@@ -36,7 +35,7 @@ defmodule Ingest.Requests.Request do
   @doc false
   def changeset(request, attrs) do
     request
-    |> cast(attrs, [:name, :description, :status, :public, :inserted_by])
+    |> cast(attrs, [:name, :description, :status, :inserted_by])
     |> validate_required([:name, :description])
   end
 end

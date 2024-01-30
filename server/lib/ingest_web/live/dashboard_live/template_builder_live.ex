@@ -40,20 +40,6 @@ defmodule IngestWeb.TemplateBuilderLive do
                 <div>
                   <p class="whitespace-nowrap items-right">
                     <span
-                      :if={field.per_file}
-                      class="inline-flex items-center rounded-md bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700"
-                    >
-                      Per File
-                    </span>
-
-                    <span
-                      :if={!field.per_file}
-                      class="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700"
-                    >
-                      Per Batch
-                    </span>
-                    |
-                    <span
                       :if={field.required}
                       class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700"
                     >
@@ -146,18 +132,6 @@ defmodule IngestWeb.TemplateBuilderLive do
               </div>
 
               <fieldset>
-                <div class="sm:col-span-4 py-5">
-                  <label for="username" class="block text-sm font-medium leading-6 text-white">
-                    Applicability - Field per File
-                  </label>
-                  <div class="mt-2">
-                    <.input type="checkbox" field={@field_form[:per_file]} />
-                  </div>
-                  <p class="mt-3 text-sm leading-6 text-gray-400">
-                    By default a field shows up only once per batch of uploads. Check this box to insure this field shows up once for each file uploaded.
-                  </p>
-                </div>
-
                 <div class="sm:col-span-4 py-3">
                   <label for="username" class="block text-sm font-medium leading-6 text-white">
                     Required

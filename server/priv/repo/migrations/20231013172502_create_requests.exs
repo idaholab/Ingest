@@ -7,7 +7,6 @@ defmodule Ingest.Repo.Migrations.CreateRequests do
       add :name, :string
       add :description, :string
       add :status, :string
-      add :public, :boolean, default: false, null: false
       add :inserted_by, references(:users, on_delete: :delete_all, type: :binary_id)
 
       timestamps()
