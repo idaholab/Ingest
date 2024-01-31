@@ -8,6 +8,7 @@ defmodule Ingest.Repo.Migrations.CreateRequests do
       add :description, :string
       add :status, :string
       add :inserted_by, references(:users, on_delete: :delete_all, type: :binary_id)
+      add :project_id, references(:projects, on_delete: :delete_all, type: :binary_id)
 
       timestamps()
     end

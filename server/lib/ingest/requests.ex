@@ -130,7 +130,7 @@ defmodule Ingest.Requests do
   end
 
   def list_own_requests(%User{} = user) do
-    Repo.all(from r in Request, where: r.inserted_by == ^user.id)
+    Repo.all(from r in Request, where: r.inserted_by == ^user.id) |> Repo.preload(:project)
   end
 
   @doc """
@@ -151,7 +151,7 @@ defmodule Ingest.Requests do
     do:
       Repo.get!(Request, id)
       |> Repo.preload(:templates)
-      |> Repo.preload(:projects)
+      |> Repo.preload(:project)
       |> Repo.preload(:destinations)
 
   @doc """
@@ -166,23 +166,24 @@ defmodule Ingest.Requests do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_request(attrs \\ %{}) do
+  def create_request(attrs \\ %{}, %Project{} = project) do
     %Request{}
     |> Request.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:project, project)
     |> Repo.insert()
   end
 
   def create_request(
         attrs \\ %{},
+        %Project{} = project,
         [%Template{}] = templates,
-        [%Project{}] = projects,
         [%Destination{}] = destinations,
         %User{} = user
       ) do
     %Request{}
     |> Request.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:project, project)
     |> Ecto.Changeset.put_assoc(:templates, templates)
-    |> Ecto.Changeset.put_assoc(:projects, projects)
     |> Ecto.Changeset.put_assoc(:destinations, destinations)
     |> Ecto.Changeset.put_assoc(:user, user)
     |> Repo.insert()
@@ -244,15 +245,6 @@ defmodule Ingest.Requests do
     )
   end
 
-  def remove_project(%Request{} = request, %Project{} = project) do
-    Repo.delete_all(
-      from d in "request_projects",
-        where:
-          d.project_id == type(^project.id, :binary_id) and
-            d.request_id == type(^request.id, :binary_id)
-    )
-  end
-
   def remove_template(%Request{} = request, %Template{} = template) do
     Repo.delete_all(
       from d in "request_templates",
@@ -262,10 +254,10 @@ defmodule Ingest.Requests do
     )
   end
 
-  def update_request_projects(%Request{} = request, projects) do
+  def update_request_project(%Request{} = request, %Project{} = project) do
     request
     |> Ecto.Changeset.change()
-    |> Ecto.Changeset.put_assoc(:projects, projects)
+    |> Ecto.Changeset.put_assoc(:project, project)
     |> Repo.update()
   end
 

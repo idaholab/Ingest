@@ -20,10 +20,9 @@ defmodule Ingest.Requests.Request do
     field :description, :string
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
+    belongs_to :project, Project, type: :binary_id, foreign_key: :project_id
 
-    # even though these say "belongs_to" it really represents a one-to-one or many-to-one association
     many_to_many :templates, Template, join_through: "request_templates"
-    many_to_many :projects, Project, join_through: "request_projects"
 
     many_to_many :destinations, Destination,
       join_through: "request_destinations",

@@ -48,6 +48,7 @@ defmodule IngestWeb.RequestsLive do
                 row_click={fn {_id, request} -> JS.navigate(~p"/dashboard/requests/#{request}") end}
               >
                 <:col :let={{_id, request}} label="Name"><%= request.name %></:col>
+                <:col :let={{_id, request}} label="Project"><%= request.project.name %></:col>
                 <:col :let={{_id, request}} label="Description">
                   <%= request.description %>
                 </:col>
