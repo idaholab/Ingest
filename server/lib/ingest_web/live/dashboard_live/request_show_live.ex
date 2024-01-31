@@ -402,11 +402,21 @@ defmodule IngestWeb.RequestShowLive do
             <div class="absolute inset-0 flex items-center" aria-hidden="true"></div>
           </div>
           <div class="relative flex justify-center">
-            <.icon name="hero-check-circle" class="text-green-600 w-40 h-40" />
+            <.icon
+              :if={@request.status == :published}
+              name="hero-check-circle"
+              class="text-green-600 w-40 h-40"
+            />
+            <.icon
+              :if={@request.status == :draft}
+              name="hero-exclamation-circle"
+              class="text-gray-600 w-40 h-40"
+            />
           </div>
 
           <div class="relative flex justify-center">
-            <p>Request Published and Acting Normally</p>
+            <p :if={@request.status == :published}>Request Published and Acting Normally</p>
+            <p :if={@request.status == :draft}>Request Not Published</p>
           </div>
         </div>
       </div>
@@ -590,7 +600,7 @@ defmodule IngestWeb.RequestShowLive do
     {:noreply,
      socket
      |> assign(:request, Requests.get_request!(request.id))
-     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
   end
 
   @impl true
@@ -600,26 +610,6 @@ defmodule IngestWeb.RequestShowLive do
     {:noreply,
      socket
      |> assign(:request, Requests.get_request!(request.id))
-     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
-  end
-
-  @impl true
-  def handle_event("set_public", _params, socket) do
-    {:ok, request} = Requests.update_request(socket.assigns.request, %{public: true})
-
-    {:noreply,
-     socket
-     |> assign(:request, Requests.get_request!(request.id))
-     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
-  end
-
-  @impl true
-  def handle_event("set_private", _params, socket) do
-    {:ok, request} = Requests.update_request(socket.assigns.request, %{public: false})
-
-    {:noreply,
-     socket
-     |> assign(:request, Requests.get_request!(request.id))
-     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
   end
 end
