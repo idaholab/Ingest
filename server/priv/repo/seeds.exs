@@ -104,7 +104,8 @@ alias Ingest.Destinations
       name: "Test Request",
       description: "A testing request",
       status: :draft,
-      public: true
+      public: true,
+      project_id: project.id
     },
     project,
     [template],

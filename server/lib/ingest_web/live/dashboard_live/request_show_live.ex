@@ -404,7 +404,7 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
         <!-- STATUS -->
-        <div class="pr-5 ">
+        <div class=" ">
           <div class="relative ">
             <div class="absolute inset-0 flex items-center" aria-hidden="true"></div>
           </div>

@@ -35,7 +35,7 @@ defmodule Sidebar do
                 </li>
                 <li>
                   <a href={~p"/dashboard/uploads"} class={active("uploads", @section)}>
-                    <.icon name="hero-arrow-up-on-square-stack" class="h-6 w-6 shrink-0" /> Uploads
+                    <.icon name="hero-arrow-up-on-square-stack" class="h-6 w-6 shrink-0" /> Upload
                   </a>
                 </li>
 
@@ -169,7 +169,7 @@ defmodule Sidebar do
               </li>
               <li>
                 <a href={~p"/dashboard/uploads"} class={active("uploads", @section)}>
-                  <.icon name="hero-arrow-up-on-square-stack" class="h-6 w-6 shrink-0" /> Uploads
+                  <.icon name="hero-arrow-up-on-square-stack" class="h-6 w-6 shrink-0" /> Upload
                 </a>
               </li>
 
