@@ -33,6 +33,13 @@ defmodule IngestWeb.LiveComponents.RequestForm do
                 <.input type="text" field={@request_form[:name]} />
               </div>
 
+              <div class="sm:col-span-4">
+                <.label for="status-select">
+                  Project
+                </.label>
+                <.input type="select" options={@options} field={@request_form[:project_id]} />
+              </div>
+
               <div class="col-span-full">
                 <.label for="request-description">
                   Request Description
@@ -63,10 +70,14 @@ defmodule IngestWeb.LiveComponents.RequestForm do
   @impl true
   def update(%{request: request} = assigns, socket) do
     changeset = Ingest.Requests.change_request(request)
+    projects = Ingest.Projects.list_own_projects_with_count(assigns.current_user.id)
+
+    options = Enum.map(projects, fn {p, _c} -> {p.name, p.id} end) |> Map.new()
 
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:options, options)
      |> assign_form(changeset)}
   end
 
@@ -82,6 +93,21 @@ defmodule IngestWeb.LiveComponents.RequestForm do
 
   def handle_event("save", %{"request" => request_params}, socket) do
     save_request(socket, socket.assigns.live_action, request_params)
+  end
+
+  defp save_request(socket, :edit, request_params) do
+    case Ingest.Requests.update_request(socket.assigns.request, request_params) do
+      {:ok, request} ->
+        notify_parent({:saved, request})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Project updated successfully")
+         |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign_form(socket, changeset)}
+    end
   end
 
   defp save_request(socket, :new, request_params) do
@@ -102,4 +128,6 @@ defmodule IngestWeb.LiveComponents.RequestForm do
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :request_form, to_form(changeset))
   end
+
+  defp(notify_parent(msg), do: send(self(), {__MODULE__, msg}))
 end

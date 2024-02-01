@@ -195,7 +195,14 @@ defmodule IngestWeb.RequestShowLive do
 
       <div class="grid grid-cols-2">
         <div>
-          <h1 class="text-2xl"><%= @request.name %></h1>
+          <span>
+            <h1 class="text-2xl">
+              <%= @request.name %> for <%= @request.project.name %>
+              <span class="text-sm">
+                <sup><a href={~p"/dashboard/requests/#{@request.id}/edit"}>Edit</a></sup>
+              </span>
+            </h1>
+          </span>
           <p><%= @request.description %></p>
           <!-- PUBLIC/PRIVATE -->
           <div class="mt-20">
@@ -423,7 +430,7 @@ defmodule IngestWeb.RequestShowLive do
 
       <div class="grid grid-cols-2">
         <!-- DESTINATIONS -->
-        <div class="pl-5 border-r-2 pr-5">
+        <div class=" border-r-2 pr-5">
           <div class="relative mt-10">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-gray-300"></div>
@@ -548,6 +555,23 @@ defmodule IngestWeb.RequestShowLive do
           current_user={@current_user}
         />
       </.modal>
+
+      <.modal
+        :if={@live_action in [:edit]}
+        id="request_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/requests/#{@request.id}")}
+      >
+        <.live_component
+          live_action={@live_action}
+          request_form={@request_form}
+          request={@request}
+          module={IngestWeb.LiveComponents.RequestForm}
+          id="request-modal-component"
+          current_user={@current_user}
+          patch={~p"/dashboard/requests/#{@request.id}"}
+        />
+      </.modal>
     </div>
     """
   end
@@ -560,6 +584,7 @@ defmodule IngestWeb.RequestShowLive do
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
     request = Requests.get_request!(id)
+    changeset = Requests.change_request(request)
 
     # set back to draft if there are not enough parts - not a catch all, but works most of the time if they remove something
     if request.templates == [] || request.destinations == [] do
@@ -569,6 +594,7 @@ defmodule IngestWeb.RequestShowLive do
     {:noreply,
      socket
      |> assign(:request, request)
+     |> assign(:request_form, to_form(changeset))
      |> stream(:templates, request.templates)
      |> stream(:destinations, request.destinations)}
   end

@@ -166,10 +166,9 @@ defmodule Ingest.Requests do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_request(attrs \\ %{}, %Project{} = project) do
+  def create_request(attrs \\ %{}) do
     %Request{}
     |> Request.changeset(attrs)
-    |> Ecto.Changeset.put_assoc(:project, project)
     |> Repo.insert()
   end
 
