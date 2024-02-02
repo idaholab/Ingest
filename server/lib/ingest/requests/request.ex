@@ -17,7 +17,9 @@ defmodule Ingest.Requests.Request do
   schema "requests" do
     field :name, :string
     field :status, Ecto.Enum, values: [:draft, :published]
+    field :visibility, Ecto.Enum, values: [:public, :private, :internal]
     field :description, :string
+    field :allowed_email_domains, {:array, :string}
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
     belongs_to :project, Project, type: :binary_id, foreign_key: :project_id
@@ -34,7 +36,15 @@ defmodule Ingest.Requests.Request do
   @doc false
   def changeset(request, attrs) do
     request
-    |> cast(attrs, [:name, :description, :status, :inserted_by, :project_id])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :status,
+      :inserted_by,
+      :project_id,
+      :visibility,
+      :allowed_email_domains
+    ])
     |> validate_required([:name, :description, :project_id])
   end
 end

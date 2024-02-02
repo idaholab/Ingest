@@ -1,4 +1,6 @@
 defmodule Ingest.Uploads.Upload do
+  alias Ingest.Accounts.User
+  alias Ingest.Requests.Request
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -8,8 +10,9 @@ defmodule Ingest.Uploads.Upload do
     field :size, :integer
     field :filename, :string
     field :ext, :string
-    field :uploaded_by, :binary_id
-    field :request_id, :binary_id
+
+    belongs_to :request, Request, type: :binary_id
+    belongs_to :user, User, type: :binary_id, foreign_key: :uploaded_by
 
     timestamps()
   end
@@ -18,6 +21,6 @@ defmodule Ingest.Uploads.Upload do
   def changeset(upload, attrs) do
     upload
     |> cast(attrs, [:filename, :ext, :size])
-    |> validate_required([:filename, :ext, :size])
+    |> validate_required([:filename])
   end
 end
