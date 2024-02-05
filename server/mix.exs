@@ -56,7 +56,10 @@ defmodule Ingest.MixProject do
       {:ecto_psql_extras, "~> 0.6"},
       {:cachex, "~> 3.6.0"},
       {:cloak_ecto, "~> 1.2.0"},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      {:req, "~> 0.4.8"},
+      {:timex, "~> 3.7.11"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:erlazure, path: "./erlazure"}
     ]
   end
 

@@ -39,6 +39,15 @@ Hooks.FormBuilderFields = {
     }
 }
 
+Hooks.UploadBox = {
+    mounted() {
+        this.el.addEventListener("click", e => {
+            let file_input = document.getElementById(this.el.dataset.fileId);
+            file_input.click();
+        })
+    }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken }, hooks: Hooks })
 
