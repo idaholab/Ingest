@@ -30,7 +30,7 @@ config :ingest, :openid_connect_oneid,
 config :ingest, :openid_connect_okta,
   issuer: System.get_env("OKTA_ISSUER"),
   client_id: System.get_env("OKTA_CLIENT_ID"),
-  client_secret: System.get_env("OKTA_CLIENT_SECRET")
+  client_secret: System.get_env("OKTA_CLIENT_SECRET"),
   redirect_uri: "#{System.get_env("PHX_HOST")}/users/log_in/okta",
   response_type: "code",
   scope: "openid email profile",
