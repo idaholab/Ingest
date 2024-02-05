@@ -28,10 +28,10 @@ config :ingest, :openid_connect_oneid,
   ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
 
 config :ingest, :openid_connect_okta,
-  issuer: "https://identity-preview.inl.gov",
-  client_id: "",
-  client_secret: "",
-  redirect_uri: "http://localhost:4000/users/log_in/okta",
+  issuer: System.get_env("OKTA_ISSUER"),
+  client_id: System.get_env("OKTA_CLIENT_ID"),
+  client_secret: System.get_env("OKTA_CLIENT_SECRET")
+  redirect_uri: System.get_env("PHX_HOST") + "/users/log_in/okta",
   response_type: "code",
   scope: "openid email profile",
   ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
