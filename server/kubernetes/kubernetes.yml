@@ -38,6 +38,12 @@ spec:
               value: "4000"
             - name: PHX_HOST
               value: "#{Host}#"
+            - name: OKTA_ISSUER
+              value: "#{Okta.Issuer}#"
+            - name: OKTA_CLIENT_ID
+              value: "#{Okta.ClientId}#"
+            - name: OKTA_CLIENT_SECRET
+              value: "#{Okta.ClientSecret}#"
 
 ---
 apiVersion: batch/v1
