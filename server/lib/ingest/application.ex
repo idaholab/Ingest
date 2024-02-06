@@ -20,7 +20,7 @@ defmodule Ingest.Application do
       Supervisor.child_spec({Cachex, name: :clients}, id: :cachex_clients),
       # Start the Endpoint (http/https)
       IngestWeb.Endpoint,
-      Ingest.Vault
+      Ingest.Vault,
       # Start a worker by calling: Ingest.Worker.start_link(arg)
       # {Ingest.Worker, arg}
 
