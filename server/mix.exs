@@ -25,7 +25,7 @@ defmodule Ingest.MixProject do
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
+  defp elixirc_paths(_), do: ["lib", "erlazure"]
 
   # Specifies your project dependencies.
   #
@@ -58,8 +58,7 @@ defmodule Ingest.MixProject do
       {:cloak_ecto, "~> 1.2.0"},
       {:req, "~> 0.4.8"},
       {:timex, "~> 3.7.11"},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:erlazure, path: "./erlazure"}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 
