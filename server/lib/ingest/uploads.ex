@@ -23,6 +23,10 @@ defmodule Ingest.Uploads do
     Repo.all(Upload)
   end
 
+  def recent_uploads_for_user(%User{} = user) do
+    Repo.all(from u in Upload, where: u.uploaded_by == ^user.id, limit: 10)
+  end
+
   @doc """
   Gets a single upload.
 

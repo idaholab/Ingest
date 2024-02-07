@@ -11,7 +11,7 @@ defmodule Ingest.Uploaders.Azure do
 
     key = "#{user_id}/#{filename}"
 
-    {:ok, %{chunk: 1, parts: [], pid: pid}}
+    {:ok, %{chunk: 1, parts: []}}
   end
 
   @impl true
