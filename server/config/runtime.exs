@@ -68,7 +68,7 @@ if config_env() == :prod do
       issuer: System.get_env("OKTA_ISSUER"),
       client_id: System.get_env("OKTA_CLIENT_ID"),
       client_secret: System.get_env("OKTA_CLIENT_SECRET"),
-      redirect_uri: "#{System.get_env("PHX_HOST")}/users/log_in/okta",
+      redirect_uri: "https://#{System.get_env("PHX_HOST")}/users/log_in/okta",
       response_type: "code",
       scope: "openid email profile",
       ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
