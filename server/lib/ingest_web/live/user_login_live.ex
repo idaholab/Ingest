@@ -110,11 +110,18 @@ defmodule IngestWeb.UserLoginLive do
              config[:client_id],
              config[:client_secret],
              %{
-               redirect_uri: config[:redirect_uri]
-               #scopes: [:openid, :email, :profile]
+               redirect_uri: config[:redirect_uri],
+               scopes: [:openid, :email, :profile]
              }
            ) do
-      {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
+
+      my_url = Enum.join(redirect_uri, "")
+      my_url = Regex.replace(~r/client_id=.+&*/, my_url, "")
+      my_url = Regex.replace(~r/redirect_uri=.+&*/, my_url, "")
+      my_url = String.trim(my_url, "&")
+      IO.puts my_url
+
+      {:noreply, socket |> redirect(external: my_url)}
     else
       {:error, :provider_not_ready} ->
         {:noreply, socket}
