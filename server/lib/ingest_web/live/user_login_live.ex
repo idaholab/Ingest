@@ -148,7 +148,7 @@ defmodule IngestWeb.UserLoginLive do
             |> Enum.reject(fn {k, v} -> String.contains?(k, "client_id") end)
       encoded_query = query |> URI.encode_query()
 
-      my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}"
+      my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}?state=test"
 
       # my_url = Enum.join(redirect_uri, "")
       # my_url = Regex.replace(~r/client_id=.+&*/, my_url, "")
