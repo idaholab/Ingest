@@ -38,7 +38,7 @@ defmodule Ingest.Application do
         {Oidcc.ProviderConfiguration.Worker,
          %{
            issuer: Application.get_env(:ingest, :openid_connect_okta)[:issuer],
-           name: __MODULE__.Okta
+           name: __MODULE__.Okta,
            provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
          }},
         id: :okta
