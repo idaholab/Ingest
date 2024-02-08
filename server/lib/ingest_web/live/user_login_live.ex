@@ -115,16 +115,50 @@ defmodule IngestWeb.UserLoginLive do
              }
            ) do
 
-      my_url = Enum.join(redirect_uri, "")
-      my_url = Regex.replace(~r/client_id=.+&*/, my_url, "")
-      my_url = Regex.replace(~r/redirect_uri=.+&*/, my_url, "")
-      my_url = String.trim(my_url, "&")
-      IO.puts my_url
+          final_url = build_url(Enum.join(redirect_uri, ""))
+          # final_url = with {:ok, uri} <- URI.new(Enum.join(redirect_uri, "")) do
+          #       query = URI.decode_query(uri.query)
+          #       query = query |> Enum.reject(fn {k, v} -> String.contains(k, "redirect_uri") end)
+          #             |> Enum.reject(fn {k, v} -> String.contains(k, "client_id") end)
+          #       encoded_query = query |> URI.encode_query()
 
-      {:noreply, socket |> redirect(external: my_url)}
+          #       my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}"
+
+          #       # my_url = Enum.join(redirect_uri, "")
+          #       # my_url = Regex.replace(~r/client_id=.+&*/, my_url, "")
+          #       # my_url = Regex.replace(~r/redirect_uri=.+&*/, my_url, "")
+          #       # my_url = String.trim(my_url, "&")
+          #       IO.puts my_url
+
+          #       my_url
+          # else { :error, :provider_not_ready } ->
+          #     redirect_uri
+          # end
+      {:noreply, socket |> redirect(external: final_url)}
     else
       {:error, :provider_not_ready} ->
         {:noreply, socket}
+    end
+  end
+
+  def build_url(raw_uri) do
+    with {:ok, uri} <- URI.new(raw_uri) do
+      query = URI.decode_query(uri.query)
+      query = query |> Enum.reject(fn {k, v} -> String.contains?(k, "redirect_uri") end)
+            |> Enum.reject(fn {k, v} -> String.contains?(k, "client_id") end)
+      encoded_query = query |> URI.encode_query()
+
+      my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}"
+
+      # my_url = Enum.join(redirect_uri, "")
+      # my_url = Regex.replace(~r/client_id=.+&*/, my_url, "")
+      # my_url = Regex.replace(~r/redirect_uri=.+&*/, my_url, "")
+      # my_url = String.trim(my_url, "&")
+      IO.puts my_url
+
+      my_url
+    else
+      {:error, :not_found} -> raw_uri
     end
   end
 end
