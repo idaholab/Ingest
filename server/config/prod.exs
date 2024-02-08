@@ -18,13 +18,13 @@ config :logger, level: :info
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
-config :ingest, :openid_connect_oneid,
-  issuer: "https://identity-preview.inl.gov",
-  client_id: "",
-  client_secret: "",
-  redirect_uri: "http://localhost:4000/users/log_in/one_id",
-  response_type: "code",
-  scope: "openid email profile",
-  ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
+# config :ingest, :openid_connect_oneid,
+#   issuer: "https://identity-preview.inl.gov",
+#   client_id: "",
+#   client_secret: "",
+#   redirect_uri: "http://localhost:4000/users/log_in/one_id",
+#   response_type: "code",
+#   scope: "openid email profile",
+#   ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
 
 config :ingest, :ca_certfile_path, "/etc/ssl/certs/CAINLROOT.cer"
