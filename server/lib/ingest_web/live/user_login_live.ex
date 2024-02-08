@@ -110,8 +110,8 @@ defmodule IngestWeb.UserLoginLive do
              config[:client_id],
              config[:client_secret],
              %{
-               redirect_uri: config[:redirect_uri],
-               scopes: [:openid, :email, :profile]
+               redirect_uri: config[:redirect_uri]
+               #scopes: [:openid, :email, :profile]
              }
            ) do
       {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
