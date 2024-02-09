@@ -15,6 +15,12 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
             out: {"ease-in duration-75", "opacity-100 scale-100", "opacity-0 scale-95"}
           )
         }
+        phx-click-away={
+          JS.hide(
+            to: "#notifications_menu",
+            transition: {"ease-in duration-75", "opacity-100 scale-100", "opacity-0 scale-95"}
+          )
+        }
         class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
       >
         <span class="sr-only">View notifications</span>
@@ -55,6 +61,17 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
                 <time datetime="2023-01-23T11:00" class="flex-none text-xs text-gray-500">
                   <%= Timex.format!(notification.inserted_at, "{UNIX}") %>
                 </time>
+
+                <.link
+                  phx-click={
+                    JS.push("delete_notification", value: %{id: notification.id}, target: @myself)
+                    |> hide("##{dom_id}")
+                  }
+                  phx-target={@myself}
+                  class="hover:text-red-900"
+                >
+                  <.icon name="hero-x-mark" />
+                </.link>
               </div>
               <p class="mt-3 truncate text-sm text-gray-500 truncate">
                 <%= notification.body %>
@@ -82,6 +99,20 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
       "new_notification",
       %{}
     )
+
+    {:noreply, socket}
+  end
+
+  def handle_event("delete_notification", %{"id" => id}, socket) do
+    notification = Accounts.get_notifications!(id)
+
+    case Accounts.delete_notifications(notification) do
+      {:ok, _n} ->
+        {:noreply, socket |> stream_delete(:notifications, notification)}
+
+      {:error, _e} ->
+        {:noreply, socket |> put_flash(:error, "Unable to delete notification")}
+    end
 
     {:noreply, socket}
   end
