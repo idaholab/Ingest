@@ -96,7 +96,7 @@ alias Ingest.Uploads
 {:ok, destination} =
   Destinations.create_destination_for_user(user, %{
     name: "Test Destination",
-    type: :passive
+    type: :internal
   })
 
 {:ok, request} =

@@ -13,7 +13,7 @@ defmodule Ingest.Destinations.Destination do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "destinations" do
     field :name, :string
-    field :type, Ecto.Enum, values: [:s3, :passive, :azure]
+    field :type, Ecto.Enum, values: [:s3, :internal, :azure]
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
     embeds_one :s3_config, S3Config

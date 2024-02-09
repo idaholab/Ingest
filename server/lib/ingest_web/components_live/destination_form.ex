@@ -39,7 +39,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                 <.input
                   type="select"
                   field={@destination_form[:type]}
-                  options={[:passive, :s3, :azure]}
+                  options={[:internal, :s3, :azure]}
                 />
               </div>
             </div>
