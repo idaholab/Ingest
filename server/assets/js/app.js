@@ -22,6 +22,7 @@ import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import Sortable from "../vendor/Sortable.js"
+import "./user_socket.js"
 
 // Custom Hooks - Primarily used for custom Javascript such as the Sortable.js library on the form builder
 let Hooks = {}
@@ -35,6 +36,15 @@ Hooks.FormBuilderFields = {
                 let params = { old: e.oldIndex, new: e.newIndex, ...e.item.dataset }
                 this.pushEventTo(this.el, "reposition", params)
             }
+        })
+    }
+}
+
+Hooks.UploadBox = {
+    mounted() {
+        this.el.addEventListener("click", e => {
+            let file_input = document.getElementById(this.el.dataset.fileId);
+            file_input.click();
         })
     }
 }

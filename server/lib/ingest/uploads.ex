@@ -4,6 +4,8 @@ defmodule Ingest.Uploads do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Requests.Request
+  alias Ingest.Accounts.User
   alias Ingest.Repo
 
   alias Ingest.Uploads.Upload
@@ -19,6 +21,10 @@ defmodule Ingest.Uploads do
   """
   def list_uploads do
     Repo.all(Upload)
+  end
+
+  def recent_uploads_for_user(%User{} = user) do
+    Repo.all(from u in Upload, where: u.uploaded_by == ^user.id, limit: 10)
   end
 
   @doc """
@@ -49,9 +55,12 @@ defmodule Ingest.Uploads do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_upload(attrs \\ %{}) do
+
+  def create_upload(attrs \\ %{}, %Request{} = request, %User{} = user) do
     %Upload{}
     |> Upload.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:user, user)
+    |> Ecto.Changeset.put_assoc(:request, request)
     |> Repo.insert()
   end
 

@@ -5,7 +5,7 @@ defmodule IngestWeb.UserLoginLive do
     ~H"""
     <div class="mx-auto max-w-sm">
       <.header class="text-center">
-        <img class="mx-auto h-10 w-auto" src="/images/ingest_logo.png" alt="Your Company" />
+        <img class="mx-auto h-10 w-auto" src="/images/logo.png" alt="Your Company" />
         Sign in to account
         <:subtitle>
           Don't have an account?

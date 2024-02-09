@@ -14,6 +14,7 @@ alias Ingest.Accounts
 alias Ingest.Projects
 alias Ingest.Requests
 alias Ingest.Destinations
+alias Ingest.Uploads
 
 {:ok, user} =
   Accounts.register_user(%{
@@ -95,7 +96,7 @@ alias Ingest.Destinations
 {:ok, destination} =
   Destinations.create_destination_for_user(user, %{
     name: "Test Destination",
-    type: :passive
+    type: :internal
   })
 
 {:ok, request} =
@@ -110,5 +111,14 @@ alias Ingest.Destinations
     project,
     [template],
     [destination],
+    user
+  )
+
+{:ok, upload} =
+  Uploads.create_upload(
+    %{
+      filename: "Test.pdf"
+    },
+    request,
     user
   )

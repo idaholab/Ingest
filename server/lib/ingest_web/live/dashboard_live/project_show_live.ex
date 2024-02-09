@@ -134,6 +134,29 @@ defmodule IngestWeb.ProjectShowLive do
                 </form>
               </div>
             </div>
+            <div class="pr-5 border-r-2">
+              <div class="relative mt-10">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center">
+                  <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+                    Outstanding Invites
+                  </span>
+                </div>
+              </div>
+
+              <.table id="requests" rows={@project.requests}>
+                <:col :let={request} label="Name"><%= request.name %></:col>
+                <:col label="Uploads">10</:col>
+
+                <:action :let={_request}>
+                  <.link data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">
+                    Delete
+                  </.link>
+                </:action>
+              </.table>
+            </div>
           </div>
         </div>
       </div>
