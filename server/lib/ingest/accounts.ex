@@ -6,7 +6,7 @@ defmodule Ingest.Accounts do
   import Ecto.Query, warn: false
   alias Ingest.Repo
 
-  alias Ingest.Accounts.{User, UserToken, UserNotifier}
+  alias Ingest.Accounts.{User, UserToken, UserNotifier, Notifications}
 
   ## Database getters
 
@@ -355,5 +355,106 @@ defmodule Ingest.Accounts do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
+  end
+
+  alias Ingest.Accounts.Notifications
+
+  @doc """
+  Returns the list of notifications.
+
+  ## Examples
+
+      iex> list_notifications()
+      [%Notifications{}, ...]
+
+  """
+  def list_notifications do
+    Repo.all(Notifications)
+  end
+
+  def list_own_notifications(%User{} = user) do
+    Repo.all(from n in Notifications, where: n.user_id == ^user.id, limit: 10)
+  end
+
+  @doc """
+  Gets a single notifications.
+
+  Raises `Ecto.NoResultsError` if the Notifications does not exist.
+
+  ## Examples
+
+      iex> get_notifications!(123)
+      %Notifications{}
+
+      iex> get_notifications!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_notifications!(id), do: Repo.get!(Notifications, id)
+
+  @doc """
+  Creates a notifications.
+
+  ## Examples
+
+      iex> create_notifications(%{field: value})
+      {:ok, %Notifications{}}
+
+      iex> create_notifications(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_notifications(attrs \\ %{}, %User{} = user) do
+    %Notifications{}
+    |> Notifications.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:user, user)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a notifications.
+
+  ## Examples
+
+      iex> update_notifications(notifications, %{field: new_value})
+      {:ok, %Notifications{}}
+
+      iex> update_notifications(notifications, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_notifications(%Notifications{} = notifications, attrs) do
+    notifications
+    |> Notifications.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a notifications.
+
+  ## Examples
+
+      iex> delete_notifications(notifications)
+      {:ok, %Notifications{}}
+
+      iex> delete_notifications(notifications)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_notifications(%Notifications{} = notifications) do
+    Repo.delete(notifications)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking notifications changes.
+
+  ## Examples
+
+      iex> change_notifications(notifications)
+      %Ecto.Changeset{data: %Notifications{}}
+
+  """
+  def change_notifications(%Notifications{} = notifications, attrs \\ %{}) do
+    Notifications.changeset(notifications, attrs)
   end
 end

@@ -1,4 +1,8 @@
 defmodule IngestWeb.NotificationsChannel do
+  @moduledoc """
+  NotificationsChannel allows us to trigger updates on the notifications live component when a user receives
+  new notifications. There doesn't need to be much here for now.
+  """
   use IngestWeb, :channel
 
   @impl true

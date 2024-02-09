@@ -122,3 +122,12 @@ alias Ingest.Uploads
     request,
     user
   )
+
+{:ok, notification} =
+  Accounts.create_notifications(
+    %{
+      body: "Test body",
+      subject: "Test Subject"
+    },
+    user
+  )
