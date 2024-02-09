@@ -8,6 +8,10 @@
       <%= assigns[:page_title] || "Ingest" %>
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <script>
+      window.userToken = "<%= assigns[:user_token] %>";
+      window.userId = "<%= assigns[:current_user].id %>";
+    </script>
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
