@@ -69,8 +69,6 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
 
   @impl true
   def update(assigns, socket) do
-    dbg(assigns)
-
     {:ok,
      socket
      |> assign(:current_user, assigns.current_user)
@@ -85,7 +83,6 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
       %{}
     )
 
-    dbg("HERE")
     {:noreply, socket}
   end
 end
