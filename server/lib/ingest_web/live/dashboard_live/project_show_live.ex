@@ -1,4 +1,5 @@
 defmodule IngestWeb.ProjectShowLive do
+  alias Ingest.Projects.ProjectInvites
   alias Ingest.Projects
   use IngestWeb, :live_view
 
@@ -115,23 +116,25 @@ defmodule IngestWeb.ProjectShowLive do
                     As the owner of this project, you can manage team members and their  permissions.
                   </p>
                 </div>
-                <form action="#" class="mt-6 flex">
-                  <label for="email" class="sr-only">Email address</label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    placeholder="Enter an email"
-                  />
-                  <button
-                    type="submit"
-                    class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                <div class="flex">
+                  <.simple_form
+                    id="invite_form"
+                    for={@invite_form}
+                    phx-change="validate_invite"
+                    phx-submit="send_invite"
+                    class="w-full"
                   >
-                    <!-- TODO: Complete email section -->
-                    Send invite
-                  </button>
-                </form>
+                    <.label>Email address</.label>
+                    <.input type="email" field={@invite_form[:email]} />
+
+                    <button
+                      type="submit"
+                      class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Send invite
+                    </button>
+                  </.simple_form>
+                </div>
               </div>
             </div>
             <div class="pr-5 border-r-2">
@@ -146,13 +149,23 @@ defmodule IngestWeb.ProjectShowLive do
                 </div>
               </div>
 
-              <.table id="requests" rows={@project.requests}>
-                <:col :let={request} label="Name"><%= request.name %></:col>
-                <:col label="Uploads">10</:col>
+              <.table id="invites" rows={@project.invites}>
+                <:col :let={invite} label="Email">
+                  <%= if Ecto.assoc_loaded?(invite.invited_user) do
+                    invite.invited_user.email
+                  else
+                    invite.email
+                  end %>
+                </:col>
 
-                <:action :let={_request}>
-                  <.link data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">
-                    Delete
+                <:action :let={invite}>
+                  <.link
+                    phx-click="delete_invite"
+                    phx-value-id={invite.id}
+                    data-confirm="Are you sure?"
+                    class="text-red-600 hover:text-red-900"
+                  >
+                    Revoke
                   </.link>
                 </:action>
               </.table>
@@ -166,12 +179,19 @@ defmodule IngestWeb.ProjectShowLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:section, "projects"), layout: {IngestWeb.Layouts, :dashboard}}
+    {:ok,
+     socket
+     |> assign(
+       :invite_form,
+       to_form(Ingest.Projects.change_project_invites(%ProjectInvites{}))
+     )
+     |> assign(:section, "projects"), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
-    {:noreply, socket |> assign(:project, Projects.get_project!(id))}
+    project = Projects.get_project!(id)
+    {:noreply, socket |> assign(:project, project) |> assign(:invites, project.invites)}
   end
 
   @impl true
@@ -181,5 +201,20 @@ defmodule IngestWeb.ProjectShowLive do
       |> Projects.remove_project_member()
 
     {:noreply, socket |> assign(:project, Projects.get_project!(project))}
+  end
+
+  @impl true
+  def handle_event("delete_invite", %{"id" => id}, socket) do
+    Projects.delete_project_invites(Projects.get_project_invites!(id))
+    {:noreply, socket |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project}")}
+  end
+
+  @impl true
+  def handle_event("validate_invite", %{"project_invites" => invite_params}, socket) do
+    changeset =
+      Projects.change_project_invites(%ProjectInvites{}, invite_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, socket |> assign(:invite_form, to_form(changeset))}
   end
 end

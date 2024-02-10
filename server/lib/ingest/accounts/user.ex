@@ -1,4 +1,5 @@
 defmodule Ingest.Accounts.User do
+  alias Ingest.Projects.ProjectInvites
   alias Ingest.Projects.ProjectMembers
   use Ecto.Schema
   import Ecto.Changeset
@@ -12,6 +13,7 @@ defmodule Ingest.Accounts.User do
     field :confirmed_at, :naive_datetime
 
     has_many :project_roles, ProjectMembers, foreign_key: :member_id
+    has_many :project_invites, ProjectInvites, foreign_key: :project_id
 
     timestamps()
   end
@@ -52,7 +54,7 @@ defmodule Ingest.Accounts.User do
     |> validate_email(opts)
   end
 
-  defp validate_email(changeset, opts) do
+  def validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
