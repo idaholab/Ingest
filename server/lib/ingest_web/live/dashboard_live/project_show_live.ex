@@ -115,7 +115,7 @@ defmodule IngestWeb.ProjectShowLive do
                     As the owner of this project, you can manage team members and their  permissions.
                   </p>
                 </div>
-                <form action="#" class="mt-6 flex">
+                <div class="mt-6 flex">
                   <label for="email" class="sr-only">Email address</label>
                   <input
                     type="email"
@@ -125,13 +125,13 @@ defmodule IngestWeb.ProjectShowLive do
                     placeholder="Enter an email"
                   />
                   <button
-                    type="submit"
+                    phx-click="send_project_invite"
                     class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
                     <!-- TODO: Complete email section -->
                     Send invite
                   </button>
-                </form>
+                </div>
               </div>
             </div>
             <div class="pr-5 border-r-2">
@@ -181,5 +181,16 @@ defmodule IngestWeb.ProjectShowLive do
       |> Projects.remove_project_member()
 
     {:noreply, socket |> assign(:project, Projects.get_project!(project))}
+  end
+
+  @impl true
+  def handle_event("send_project_invite", unsigned_params, socket) do
+    IngestWeb.Notifications.notify(
+      :project_invite,
+      socket.assigns.current_user,
+      socket.assigns.project
+    )
+
+    {:noreply, socket}
   end
 end

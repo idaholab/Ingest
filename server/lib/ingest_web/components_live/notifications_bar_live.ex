@@ -24,20 +24,8 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
         class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
       >
         <span class="sr-only">View notifications</span>
-        <svg
-          class="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-          />
-        </svg>
+        <.icon :if={!@has_notifications} name="hero-bell" class="h-6 w-6" />
+        <.icon :if={@has_notifications} name="hero-bell-alert" class="h-6 w-6 bg-green-900 " />
       </button>
 
       <div
@@ -53,7 +41,20 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
             <li class="hidden last:block">
               No Notifications
             </li>
-            <li :for={{dom_id, notification} <- @streams.notifications} class="py-4" id={dom_id}>
+            <li
+              :for={{dom_id, notification} <- @streams.notifications}
+              class="py-4 cursor-pointer"
+              id={dom_id}
+              phx-click="select"
+              phx-value-id={notification.id}
+              phx-target={@myself}
+            >
+              <span
+                :if={!notification.seen}
+                class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20"
+              >
+                New!
+              </span>
               <div class="flex items-center gap-x-3">
                 <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
                   <%= notification.subject %>
@@ -86,23 +87,16 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
 
   @impl true
   def update(assigns, socket) do
+    notifications = Accounts.list_own_notifications(assigns.current_user)
+
     {:ok,
      socket
      |> assign(:current_user, assigns.current_user)
-     |> stream(:notifications, Accounts.list_own_notifications(assigns.current_user))}
+     |> assign(:has_notifications, Enum.filter(notifications, fn n -> !n.seen end) != [])
+     |> stream(:notifications, notifications)}
   end
 
   @impl true
-  def handle_event("new_notification", unsigned_params, socket) do
-    IngestWeb.Endpoint.broadcast(
-      "notifications:#{socket.assigns.current_user.id}",
-      "new_notification",
-      %{}
-    )
-
-    {:noreply, socket}
-  end
-
   def handle_event("delete_notification", %{"id" => id}, socket) do
     notification = Accounts.get_notifications!(id)
 
@@ -115,5 +109,25 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
     end
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("new_notification", %{"id" => id}, socket) do
+    {:noreply,
+     socket
+     |> assign(:has_notifications, true)
+     |> stream_insert(:notifications, Accounts.get_notifications!(id))}
+  end
+
+  @impl true
+  def handle_event("select", %{"id" => id}, socket) do
+    notification = Accounts.get_notifications!(id)
+    Accounts.delete_notifications(notification)
+
+    if notification.action_link == nil do
+      {:noreply, socket |> stream_delete(:notifications, notification)}
+    else
+      {:noreply, socket |> push_navigate(to: notification.action_link)}
+    end
   end
 end

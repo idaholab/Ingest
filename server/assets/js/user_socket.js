@@ -12,12 +12,10 @@ export var Notifications = {
 
     let channel = socket.channel(`notifications:${window.userId}`, {})
     channel.join()
-      .receive("ok", resp => { this.pushEventTo(this.el, "new_notification") })
       .receive("error", resp => { console.log("Unable to join", resp) })
 
     channel.on("new_notification", payload => {
-      console.log("NEW NOTIFICATION")
+      this.pushEventTo(this.el, "new_notification", payload)
     })
-
   }
 }
