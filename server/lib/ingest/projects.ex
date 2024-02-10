@@ -67,6 +67,7 @@ defmodule Ingest.Projects do
     do:
       Repo.get!(Project, id)
       |> Repo.preload(project_members: :project_roles)
+      |> Repo.preload(invites: :invited_user)
       |> Repo.preload(:requests)
 
   @doc """
@@ -177,5 +178,116 @@ defmodule Ingest.Projects do
       )
 
     Repo.all(query)
+  end
+
+  alias Ingest.Projects.ProjectInvites
+
+  @doc """
+  Returns the list of project_invites.
+
+  ## Examples
+
+      iex> list_project_invites()
+      [%ProjectInvites{}, ...]
+
+  """
+  def list_project_invites(%Project{} = project) do
+    Repo.all(from p in ProjectInvites, where: p.project_id == ^project.id)
+  end
+
+  @doc """
+  Gets a single project_invites.
+
+  Raises `Ecto.NoResultsError` if the Project invites does not exist.
+
+  ## Examples
+
+      iex> get_project_invites!(123)
+      %ProjectInvites{}
+
+      iex> get_project_invites!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_project_invites!(id), do: Repo.get!(ProjectInvites, id)
+
+  @doc """
+  Creates a project_invites.
+
+  ## Examples
+
+      iex> create_project_invites(%{field: value})
+      {:ok, %ProjectInvites{}}
+
+      iex> create_project_invites(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_project_invites(attrs \\ %{}) do
+    %ProjectInvites{}
+    |> ProjectInvites.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def invite(%Project{} = project, %User{} = user) do
+    %ProjectInvites{}
+    |> ProjectInvites.changeset(%{email: user.email})
+    |> Ecto.Changeset.put_assoc(:project, project)
+    |> Ecto.Changeset.put_assoc(:invited_user, user)
+    |> Repo.insert()
+  end
+
+  def invite_by_email(%Project{} = project, email) do
+    %ProjectInvites{}
+    |> ProjectInvites.email_changeset(%{email: email})
+    |> Ecto.Changeset.put_assoc(:project, project)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a project_invites.
+
+  ## Examples
+
+      iex> update_project_invites(project_invites, %{field: new_value})
+      {:ok, %ProjectInvites{}}
+
+      iex> update_project_invites(project_invites, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_project_invites(%ProjectInvites{} = project_invites, attrs) do
+    project_invites
+    |> ProjectInvites.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a project_invites.
+
+  ## Examples
+
+      iex> delete_project_invites(project_invites)
+      {:ok, %ProjectInvites{}}
+
+      iex> delete_project_invites(project_invites)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_project_invites(%ProjectInvites{} = project_invites) do
+    Repo.delete(project_invites)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking project_invites changes.
+
+  ## Examples
+
+      iex> change_project_invites(project_invites)
+      %Ecto.Changeset{data: %ProjectInvites{}}
+
+  """
+  def change_project_invites(%ProjectInvites{} = project_invites, attrs \\ %{}) do
+    ProjectInvites.changeset(project_invites, attrs)
   end
 end
