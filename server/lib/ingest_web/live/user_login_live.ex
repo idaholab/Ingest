@@ -103,7 +103,7 @@ defmodule IngestWeb.UserLoginLive do
 
   def handle_event("login_okta", _params, socket) do
     config = Application.get_env(:ingest, :openid_connect_okta)
-
+    state = :crypto.strong_rand_bytes(20) |> Base.encode64()
     with {:ok, redirect_uri} <-
            Oidcc.create_redirect_url(
              Ingest.Application.Okta,
@@ -111,29 +111,13 @@ defmodule IngestWeb.UserLoginLive do
              config[:client_secret],
              %{
                redirect_uri: config[:redirect_uri],
-               scopes: [:openid, :email, :profile]
+               scopes: [:openid, :email, :profile],
+               state: state
              }
            ) do
 
           final_url = build_url(Enum.join(redirect_uri, ""))
-          # final_url = with {:ok, uri} <- URI.new(Enum.join(redirect_uri, "")) do
-          #       query = URI.decode_query(uri.query)
-          #       query = query |> Enum.reject(fn {k, v} -> String.contains(k, "redirect_uri") end)
-          #             |> Enum.reject(fn {k, v} -> String.contains(k, "client_id") end)
-          #       encoded_query = query |> URI.encode_query()
 
-          #       my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}"
-
-          #       # my_url = Enum.join(redirect_uri, "")
-          #       # my_url = Regex.replace(~r/client_id=.+&*/, my_url, "")
-          #       # my_url = Regex.replace(~r/redirect_uri=.+&*/, my_url, "")
-          #       # my_url = String.trim(my_url, "&")
-          #       IO.puts my_url
-
-          #       my_url
-          # else { :error, :provider_not_ready } ->
-          #     redirect_uri
-          # end
       {:noreply, socket |> redirect(external: final_url)}
     else
       {:error, :provider_not_ready} ->
@@ -142,21 +126,12 @@ defmodule IngestWeb.UserLoginLive do
   end
 
   def build_url(raw_uri) do
-    #raw_uri
     with {:ok, uri} <- URI.new(raw_uri) do
       query = URI.decode_query(uri.query)
       query = query |> Enum.reject(fn {k, v} -> String.contains?(k, "redirect_uri") end)
-            |> Enum.reject(fn {k, v} -> String.contains?(k, "client_id") end)
       encoded_query = query |> URI.encode_query()
 
-      my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}?state=test"
-
-      # my_url = Enum.join(redirect_uri, "")
-      # my_url = Regex.replace(~r/client_id=.+&*/, my_url, "")
-      # my_url = Regex.replace(~r/redirect_uri=.+&*/, my_url, "")
-      # my_url = String.trim(my_url, "&")
-      IO.puts my_url
-
+      my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}"
       my_url
     else
       {:error, :not_found} -> raw_uri

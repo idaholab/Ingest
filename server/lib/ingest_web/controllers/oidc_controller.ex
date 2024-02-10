@@ -52,7 +52,7 @@ defmodule IngestWeb.OidcController do
   end
 
   def okta(conn, %{"code" => code}) do
-    config = Application.get_env(:ingest, :openid_connect_oneid)
+    config = Application.get_env(:ingest, :openid_connect_okta)
 
     with {:ok, token} <-
            Oidcc.retrieve_token(
