@@ -1,4 +1,10 @@
 defmodule Ingest.Uploads.Upload do
+  @moduledoc """
+  Upload represents a single file uploaded through Ingest. It's tied back to a request
+  and for right now at least, we only hold some basic information about it. Any additional
+  information can be either written in the metadata .json file - or captured later by a different
+  program
+  """
   alias Ingest.Accounts.User
   alias Ingest.Requests.Request
   use Ecto.Schema

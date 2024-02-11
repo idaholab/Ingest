@@ -1,7 +1,4 @@
 defmodule Ingest.Uploaders.Azure do
-  alias ExMicrosoftAzureStorage.Storage
-  alias ExMicrosoftAzureStorage.Storage.{Blob, Container}
-
   @behaviour Phoenix.LiveView.UploadWriter
 
   @impl true
@@ -9,7 +6,7 @@ defmodule Ingest.Uploaders.Azure do
     filename = Keyword.fetch!(opts, :name)
     user_id = Keyword.fetch!(opts, :user_id)
 
-    key = "#{user_id}/#{filename}"
+    _key = "#{user_id}/#{filename}"
 
     {:ok, %{chunk: 1, parts: []}}
   end
@@ -20,13 +17,13 @@ defmodule Ingest.Uploaders.Azure do
   end
 
   @impl true
-  def write_chunk(data, state) do
+  def write_chunk(_data, state) do
     {:ok, state}
     # {:ok, %{state | chunk: state.chunk + 1, parts: [state.chunk | state.parts]}}
   end
 
   @impl true
-  def close(state, reason) do
+  def close(state, _reason) do
     {:ok, state}
   end
 end

@@ -19,4 +19,19 @@ defmodule Ingest.UploadsFixtures do
 
     upload
   end
+
+  @doc """
+  Generate a metadata.
+  """
+  def metadata_fixture(attrs \\ %{}) do
+    {:ok, metadata} =
+      attrs
+      |> Enum.into(%{
+        data: %{},
+        uploaded: true
+      })
+      |> Ingest.Uploads.create_metadata()
+
+    metadata
+  end
 end

@@ -11,7 +11,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
     ~H"""
     <div>
       <div class="space-y-12">
-        <.form phx-change="search" phx-target={@myself} id="search">
+        <form phx-change="search" phx-target={@myself} id="search">
           <div class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
               <div class="sm:col-span-full">
@@ -22,7 +22,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
               </div>
             </div>
           </div>
-        </.form>
+        </form>
       </div>
 
       <div :if={@results && @results == []}>
@@ -83,14 +83,6 @@ defmodule IngestWeb.LiveComponents.SearchForm do
   @impl true
   def handle_event("add", %{"id" => id}, socket) do
     add(socket, socket.assigns.live_action, id)
-  end
-
-  def add(socket, :search_projects, id) do
-    projects = [Ingest.Projects.get_project!(id) | socket.assigns.request.projects]
-
-    Ingest.Requests.update_request_projects(socket.assigns.request, projects)
-
-    {:noreply, socket |> push_patch(to: ~p"/dashboard/requests/#{socket.assigns.request.id}")}
   end
 
   def add(socket, :search_templates, id) do

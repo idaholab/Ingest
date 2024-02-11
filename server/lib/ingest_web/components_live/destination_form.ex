@@ -39,8 +39,33 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                 <.input
                   type="select"
                   field={@destination_form[:type]}
-                  options={[:internal, :s3, :azure]}
+                  options={[:temporary, :s3, :azure]}
                 />
+              </div>
+            </div>
+          </div>
+
+          <div
+            :if={@type == "temporary"}
+            class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3"
+          >
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">
+                Temporary Data Destination
+              </h2>
+              <p class="mt-1 text-sm leading-6 text-gray-600">
+                This is a temporary storage for your data. We will hold on to it for a set number of days, allowing you to download it via our API. Once the day limit has been reached, your data will be deleted.
+              </p>
+            </div>
+
+            <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
+              <div class="sm:col-span-4">
+                <.inputs_for :let={config} field={@destination_form[:temporary_config]}>
+                  <.label for="status-select">
+                    Data Retention Limit (Days)
+                  </.label>
+                  <.input type="number" max="30" field={config[:limit]} />
+                </.inputs_for>
               </div>
             </div>
           </div>

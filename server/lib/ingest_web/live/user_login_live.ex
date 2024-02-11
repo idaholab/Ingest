@@ -125,7 +125,7 @@ defmodule IngestWeb.UserLoginLive do
   def build_url(raw_uri) do
     with {:ok, uri} <- URI.new(raw_uri) do
       query = URI.decode_query(uri.query)
-      query = query |> Enum.reject(fn {k, v} -> String.contains?(k, "redirect_uri") end)
+      query = query |> Enum.reject(fn {k, _v} -> String.contains?(k, "redirect_uri") end)
       encoded_query = query |> URI.encode_query()
 
       my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}"

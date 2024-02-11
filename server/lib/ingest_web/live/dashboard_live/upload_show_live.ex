@@ -71,14 +71,14 @@ defmodule IngestWeb.UploadShowLive do
                 id="requests"
                 rows={@streams.uploads}
                 row_click={
-                  fn {id, upload} -> JS.navigate(~p"/dashboard/uploads/#{@request}/#{upload}") end
+                  fn {_id, upload} -> JS.navigate(~p"/dashboard/uploads/#{@request}/#{upload}") end
                 }
               >
-                <:col :let={{id, upload}} label="File Name"><%= upload.filename %></:col>
-                <:col :let={{id, upload}} label="Size"><%= mb(upload.size) %>mb</:col>
-                <:col :let={{id, upload}} label="Extension"><%= upload.ext %></:col>
+                <:col :let={{_id, upload}} label="File Name"><%= upload.filename %></:col>
+                <:col :let={{_id, upload}} label="Size"><%= mb(upload.size) %>mb</:col>
+                <:col :let={{_id, upload}} label="Extension"><%= upload.ext %></:col>
 
-                <:action :let={{id, upload}}>
+                <:action :let={{_id, upload}}>
                   <.link
                     navigate={~p"/dashboard/uploads/#{@request}/#{upload}"}
                     class="text-indigo-600 hover:text-indigo-900"

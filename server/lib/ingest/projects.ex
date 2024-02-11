@@ -4,7 +4,6 @@ defmodule Ingest.Projects do
   """
 
   import Ecto.Query, warn: false
-  alias Ingest.Projects.ProjectNotifier
   alias Ingest.Repo
 
   alias Ingest.Projects.Project

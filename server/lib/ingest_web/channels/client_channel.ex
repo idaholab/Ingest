@@ -8,7 +8,7 @@ defmodule IngestWeb.ClientChannel do
   use IngestWeb, :channel
 
   @impl true
-  def join("client:" <> client_id, payload, socket) do
+  def join("client:" <> client_id, _payload, socket) do
     if authorized?(client_id, socket.assigns.current_user) do
       {:ok, socket}
     else

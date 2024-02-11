@@ -380,7 +380,7 @@ defmodule IngestWeb.RequestShowLive do
           <.table id="requests" rows={@streams.templates}>
             <:col :let={{_id, template}} label="Name"><%= template.name %></:col>
 
-            <:action :let={{id, template}}>
+            <:action :let={{_id, template}}>
               <.link
                 data-confirm="Are you sure?"
                 phx-click="remove_template"

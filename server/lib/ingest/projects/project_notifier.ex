@@ -5,9 +5,7 @@ defmodule Ingest.Projects.ProjectNotifier do
   """
   import Swoosh.Email
 
-  alias Ingest.Accounts
   alias Ingest.Projects.Project
-  alias Ingest.Accounts.User
   alias Ingest.Mailer
 
   defp deliver(recipient, subject, body) do

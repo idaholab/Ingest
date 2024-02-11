@@ -60,4 +60,60 @@ defmodule Ingest.UploadsTest do
       assert %Ecto.Changeset{} = Uploads.change_upload(upload)
     end
   end
+
+  describe "metadata" do
+    alias Ingest.Uploads.Metadata
+
+    import Ingest.UploadsFixtures
+
+    @invalid_attrs %{data: nil, uploaded: nil}
+
+    test "list_metadata/0 returns all metadata" do
+      metadata = metadata_fixture()
+      assert Uploads.list_metadata() == [metadata]
+    end
+
+    test "get_metadata!/1 returns the metadata with given id" do
+      metadata = metadata_fixture()
+      assert Uploads.get_metadata!(metadata.id) == metadata
+    end
+
+    test "create_metadata/1 with valid data creates a metadata" do
+      valid_attrs = %{data: %{}, uploaded: true}
+
+      assert {:ok, %Metadata{} = metadata} = Uploads.create_metadata(valid_attrs)
+      assert metadata.data == %{}
+      assert metadata.uploaded == true
+    end
+
+    test "create_metadata/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Uploads.create_metadata(@invalid_attrs)
+    end
+
+    test "update_metadata/2 with valid data updates the metadata" do
+      metadata = metadata_fixture()
+      update_attrs = %{data: %{}, uploaded: false}
+
+      assert {:ok, %Metadata{} = metadata} = Uploads.update_metadata(metadata, update_attrs)
+      assert metadata.data == %{}
+      assert metadata.uploaded == false
+    end
+
+    test "update_metadata/2 with invalid data returns error changeset" do
+      metadata = metadata_fixture()
+      assert {:error, %Ecto.Changeset{}} = Uploads.update_metadata(metadata, @invalid_attrs)
+      assert metadata == Uploads.get_metadata!(metadata.id)
+    end
+
+    test "delete_metadata/1 deletes the metadata" do
+      metadata = metadata_fixture()
+      assert {:ok, %Metadata{}} = Uploads.delete_metadata(metadata)
+      assert_raise Ecto.NoResultsError, fn -> Uploads.get_metadata!(metadata.id) end
+    end
+
+    test "change_metadata/1 returns a metadata changeset" do
+      metadata = metadata_fixture()
+      assert %Ecto.Changeset{} = Uploads.change_metadata(metadata)
+    end
+  end
 end
