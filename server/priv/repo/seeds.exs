@@ -37,7 +37,7 @@ alias Ingest.Uploads
 {:ok, invite} = Projects.invite(project, second_user)
 
 # build a second project owned by the second_user so we can see how invites look
-{:ok, project} =
+{:ok, project2} =
   Projects.create_project(%{
     name: "Test Project 2 ",
     description: "A testing project for invites",
