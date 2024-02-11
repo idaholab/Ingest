@@ -20,7 +20,7 @@ defmodule Ingest.Application do
       Supervisor.child_spec({Cachex, name: :clients}, id: :cachex_clients),
       # Start the Endpoint (http/https)
       IngestWeb.Endpoint,
-      Ingest.Vault
+      Ingest.Vault,
       # Start a worker by calling: Ingest.Worker.start_link(arg)
       # {Ingest.Worker, arg}
 
@@ -34,15 +34,15 @@ defmodule Ingest.Application do
       #    }},
       #   id: :oneid
       # ),
-      # Supervisor.child_spec(
-      #   {Oidcc.ProviderConfiguration.Worker,
-      #    %{
-      #      issuer: Application.get_env(:ingest, :openid_connect_okta)[:issuer],
-      #      name: __MODULE__.Okta,
-      #      provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
-      #    }},
-      #   id: :okta
-      # )
+      Supervisor.child_spec(
+        {Oidcc.ProviderConfiguration.Worker,
+         %{
+           issuer: Application.get_env(:ingest, :openid_connect_okta)[:issuer],
+           name: __MODULE__.Okta
+           #provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
+         }},
+        id: :okta
+      )
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -64,6 +64,15 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+    config :ingest, :openid_connect_okta,
+      issuer: System.get_env("OKTA_ISSUER"),
+      client_id: System.get_env("OKTA_CLIENT_ID"),
+      client_secret: System.get_env("OKTA_CLIENT_SECRET"),
+      redirect_uri: "https://#{System.get_env("PHX_HOST")}/users/log_in/okta",
+      response_type: "code",
+      scope: "openid email profile",
+      ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
