@@ -59,7 +59,9 @@ defmodule IngestWeb.ProjectShowLive do
                   <div class="flex min-w-0 gap-x-4">
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
                       <span class="font-medium leading-none text-white">
-                        <%= String.slice(member.name, 0..1) |> String.upcase() %>
+                        <%= if member.name do
+                          String.slice(member.name, 0..1) |> String.upcase()
+                        end %>
                       </span>
                     </span>
                     <div class="min-w-0 flex-auto">
@@ -153,7 +155,7 @@ defmodule IngestWeb.ProjectShowLive do
               <.table id="invites" rows={@project.invites}>
                 <:col :let={invite} label="Email">
                   <%= if Ecto.assoc_loaded?(invite.invited_user) && invite.invited_user do
-                    invite.invited_user
+                    invite.invited_user.email
                   else
                     invite.email
                   end %>
@@ -226,10 +228,20 @@ defmodule IngestWeb.ProjectShowLive do
 
     if email && user do
       {:ok, i} = Projects.invite(socket.assigns.project, user)
-      Ingest.Projects.ProjectNotifier.deliver_project_invite(i.email, socket.assigns.project)
+
+      Ingest.Projects.ProjectNotifier.notify_project_invite(
+        i.email,
+        socket.assigns.project
+      )
+
+      IngestWeb.Notifications.notify(:project_invite, user, socket.assigns.project)
     else
       {:ok, i} = Projects.invite_by_email(socket.assigns.project, email)
-      Ingest.Projects.ProjectNotifier.deliver_project_invite(i.email, socket.assigns.project)
+
+      Ingest.Projects.ProjectNotifier.notify_project_invite(
+        i.email,
+        socket.assigns.project
+      )
     end
 
     {:noreply,

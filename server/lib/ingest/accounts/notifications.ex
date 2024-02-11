@@ -22,7 +22,7 @@ defmodule Ingest.Accounts.Notifications do
   @doc false
   def changeset(notifications, attrs) do
     notifications
-    |> cast(attrs, [:subject, :body, :seen])
+    |> cast(attrs, [:subject, :body, :seen, :action_link])
     |> validate_required([:subject, :body, :seen])
   end
 end

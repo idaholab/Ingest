@@ -14,7 +14,7 @@ defmodule IngestWeb.Notifications do
       %{
         subject: "Project Invitation",
         body: "You've been invited to project #{project.name}",
-        action_link: "/dashboard/projects/#{project.id}/accept"
+        action_link: "/dashboard/projects/accept/#{project.id}"
       }
     )
   end

@@ -4,6 +4,7 @@ defmodule Ingest.Projects do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Projects.ProjectNotifier
   alias Ingest.Repo
 
   alias Ingest.Projects.Project
@@ -302,5 +303,16 @@ defmodule Ingest.Projects do
   """
   def change_project_invites(%ProjectInvites{} = project_invites, attrs \\ %{}) do
     ProjectInvites.changeset(project_invites, attrs)
+  end
+
+  def queue_project_invite_notifications(%User{} = user) do
+    invites =
+      Repo.all(from i in ProjectInvites, where: i.email == ^user.email) |> Repo.preload(:project)
+
+    if invites != [] do
+      Enum.map(invites, fn i ->
+        IngestWeb.Notifications.notify(:project_invite, user, i.project)
+      end)
+    end
   end
 end

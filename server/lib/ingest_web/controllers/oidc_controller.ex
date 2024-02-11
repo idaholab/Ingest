@@ -1,6 +1,7 @@
 defmodule IngestWeb.OidcController do
   use IngestWeb, :controller
 
+  alias Ingest.Projects
   alias Ingest.Accounts
   alias IngestWeb.UserAuth
 
@@ -28,6 +29,7 @@ defmodule IngestWeb.OidcController do
         case user do
           nil ->
             with {:ok, user} <- Accounts.register_user(%{email: claims["email"]}, :oidcc) do
+              Projects.queue_project_invite_notifications(user)
               UserAuth.log_in_user(conn, user, %{})
             else
               {:error, err} ->

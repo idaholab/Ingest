@@ -5,6 +5,7 @@ defmodule Ingest.Projects.ProjectNotifier do
   """
   import Swoosh.Email
 
+  alias Ingest.Accounts
   alias Ingest.Projects.Project
   alias Ingest.Accounts.User
   alias Ingest.Mailer
@@ -22,9 +23,7 @@ defmodule Ingest.Projects.ProjectNotifier do
     end
   end
 
-  def deliver_project_invite(email, %Project{} = project) do
-    IngestWeb.Endpoint.url()
-
+  def notify_project_invite(email, %Project{} = project) do
     deliver(email, "You've been invited to the #{project.name} project!", """
     ==============================
 

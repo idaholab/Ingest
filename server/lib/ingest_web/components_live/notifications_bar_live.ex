@@ -122,6 +122,7 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
   @impl true
   def handle_event("select", %{"id" => id}, socket) do
     notification = Accounts.get_notifications!(id)
+    dbg(notification)
     Accounts.delete_notifications(notification)
 
     if notification.action_link == nil do
