@@ -1,4 +1,5 @@
 defmodule IngestWeb.ProjectsLive do
+  alias Ingest.Projects
   use IngestWeb, :live_view
   alias Ingest.Projects.Project
 
@@ -96,6 +97,22 @@ defmodule IngestWeb.ProjectsLive do
         current_user={@current_user}
       />
     </.modal>
+
+    <.modal
+      :if={@live_action in [:invite]}
+      id="invite_modal"
+      show
+      on_cancel={JS.patch(~p"/dashboard/projects")}
+    >
+      <.live_component
+        live_action={@live_action}
+        project={@project}
+        module={IngestWeb.LiveComponents.ProjectInvitation}
+        id="invite-modal-component"
+        patch={~p"/dashboard/projects"}
+        current_user={@current_user}
+      />
+    </.modal>
     """
   end
 
@@ -122,6 +139,19 @@ defmodule IngestWeb.ProjectsLive do
     socket
     |> assign(:page_title, "Edit Project")
     |> assign(:project, Ingest.Projects.get_project!(id))
+  end
+
+  defp apply_action(socket, :invite, %{"id" => id}) do
+    invites =
+      Projects.list_project_invites_user(Projects.get_project!(id), socket.assigns.current_user)
+
+    if invites == [] do
+      socket |> push_navigate(to: ~p"/dashboard/projects")
+    else
+      socket
+      |> assign(:page_title, "Accept Project Invite")
+      |> assign(:project, Ingest.Projects.get_project!(id))
+    end
   end
 
   defp apply_action(socket, :new, _params) do

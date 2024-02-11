@@ -192,7 +192,6 @@ defmodule IngestWeb.ProjectShowLive do
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
     project = Projects.get_project!(id)
-    dbg(project)
     {:noreply, socket |> assign(:project, project) |> assign(:invites, project.invites)}
   end
 

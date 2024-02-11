@@ -9,7 +9,7 @@
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <script>
-      <%= if assigns["user_token"] != nil do %>
+      <%= if assigns[:user_token] != nil do %>
         window.userToken = "<%= assigns[:user_token] %>";
         window.userId = "<%= assigns[:current_user].id %>";
       <% end %>

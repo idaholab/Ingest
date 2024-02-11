@@ -195,6 +195,12 @@ defmodule Ingest.Projects do
     Repo.all(from p in ProjectInvites, where: p.project_id == ^project.id)
   end
 
+  def list_project_invites_user(%Project{} = project, %User{} = user) do
+    Repo.all(
+      from p in ProjectInvites, where: p.project_id == ^project.id and p.email == ^user.email
+    )
+  end
+
   @doc """
   Gets a single project_invites.
 
@@ -276,6 +282,13 @@ defmodule Ingest.Projects do
   """
   def delete_project_invites(%ProjectInvites{} = project_invites) do
     Repo.delete(project_invites)
+  end
+
+  def delete_all_invites(%Project{} = project, %User{} = user) do
+    Repo.delete_all(
+      from i in ProjectInvites,
+        where: i.project_id == ^project.id and i.email == ^user.email
+    )
   end
 
   @doc """
