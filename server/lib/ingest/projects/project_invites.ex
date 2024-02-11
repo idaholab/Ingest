@@ -25,7 +25,7 @@ defmodule Ingest.Projects.ProjectInvites do
   def email_changeset(project_invites, attrs) do
     project_invites
     |> cast(attrs, [:email])
-    |> Ingest.Accounts.User.validate_email(%{validate_email: false})
+    |> Ingest.Accounts.User.validate_email(validate_email: false)
     |> validate_required([:email])
   end
 end

@@ -28,3 +28,4 @@ config :logger, level: :info
 #   ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
 
 config :ingest, :ca_certfile_path, "/etc/ssl/certs/CAINLROOT.cer"
+config :ingest, :environment, :prod

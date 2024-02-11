@@ -1,4 +1,5 @@
 defmodule IngestWeb.ProjectShowLive do
+  alias Ingest.Accounts
   alias Ingest.Projects.ProjectInvites
   alias Ingest.Projects
   use IngestWeb, :live_view
@@ -151,8 +152,8 @@ defmodule IngestWeb.ProjectShowLive do
 
               <.table id="invites" rows={@project.invites}>
                 <:col :let={invite} label="Email">
-                  <%= if Ecto.assoc_loaded?(invite.invited_user) do
-                    invite.invited_user.email
+                  <%= if Ecto.assoc_loaded?(invite.invited_user) && invite.invited_user do
+                    invite.invited_user
                   else
                     invite.email
                   end %>
@@ -191,6 +192,7 @@ defmodule IngestWeb.ProjectShowLive do
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
     project = Projects.get_project!(id)
+    dbg(project)
     {:noreply, socket |> assign(:project, project) |> assign(:invites, project.invites)}
   end
 
@@ -216,5 +218,24 @@ defmodule IngestWeb.ProjectShowLive do
       |> Map.put(:action, :validate)
 
     {:noreply, socket |> assign(:invite_form, to_form(changeset))}
+  end
+
+  @impl true
+  def handle_event("send_invite", %{"project_invites" => invite_params}, socket) do
+    email = Map.get(invite_params, "email")
+    user = Accounts.get_user_by_email(email)
+
+    if email && user do
+      {:ok, i} = Projects.invite(socket.assigns.project, user)
+      Ingest.Projects.ProjectNotifier.deliver_project_invite(i.email, socket.assigns.project)
+    else
+      {:ok, i} = Projects.invite_by_email(socket.assigns.project, email)
+      Ingest.Projects.ProjectNotifier.deliver_project_invite(i.email, socket.assigns.project)
+    end
+
+    {:noreply,
+     socket
+     |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project}")
+     |> put_flash(:info, "Invite sent successfully")}
   end
 end

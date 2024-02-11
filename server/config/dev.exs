@@ -104,3 +104,4 @@ config :ingest, :openid_connect_okta,
   ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
 
 config :ingest, :ca_certfile_path, "/etc/ssl/certs/CAINLROOT.cer"
+config :ingest, :environment, :dev
