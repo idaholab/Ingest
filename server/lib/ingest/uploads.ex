@@ -206,4 +206,8 @@ defmodule Ingest.Uploads do
   def change_metadata(%Metadata{} = metadata, attrs \\ %{}) do
     Metadata.changeset(metadata, attrs)
   end
+
+  def uploads_for_request_count(%Request{} = request) do
+    Repo.one!(from u in Upload, where: u.request_id == ^request.id, select: count())
+  end
 end

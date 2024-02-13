@@ -66,6 +66,7 @@ defmodule Ingest.Projects do
   def get_project!(id),
     do:
       Repo.get!(Project, id)
+      |> Repo.preload(:user)
       |> Repo.preload(project_members: :project_roles)
       |> Repo.preload(invites: :invited_user)
       |> Repo.preload(:requests)

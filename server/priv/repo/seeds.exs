@@ -20,11 +20,17 @@ alias Ingest.Uploads
   Accounts.register_user(%{
     email: "admin@admin.com",
     password: "xxxxxxxxxxxx",
-    name: "Administrator"
+    name: "Administrator",
+    roles: :admin
   })
 
 {:ok, second_user} =
-  Accounts.register_user(%{email: "user@user.com", password: "xxxxxxxxxxxx", name: "Normal User"})
+  Accounts.register_user(%{
+    email: "user@user.com",
+    password: "xxxxxxxxxxxx",
+    name: "Normal User",
+    roles: :manager
+  })
 
 {:ok, project} =
   Projects.create_project(%{

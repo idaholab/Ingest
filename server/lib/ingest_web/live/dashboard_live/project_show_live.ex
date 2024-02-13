@@ -1,4 +1,5 @@
 defmodule IngestWeb.ProjectShowLive do
+  alias Ingest.Uploads
   alias Ingest.Accounts
   alias Ingest.Projects.ProjectInvites
   alias Ingest.Projects
@@ -25,7 +26,7 @@ defmodule IngestWeb.ProjectShowLive do
 
           <.table id="requests" rows={@project.requests}>
             <:col :let={request} label="Name"><%= request.name %></:col>
-            <:col label="Uploads">10</:col>
+            <:col :let={request} label="Uploads"><%= get_upload_count(request) %></:col>
 
             <:action :let={_request}>
               <.link class="text-indigo-600 hover:text-indigo-900">
@@ -40,7 +41,7 @@ defmodule IngestWeb.ProjectShowLive do
           </.table>
         </div>
 
-        <div class="pl-5">
+        <div :if={@current_user.roles in [:admin, :manager]} class="pl-5">
           <div class="relative mt-10">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-gray-300"></div>
@@ -54,6 +55,34 @@ defmodule IngestWeb.ProjectShowLive do
 
           <div>
             <ul role="list" class="divide-y divide-gray-100">
+              <li
+                :if={@current_user.id != @project.inserted_by}
+                class="flex items-center justify-between gap-x-6 py-5"
+              >
+                <div class="flex min-w-0 gap-x-4">
+                  <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
+                    <span class="font-medium leading-none text-white">
+                      <%= if @project.user.name do
+                        String.slice(@project.user.name, 0..1) |> String.upcase()
+                      end %>
+                    </span>
+                  </span>
+                  <div class="min-w-0 flex-auto">
+                    <p class="text-sm font-semibold leading-6 text-gray-900">
+                      <%= @project.user.name %>
+                    </p>
+                    <p class="mt-1 truncate text-xs leading-5 text-gray-500">
+                      <%= @project.user.email %>
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                    Owner
+                  </span>
+                </div>
+              </li>
+
               <%= for member <- @project.project_members do %>
                 <li class="flex items-center justify-between gap-x-6 py-5">
                   <div class="flex min-w-0 gap-x-4">
@@ -95,7 +124,7 @@ defmodule IngestWeb.ProjectShowLive do
               <% end %>
             </ul>
 
-            <div class="mx-auto max-w-lg mt-44">
+            <div :if={@current_user.id == @project.inserted_by} class="mx-auto max-w-lg mt-44">
               <div>
                 <div class="text-center">
                   <svg
@@ -140,7 +169,8 @@ defmodule IngestWeb.ProjectShowLive do
                 </div>
               </div>
             </div>
-            <div class="pr-5 border-r-2">
+
+            <div :if={@current_user.id == @project.inserted_by} class="pr-5 border-r-2">
               <div class="relative mt-10">
                 <div class="absolute inset-0 flex items-center" aria-hidden="true">
                   <div class="w-full border-t border-gray-300"></div>
@@ -248,5 +278,9 @@ defmodule IngestWeb.ProjectShowLive do
      socket
      |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project}")
      |> put_flash(:info, "Invite sent successfully")}
+  end
+
+  defp get_upload_count(request) do
+    Uploads.uploads_for_request_count(request)
   end
 end

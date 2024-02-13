@@ -12,6 +12,10 @@ defmodule Ingest.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
 
+    # these are general roles, admin: has all roles, manager: can build data requests, member: can only upload and input metadata
+    field :roles, Ecto.Enum, values: [:admin, :manager, :member]
+    field :identity_provider, Ecto.Enum, values: [:oidc, :internal], default: :internal
+
     has_many :project_roles, ProjectMembers, foreign_key: :member_id
     has_many :project_invites, ProjectInvites, foreign_key: :project_id
 
@@ -43,14 +47,14 @@ defmodule Ingest.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :name])
+    |> cast(attrs, [:email, :password, :name, :roles])
     |> validate_email(opts)
     |> validate_password(opts)
   end
 
   def oidcc_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :name])
+    |> cast(attrs, [:email, :password, :name, :identity_provider, :roles])
     |> validate_email(opts)
   end
 

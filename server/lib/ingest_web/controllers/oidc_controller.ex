@@ -28,7 +28,11 @@ defmodule IngestWeb.OidcController do
 
         case user do
           nil ->
-            with {:ok, user} <- Accounts.register_user(%{email: claims["email"]}, :oidcc) do
+            with {:ok, user} <-
+                   Accounts.register_user(
+                     %{email: claims["email"], role: :manager, identity_provider: :oidc},
+                     :oidcc
+                   ) do
               Projects.queue_project_invite_notifications(user)
               UserAuth.log_in_user(conn, user, %{})
             else
@@ -76,7 +80,11 @@ defmodule IngestWeb.OidcController do
 
         case user do
           nil ->
-            with {:ok, user} <- Accounts.register_user(%{email: claims["email"]}, :oidcc) do
+            with {:ok, user} <-
+                   Accounts.register_user(
+                     %{email: claims["email"], role: :manager, identity_provider: :oidc},
+                     :oidcc
+                   ) do
               UserAuth.log_in_user(conn, user, %{})
             else
               {:error, err} ->
