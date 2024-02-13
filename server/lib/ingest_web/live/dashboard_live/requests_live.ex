@@ -1,6 +1,8 @@
 defmodule IngestWeb.RequestsLive do
   use IngestWeb, :live_view
 
+  alias Ingest.Uploads
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -53,6 +55,7 @@ defmodule IngestWeb.RequestsLive do
                   <%= request.description %>
                 </:col>
 
+                <:col :let={{_id, request}} label="Uploads"><%= get_upload_count(request) %></:col>
                 <:col :let={{_id, request}} label="Status"><%= request.status %></:col>
 
                 <:action :let={{_id, request}}>
@@ -132,5 +135,9 @@ defmodule IngestWeb.RequestsLive do
     {:ok, _} = Ingest.Requests.delete_request(request)
 
     {:noreply, stream_delete(socket, :requests, request)}
+  end
+
+  defp get_upload_count(request) do
+    Uploads.uploads_for_request_count(request)
   end
 end
