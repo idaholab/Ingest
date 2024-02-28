@@ -65,13 +65,12 @@ RUN mix release
 
 # start a new build stage so that the final image will only contain
 # the compiled release and other runtime necessities
-FROM debian:bullseye-20230612-slim
+FROM debian:bullseye
 
 RUN apt-get update -y && \
   apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates \
   && apt-get clean && rm -f /var/lib/apt/lists/*_* \
-  && apt update \ 
-  && apt install -y glibc perl krb5 tar ncurses openssl
+  && apt-get install -y libc6 perl krb5 tar ncurses openssl
 
 # Set the locale
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
