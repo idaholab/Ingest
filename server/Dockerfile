@@ -22,8 +22,7 @@ FROM hexpm/elixir:1.15.6-erlang-26.0.2-debian-bullseye-20230612-slim as builder
 
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
-    && apt-get clean && rm -f /var/lib/apt/lists/*_* \
-    && apt-get install -y glibc perl krb5 tar ncurses openssl
+    && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # prepare build dir
 WORKDIR /app
@@ -70,7 +69,9 @@ FROM debian:bullseye-20230612-slim
 
 RUN apt-get update -y && \
   apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates \
-  && apt-get clean && rm -f /var/lib/apt/lists/*_*
+  && apt-get clean && rm -f /var/lib/apt/lists/*_* \
+  && apt update \ 
+  && apt install -y glibc perl krb5 tar ncurses openssl
 
 # Set the locale
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
