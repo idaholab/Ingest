@@ -22,7 +22,8 @@ FROM hexpm/elixir:1.15.6-erlang-26.0.2-debian-bullseye-20230612-slim as builder
 
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
-    && apt-get clean && rm -f /var/lib/apt/lists/*_*
+    && apt-get clean && rm -f /var/lib/apt/lists/*_* \
+    && apt-get install -y glibc perl krb5 tar ncurses openssl
 
 # prepare build dir
 WORKDIR /app
