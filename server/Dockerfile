@@ -70,7 +70,7 @@ FROM debian:bullseye
 RUN apt-get update -y && \
   && apt-get install -y libc6 perl krb5 tar ncurses openssl \
   && apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates \
-  && apt-get clean && rm -f /var/lib/apt/lists/*_* \
+  && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 
 # Set the locale
