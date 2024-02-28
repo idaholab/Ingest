@@ -13,6 +13,7 @@ defmodule IngestWeb.UserSettingsLive do
     <div class="space-y-12 divide-y">
       <div>
         <.simple_form
+          :if={@current_user.identity_provider in [:internal]}
           for={@email_form}
           id="email_form"
           phx-submit="update_email"
@@ -35,6 +36,7 @@ defmodule IngestWeb.UserSettingsLive do
       </div>
       <div>
         <.simple_form
+          :if={@current_user.identity_provider in [:internal]}
           for={@password_form}
           id="password_form"
           action={~p"/users/log_in?_action=password_updated"}

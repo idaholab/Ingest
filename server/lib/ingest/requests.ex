@@ -4,6 +4,7 @@ defmodule Ingest.Requests do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Uploads.Upload
   alias Ingest.Requests.TemplateField
   alias Ingest.Accounts.User
   alias Ingest.Projects.Project
@@ -274,6 +275,19 @@ defmodule Ingest.Requests do
     |> Repo.update()
   end
 
+  def list_recent_requests(%User{} = user) do
+    Repo.all(
+      from r in Request,
+        join: u in Upload,
+        on: u.request_id == r.id,
+        where: r.inserted_by == ^user.id,
+        group_by: r.id,
+        limit: 50,
+        select: r
+    )
+    |> Repo.preload(:project)
+  end
+
   @defaults %{exclude: []}
   def search_templates(search_term, opts \\ []) do
     %{exclude: exclude} = Enum.into(opts, @defaults)
@@ -295,5 +309,26 @@ defmodule Ingest.Requests do
       )
 
     Repo.all(query)
+  end
+
+  def search_requests_by_project(search_term) do
+    Repo.all(
+      from r in Request,
+        join: p in Project,
+        on: p.id == r.project_id,
+        where:
+          fragment(
+            "p1.searchable @@ websearch_to_tsquery(?)",
+            ^search_term
+          ),
+        order_by: {
+          :desc,
+          fragment(
+            "ts_rank_cd(p1.searchable, websearch_to_tsquery(?), 4)",
+            ^search_term
+          )
+        }
+    )
+    |> Repo.preload(:project)
   end
 end

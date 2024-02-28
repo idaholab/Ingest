@@ -28,4 +28,20 @@ defmodule Ingest.AccountsFixtures do
     [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")
     token
   end
+
+  @doc """
+  Generate a notifications.
+  """
+  def notifications_fixture(attrs \\ %{}) do
+    {:ok, notifications} =
+      attrs
+      |> Enum.into(%{
+        body: "some body",
+        seen: true,
+        subject: "some subject"
+      })
+      |> Ingest.Accounts.create_notifications()
+
+    notifications
+  end
 end

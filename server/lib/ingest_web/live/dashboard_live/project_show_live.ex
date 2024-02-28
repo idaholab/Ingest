@@ -1,4 +1,7 @@
 defmodule IngestWeb.ProjectShowLive do
+  alias Ingest.Uploads
+  alias Ingest.Accounts
+  alias Ingest.Projects.ProjectInvites
   alias Ingest.Projects
   use IngestWeb, :live_view
 
@@ -23,7 +26,7 @@ defmodule IngestWeb.ProjectShowLive do
 
           <.table id="requests" rows={@project.requests}>
             <:col :let={request} label="Name"><%= request.name %></:col>
-            <:col label="Uploads">10</:col>
+            <:col :let={request} label="Uploads"><%= get_upload_count(request) %></:col>
 
             <:action :let={_request}>
               <.link class="text-indigo-600 hover:text-indigo-900">
@@ -38,7 +41,7 @@ defmodule IngestWeb.ProjectShowLive do
           </.table>
         </div>
 
-        <div class="pl-5">
+        <div :if={@current_user.roles in [:admin, :manager]} class="pl-5">
           <div class="relative mt-10">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-gray-300"></div>
@@ -52,12 +55,42 @@ defmodule IngestWeb.ProjectShowLive do
 
           <div>
             <ul role="list" class="divide-y divide-gray-100">
+              <li
+                :if={@current_user.id != @project.inserted_by}
+                class="flex items-center justify-between gap-x-6 py-5"
+              >
+                <div class="flex min-w-0 gap-x-4">
+                  <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
+                    <span class="font-medium leading-none text-white">
+                      <%= if @project.user.name do
+                        String.slice(@project.user.name, 0..1) |> String.upcase()
+                      end %>
+                    </span>
+                  </span>
+                  <div class="min-w-0 flex-auto">
+                    <p class="text-sm font-semibold leading-6 text-gray-900">
+                      <%= @project.user.name %>
+                    </p>
+                    <p class="mt-1 truncate text-xs leading-5 text-gray-500">
+                      <%= @project.user.email %>
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                    Owner
+                  </span>
+                </div>
+              </li>
+
               <%= for member <- @project.project_members do %>
                 <li class="flex items-center justify-between gap-x-6 py-5">
                   <div class="flex min-w-0 gap-x-4">
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
                       <span class="font-medium leading-none text-white">
-                        <%= String.slice(member.name, 0..1) |> String.upcase() %>
+                        <%= if member.name do
+                          String.slice(member.name, 0..1) |> String.upcase()
+                        end %>
                       </span>
                     </span>
                     <div class="min-w-0 flex-auto">
@@ -91,7 +124,7 @@ defmodule IngestWeb.ProjectShowLive do
               <% end %>
             </ul>
 
-            <div class="mx-auto max-w-lg mt-44">
+            <div :if={@current_user.id == @project.inserted_by} class="mx-auto max-w-lg mt-44">
               <div>
                 <div class="text-center">
                   <svg
@@ -115,24 +148,60 @@ defmodule IngestWeb.ProjectShowLive do
                     As the owner of this project, you can manage team members and their  permissions.
                   </p>
                 </div>
-                <form action="#" class="mt-6 flex">
-                  <label for="email" class="sr-only">Email address</label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    placeholder="Enter an email"
-                  />
-                  <button
-                    type="submit"
-                    class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                <div class="flex">
+                  <.simple_form
+                    id="invite_form"
+                    for={@invite_form}
+                    phx-change="validate_invite"
+                    phx-submit="send_invite"
+                    class="w-full"
                   >
-                    <!-- TODO: Complete email section -->
-                    Send invite
-                  </button>
-                </form>
+                    <.label>Email address</.label>
+                    <.input type="email" field={@invite_form[:email]} />
+
+                    <button
+                      type="submit"
+                      class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Send invite
+                    </button>
+                  </.simple_form>
+                </div>
               </div>
+            </div>
+
+            <div :if={@current_user.id == @project.inserted_by} class="pr-5 border-r-2">
+              <div class="relative mt-10">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center">
+                  <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+                    Outstanding Invites
+                  </span>
+                </div>
+              </div>
+
+              <.table id="invites" rows={@project.invites}>
+                <:col :let={invite} label="Email">
+                  <%= if Ecto.assoc_loaded?(invite.invited_user) && invite.invited_user do
+                    invite.invited_user.email
+                  else
+                    invite.email
+                  end %>
+                </:col>
+
+                <:action :let={invite}>
+                  <.link
+                    phx-click="delete_invite"
+                    phx-value-id={invite.id}
+                    data-confirm="Are you sure?"
+                    class="text-red-600 hover:text-red-900"
+                  >
+                    Revoke
+                  </.link>
+                </:action>
+              </.table>
             </div>
           </div>
         </div>
@@ -143,12 +212,19 @@ defmodule IngestWeb.ProjectShowLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:section, "projects"), layout: {IngestWeb.Layouts, :dashboard}}
+    {:ok,
+     socket
+     |> assign(
+       :invite_form,
+       to_form(Ingest.Projects.change_project_invites(%ProjectInvites{}))
+     )
+     |> assign(:section, "projects"), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
-    {:noreply, socket |> assign(:project, Projects.get_project!(id))}
+    project = Projects.get_project!(id)
+    {:noreply, socket |> assign(:project, project) |> assign(:invites, project.invites)}
   end
 
   @impl true
@@ -158,5 +234,53 @@ defmodule IngestWeb.ProjectShowLive do
       |> Projects.remove_project_member()
 
     {:noreply, socket |> assign(:project, Projects.get_project!(project))}
+  end
+
+  @impl true
+  def handle_event("delete_invite", %{"id" => id}, socket) do
+    Projects.delete_project_invites(Projects.get_project_invites!(id))
+    {:noreply, socket |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project}")}
+  end
+
+  @impl true
+  def handle_event("validate_invite", %{"project_invites" => invite_params}, socket) do
+    changeset =
+      Projects.change_project_invites(%ProjectInvites{}, invite_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, socket |> assign(:invite_form, to_form(changeset))}
+  end
+
+  @impl true
+  def handle_event("send_invite", %{"project_invites" => invite_params}, socket) do
+    email = Map.get(invite_params, "email")
+    user = Accounts.get_user_by_email(email)
+
+    if email && user do
+      {:ok, i} = Projects.invite(socket.assigns.project, user)
+
+      Ingest.Projects.ProjectNotifier.notify_project_invite(
+        i.email,
+        socket.assigns.project
+      )
+
+      IngestWeb.Notifications.notify(:project_invite, user, socket.assigns.project)
+    else
+      {:ok, i} = Projects.invite_by_email(socket.assigns.project, email)
+
+      Ingest.Projects.ProjectNotifier.notify_project_invite(
+        i.email,
+        socket.assigns.project
+      )
+    end
+
+    {:noreply,
+     socket
+     |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project}")
+     |> put_flash(:info, "Invite sent successfully")}
+  end
+
+  defp get_upload_count(request) do
+    Uploads.uploads_for_request_count(request)
   end
 end

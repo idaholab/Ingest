@@ -124,7 +124,7 @@ defmodule IngestWeb.TemplateBuilderLive do
                   File Extensions
                 </label>
                 <div class="mt-2">
-                  <.input type="combobox" field={@field_form[:file_extensions]} />
+                  <.input type="text" field={@field_form[:file_extensions]} />
                 </div>
                 <p class="mt-3 text-sm leading-6 text-gray-400">
                   Comma-seperated values. Example: .csv,.pdf,.html - Leave blank for all file types

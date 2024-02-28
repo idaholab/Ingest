@@ -380,7 +380,7 @@ defmodule IngestWeb.RequestShowLive do
           <.table id="requests" rows={@streams.templates}>
             <:col :let={{_id, template}} label="Name"><%= template.name %></:col>
 
-            <:action :let={{id, template}}>
+            <:action :let={{_id, template}}>
               <.link
                 data-confirm="Are you sure?"
                 phx-click="remove_template"
@@ -451,7 +451,7 @@ defmodule IngestWeb.RequestShowLive do
                       <span class="font-medium leading-none text-white">
                         <span :if={destination.type == :s3}>S3</span>
                         <span :if={destination.type == :azure}>AZ</span>
-                        <span :if={destination.type == :passive}>P</span>
+                        <span :if={destination.type == :internal}>I</span>
                       </span>
                     </span>
                     <div class="min-w-0 flex-auto">
@@ -523,6 +523,173 @@ defmodule IngestWeb.RequestShowLive do
               </p>
             </div>
             <form action="#" class="mt-12 flex text-center">
+              <label id="listbox-label" class="sr-only">Change visibility </label>
+              <div class="relative pl-20">
+                <div class="inline-flex divide-x divide-white-700 rounded-md shadow-sm">
+                  <div class={
+                    if @request.visibility == :public do
+                      "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
+                    else
+                      "inline-flex items-center gap-x-1.5 rounded-l-md bg-indigo-600 px-3 py-2 text-white shadow-sm"
+                    end
+                  }>
+                    <svg
+                      class="-ml-0.5 h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <p :if={@request.visibility == :public} class="text-sm font-semibold">Public</p>
+                    <p :if={@request.visibility == :internal} class="text-sm font-semibold">
+                      Internal Only
+                    </p>
+                    <p :if={@request.visibility == :private} class="text-sm font-semibold">Private</p>
+                  </div>
+                  <button
+                    phx-click={
+                      JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
+                    }
+                    type="button"
+                    class={
+                      if @request.visibility == :public do
+                        "inline-flex items-center rounded-l-none rounded-r-md bg-green-600 p-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                      else
+                        "inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                      end
+                    }
+                    aria-haspopup="listbox"
+                    aria-expanded="true"
+                    aria-labelledby="listbox-label"
+                  >
+                    <span class="sr-only">Change published status</span>
+                    <svg
+                      class="h-5 w-5 text-white"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <ul
+                  phx-click-away={
+                    JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
+                  }
+                  id="visibility_dropdown"
+                  class=" hidden absolute left-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  tabindex="-1"
+                  role="listbox"
+                  aria-labelledby="listbox-label"
+                  aria-activedescendant="listbox-option-0"
+                >
+                  <li
+                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                    id="listbox-option-0"
+                    role="option"
+                    phx-click="set_public"
+                  >
+                    <div class="flex flex-col cursor-pointer">
+                      <div class="flex justify-between">
+                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                        <p class="font-normal">Public</p>
+
+                        <span :if={@request.visibility == :public}>
+                          <svg
+                            class="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                      <p class="mt-2">
+                        Allow all users with approved email domains to upload data. Visible in searches.
+                      </p>
+                    </div>
+                  </li>
+                  <li
+                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                    id="listbox-option-0"
+                    role="option"
+                    phx-click="set_internal"
+                  >
+                    <div class="flex flex-col cursor-pointer">
+                      <div class="flex justify-between">
+                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                        <p class="font-normal">Internal Only</p>
+
+                        <span :if={@request.visibility == :internal}>
+                          <svg
+                            class="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                      <p class="mt-2">
+                        Allow all users with approved email domains to upload data. Not in searches.
+                      </p>
+                    </div>
+                  </li>
+                  <li
+                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                    id="listbox-option-0"
+                    role="option"
+                    phx-click="set_private"
+                  >
+                    <div class="flex flex-col cursor-pointer">
+                      <div class="flex justify-between">
+                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                        <p class="font-normal">Private</p>
+
+                        <span :if={@request.visibility == :private}>
+                          <svg
+                            class="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                      <p class="mt-2">
+                        Allow only invited users to upload data.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
               <button
                 type="submit"
                 class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -632,6 +799,36 @@ defmodule IngestWeb.RequestShowLive do
   @impl true
   def handle_event("set_draft", _params, socket) do
     {:ok, request} = Requests.update_request(socket.assigns.request, %{status: :draft})
+
+    {:noreply,
+     socket
+     |> assign(:request, Requests.get_request!(request.id))
+     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  @impl true
+  def handle_event("set_private", _params, socket) do
+    {:ok, request} = Requests.update_request(socket.assigns.request, %{visibility: :private})
+
+    {:noreply,
+     socket
+     |> assign(:request, Requests.get_request!(request.id))
+     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  @impl true
+  def handle_event("set_internal", _params, socket) do
+    {:ok, request} = Requests.update_request(socket.assigns.request, %{visibility: :internal})
+
+    {:noreply,
+     socket
+     |> assign(:request, Requests.get_request!(request.id))
+     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  @impl true
+  def handle_event("set_public", _params, socket) do
+    {:ok, request} = Requests.update_request(socket.assigns.request, %{visibility: :public})
 
     {:noreply,
      socket

@@ -14,16 +14,23 @@ alias Ingest.Accounts
 alias Ingest.Projects
 alias Ingest.Requests
 alias Ingest.Destinations
+alias Ingest.Uploads
 
 {:ok, user} =
   Accounts.register_user(%{
     email: "admin@admin.com",
     password: "xxxxxxxxxxxx",
-    name: "Administrator"
+    name: "Administrator",
+    roles: :admin
   })
 
 {:ok, second_user} =
-  Accounts.register_user(%{email: "user@user.com", password: "xxxxxxxxxxxx", name: "Normal User"})
+  Accounts.register_user(%{
+    email: "user@user.com",
+    password: "xxxxxxxxxxxx",
+    name: "Normal User",
+    roles: :manager
+  })
 
 {:ok, project} =
   Projects.create_project(%{
@@ -33,6 +40,15 @@ alias Ingest.Destinations
   })
 
 {:ok, project_member} = Projects.add_user_to_project(project, second_user)
+{:ok, invite} = Projects.invite(project, second_user)
+
+# build a second project owned by the second_user so we can see how invites look
+{:ok, project2} =
+  Projects.create_project(%{
+    name: "Test Project 2 ",
+    description: "A testing project for invites",
+    inserted_by: second_user.id
+  })
 
 {:ok, template} =
   Requests.create_template(%{
@@ -95,7 +111,7 @@ alias Ingest.Destinations
 {:ok, destination} =
   Destinations.create_destination_for_user(user, %{
     name: "Test Destination",
-    type: :passive
+    type: :internal
   })
 
 {:ok, request} =
@@ -110,5 +126,23 @@ alias Ingest.Destinations
     project,
     [template],
     [destination],
+    user
+  )
+
+{:ok, upload} =
+  Uploads.create_upload(
+    %{
+      filename: "Test.pdf"
+    },
+    request,
+    user
+  )
+
+{:ok, notification} =
+  Accounts.create_notifications(
+    %{
+      body: "Test body",
+      subject: "Test Subject"
+    },
     user
   )

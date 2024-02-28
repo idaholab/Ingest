@@ -14,6 +14,10 @@ config :ingest,
 config :ingest, :can_do,
   resource_types: [Ingest.Projects.Project, Ingest.Requests.Request, Ingest.Requests.Template]
 
+config :ingest, :generators,
+  migration: true,
+  binary_id: true
+
 # Configures the endpoint
 config :ingest, IngestWeb.Endpoint,
   url: [host: "localhost"],

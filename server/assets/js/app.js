@@ -1,7 +1,3 @@
-// If you want to use Phoenix channels, run `mix help phx.gen.channel`
-// to get started and then uncomment the line below.
-// import "./user_socket.js"
-
 // You can include dependencies in two ways.
 //
 // The simplest option is to put them in assets/vendor and
@@ -22,6 +18,7 @@ import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import Sortable from "../vendor/Sortable.js"
+import { Notifications } from "./user_socket.js"
 
 // Custom Hooks - Primarily used for custom Javascript such as the Sortable.js library on the form builder
 let Hooks = {}
@@ -38,6 +35,17 @@ Hooks.FormBuilderFields = {
         })
     }
 }
+
+Hooks.UploadBox = {
+    mounted() {
+        this.el.addEventListener("click", e => {
+            let file_input = document.getElementById(this.el.dataset.fileId);
+            file_input.click();
+        })
+    }
+}
+
+Hooks.Notifications = Notifications
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken }, hooks: Hooks })

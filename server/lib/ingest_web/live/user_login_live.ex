@@ -5,7 +5,7 @@ defmodule IngestWeb.UserLoginLive do
     ~H"""
     <div class="mx-auto max-w-sm">
       <.header class="text-center">
-        <img class="mx-auto h-10 w-auto" src="/images/ingest_logo.png" alt="Your Company" />
+        <img class="mx-auto h-10 w-auto" src="/images/logo.png" alt="Your Company" />
         Sign in to account
         <:subtitle>
           Don't have an account?
@@ -57,13 +57,10 @@ defmodule IngestWeb.UserLoginLive do
           </div>
         </div>
 
-        <div class="mt-6 grid grid-cols-2 gap-4">
-          <button phx-click="login_oneid">
-            <img src="/images/oneid_logo.png" />
-          </button>
-
+        <div class="mt-6 flex justify-center items-center">
+          <!-- Yes the OneID logo leads to the okta login as well, this is because we're using INL's okta to front OneID -->
           <button phx-click="login_okta">
-            <img src="/images/inllogo.png" />
+            <img src="/images/oneid_logo.png" />
           </button>
         </div>
       </div>
@@ -103,6 +100,7 @@ defmodule IngestWeb.UserLoginLive do
 
   def handle_event("login_okta", _params, socket) do
     config = Application.get_env(:ingest, :openid_connect_okta)
+    state = :crypto.strong_rand_bytes(20) |> Base.encode64()
 
     with {:ok, redirect_uri} <-
            Oidcc.create_redirect_url(
@@ -111,13 +109,29 @@ defmodule IngestWeb.UserLoginLive do
              config[:client_secret],
              %{
                redirect_uri: config[:redirect_uri],
-               scopes: [:openid, :email, :profile]
+               scopes: [:openid, :email, :profile],
+               state: state
              }
            ) do
-      {:noreply, socket |> redirect(external: Enum.join(redirect_uri, ""))}
+      final_url = build_url(Enum.join(redirect_uri, ""))
+
+      {:noreply, socket |> redirect(external: final_url)}
     else
       {:error, :provider_not_ready} ->
         {:noreply, socket}
+    end
+  end
+
+  def build_url(raw_uri) do
+    with {:ok, uri} <- URI.new(raw_uri) do
+      query = URI.decode_query(uri.query)
+      query = query |> Enum.reject(fn {k, _v} -> String.contains?(k, "redirect_uri") end)
+      encoded_query = query |> URI.encode_query()
+
+      my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}"
+      my_url
+    else
+      {:error, :not_found} -> raw_uri
     end
   end
 end

@@ -1,4 +1,5 @@
 defmodule IngestWeb.UserRegistrationLive do
+  alias Ingest.Projects
   use IngestWeb, :live_view
 
   alias Ingest.Accounts
@@ -8,7 +9,7 @@ defmodule IngestWeb.UserRegistrationLive do
     ~H"""
     <div class="mx-auto max-w-sm">
       <.header class="text-center">
-        <img class="mx-auto h-10 w-auto" src="/images/ingest_logo.png" alt="Your Company" />
+        <img class="mx-auto h-10 w-auto" src="/images/logo.png" alt="Your Company" />
         Register for an account
         <:subtitle>
           Already registered?
@@ -95,6 +96,8 @@ defmodule IngestWeb.UserRegistrationLive do
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
+        Projects.queue_project_invite_notifications(user)
+
         {:ok, _} =
           Accounts.deliver_user_confirmation_instructions(
             user,

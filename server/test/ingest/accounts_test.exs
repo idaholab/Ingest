@@ -505,4 +505,62 @@ defmodule Ingest.AccountsTest do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
     end
   end
+
+  describe "notifications" do
+    alias Ingest.Accounts.Notifications
+
+    import Ingest.AccountsFixtures
+
+    @invalid_attrs %{body: nil, seen: nil, subject: nil}
+
+    test "list_notifications/0 returns all notifications" do
+      notifications = notifications_fixture()
+      assert Accounts.list_notifications() == [notifications]
+    end
+
+    test "get_notifications!/1 returns the notifications with given id" do
+      notifications = notifications_fixture()
+      assert Accounts.get_notifications!(notifications.id) == notifications
+    end
+
+    test "create_notifications/1 with valid data creates a notifications" do
+      valid_attrs = %{body: "some body", seen: true, subject: "some subject"}
+
+      assert {:ok, %Notifications{} = notifications} = Accounts.create_notifications(valid_attrs)
+      assert notifications.body == "some body"
+      assert notifications.seen == true
+      assert notifications.subject == "some subject"
+    end
+
+    test "create_notifications/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Accounts.create_notifications(@invalid_attrs)
+    end
+
+    test "update_notifications/2 with valid data updates the notifications" do
+      notifications = notifications_fixture()
+      update_attrs = %{body: "some updated body", seen: false, subject: "some updated subject"}
+
+      assert {:ok, %Notifications{} = notifications} = Accounts.update_notifications(notifications, update_attrs)
+      assert notifications.body == "some updated body"
+      assert notifications.seen == false
+      assert notifications.subject == "some updated subject"
+    end
+
+    test "update_notifications/2 with invalid data returns error changeset" do
+      notifications = notifications_fixture()
+      assert {:error, %Ecto.Changeset{}} = Accounts.update_notifications(notifications, @invalid_attrs)
+      assert notifications == Accounts.get_notifications!(notifications.id)
+    end
+
+    test "delete_notifications/1 deletes the notifications" do
+      notifications = notifications_fixture()
+      assert {:ok, %Notifications{}} = Accounts.delete_notifications(notifications)
+      assert_raise Ecto.NoResultsError, fn -> Accounts.get_notifications!(notifications.id) end
+    end
+
+    test "change_notifications/1 returns a notifications changeset" do
+      notifications = notifications_fixture()
+      assert %Ecto.Changeset{} = Accounts.change_notifications(notifications)
+    end
+  end
 end

@@ -6,7 +6,9 @@ defmodule Ingest.Repo.Migrations.CreateRequests do
       add :id, :binary_id, primary_key: true
       add :name, :string
       add :description, :string
-      add :status, :string
+      add :status, :string, default: "draft"
+      add :visibility, :string, default: "private"
+      add :allowed_email_domains, {:array, :string}
       add :inserted_by, references(:users, on_delete: :delete_all, type: :binary_id)
       add :project_id, references(:projects, on_delete: :delete_all, type: :binary_id)
 

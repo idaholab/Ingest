@@ -11,6 +11,7 @@ defmodule IngestWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
+    plug :put_user_token
   end
 
   pipeline :api do
@@ -92,11 +93,14 @@ defmodule IngestWeb.Router do
       live "/dashboard/destinations/register_client", DestinationsLive, :register_client
 
       live "/dashboard/projects", ProjectsLive, :index
+      live "/dashboard/projects/accept/:id", ProjectsLive, :invite
       live "/dashboard/projects/new", ProjectsLive, :new
       live "/dashboard/projects/:id/", ProjectShowLive, :show
       live "/dashboard/projects/:id/edit", ProjectsLive, :edit
 
       live "/dashboard/uploads", UploadsLive, :index
+      live "/dashboard/uploads/:id", UploadShowLive, :index
+      live "/dashboard/uploads/:id/:upload_id", MetadataEntryLive, :index
     end
   end
 
@@ -109,6 +113,15 @@ defmodule IngestWeb.Router do
       on_mount: [{IngestWeb.UserAuth, :mount_current_user}] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
+    end
+  end
+
+  defp put_user_token(conn, _) do
+    if current_user = conn.assigns[:current_user] do
+      token = Phoenix.Token.sign(conn, "user socket", current_user.id)
+      assign(conn, :user_token, token)
+    else
+      conn
     end
   end
 end

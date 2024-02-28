@@ -1,3 +1,6 @@
+<script>
+  window.userId = "<%= assigns[:current_user].id %>";
+</script>
 <div>
   <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
   <div class="relative z-50 lg:hidden mobile-sidebar hidden" role="dialog" aria-modal="true">
@@ -72,23 +75,11 @@
       <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
         <form class="relative flex flex-1" action="#" method="GET"></form>
         <div class="flex items-center gap-x-4 lg:gap-x-6">
-          <button type="button" class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500">
-            <span class="sr-only">View notifications</span>
-            <svg
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-              />
-            </svg>
-          </button>
+          <.live_component
+            module={IngestWeb.ComponentsLive.NotificationsBarLive}
+            id="notifications_bar"
+            current_user={@current_user}
+          />
           <!-- Separator -->
           <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-900/10" aria-hidden="true"></div>
           <!-- Profile dropdown -->
@@ -130,16 +121,7 @@
                 </svg>
               </span>
             </button>
-            <!--
-              Dropdown menu, show/hide based on menu state.
 
-              Entering: "transition ease-out duration-100"
-                From: "transform opacity-0 scale-95"
-                To: "transform opacity-100 scale-100"
-              Leaving: "transition ease-in duration-75"
-                From: "transform opacity-100 scale-100"
-                To: "transform opacity-0 scale-95"
-            -->
             <div
               id="usermenu"
               class="hidden absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
@@ -158,15 +140,16 @@
               >
                 Your profile
               </a>
-              <a
+              <.link
                 href={~p"/users/log_out"}
                 class="block px-3 py-1 text-sm leading-6 text-gray-900"
                 role="menuitem"
                 tabindex="-1"
                 id="user-menu-item-1"
+                method="delete"
               >
                 Sign out
-              </a>
+              </.link>
             </div>
           </div>
         </div>

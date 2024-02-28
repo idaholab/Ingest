@@ -21,4 +21,18 @@ defmodule Ingest.ProjectsFixtures do
     |> Ingest.Repo.preload(:project_members)
     |> Ingest.Repo.preload(:requests)
   end
+
+  @doc """
+  Generate a project_invites.
+  """
+  def project_invites_fixture(attrs \\ %{}) do
+    {:ok, project_invites} =
+      attrs
+      |> Enum.into(%{
+        email: "some email"
+      })
+      |> Ingest.Projects.create_project_invites()
+
+    project_invites
+  end
 end

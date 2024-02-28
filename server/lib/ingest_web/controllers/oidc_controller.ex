@@ -1,6 +1,7 @@
 defmodule IngestWeb.OidcController do
   use IngestWeb, :controller
 
+  alias Ingest.Projects
   alias Ingest.Accounts
   alias IngestWeb.UserAuth
 
@@ -27,7 +28,12 @@ defmodule IngestWeb.OidcController do
 
         case user do
           nil ->
-            with {:ok, user} <- Accounts.register_user(%{email: claims["email"]}, :oidcc) do
+            with {:ok, user} <-
+                   Accounts.register_user(
+                     %{email: claims["email"], role: :manager, identity_provider: :oidc},
+                     :oidcc
+                   ) do
+              Projects.queue_project_invite_notifications(user)
               UserAuth.log_in_user(conn, user, %{})
             else
               {:error, err} ->
@@ -52,7 +58,7 @@ defmodule IngestWeb.OidcController do
   end
 
   def okta(conn, %{"code" => code}) do
-    config = Application.get_env(:ingest, :openid_connect_oneid)
+    config = Application.get_env(:ingest, :openid_connect_okta)
 
     with {:ok, token} <-
            Oidcc.retrieve_token(
@@ -74,7 +80,11 @@ defmodule IngestWeb.OidcController do
 
         case user do
           nil ->
-            with {:ok, user} <- Accounts.register_user(%{email: claims["email"]}, :oidcc) do
+            with {:ok, user} <-
+                   Accounts.register_user(
+                     %{email: claims["email"], role: :manager, identity_provider: :oidc},
+                     :oidcc
+                   ) do
               UserAuth.log_in_user(conn, user, %{})
             else
               {:error, err} ->

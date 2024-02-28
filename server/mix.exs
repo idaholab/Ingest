@@ -44,18 +44,21 @@ defmodule Ingest.MixProject do
       {:phoenix_live_dashboard, "~> 0.8.0"},
       {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
-      {:swoosh, "~> 1.3"},
+      {:swoosh, "~> 1.15.2"},
       {:finch, "~> 0.13"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:oidcc, git: "https://github.com/erlef/oidcc.git", tag: "v3.1.0-beta.1"},
+      {:oidcc, git: "https://github.com/erlef/oidcc.git", tag: "v3.1.1"},
       {:jose, "~> 1.11"},
       {:ecto_psql_extras, "~> 0.6"},
       {:cachex, "~> 3.6.0"},
       {:cloak_ecto, "~> 1.2.0"},
+      {:req, "~> 0.4.8"},
+      {:timex, "~> 3.7.11"},
+      {:gen_smtp, "~> 1.2"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
