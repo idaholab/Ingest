@@ -101,6 +101,8 @@ defmodule IngestWeb.Router do
       live "/dashboard/uploads", UploadsLive, :index
       live "/dashboard/uploads/:id", UploadShowLive, :index
       live "/dashboard/uploads/:id/:upload_id", MetadataEntryLive, :index
+
+      live "/dashboard/tasks", TasksLive, :index
     end
   end
 

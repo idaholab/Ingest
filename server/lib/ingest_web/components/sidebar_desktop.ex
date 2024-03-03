@@ -38,6 +38,24 @@ defmodule Sidebar do
                     <.icon name="hero-arrow-up-on-square-stack" class="h-6 w-6 shrink-0" /> Upload
                   </a>
                 </li>
+                <li>
+                  <a
+                    href={~p"/dashboard/tasks"}
+                    class={active("tasks", @section)}
+                    let={count = tasks_count(@current_user)}
+                  >
+                    <.icon name="hero-clipboard-document-list" class="h-6 w-6 shrink-0" /> Tasks
+                    <span
+                      :if={count > 0}
+                      class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
+                    >
+                      <svg class="h-1.5 w-1.5 fill-blue-500" viewBox="0 0 6 6" aria-hidden="true">
+                        <circle cx="3" cy="3" r="3" />
+                      </svg>
+                      <%= count %>
+                    </span>
+                  </a>
+                </li>
                 <div :if={@current_user.roles in [:manager, :admin]}>
                   <li class="pt-10">
                     <div class="text-xs font-semibold leading-6 text-gray-400">Management</div>
@@ -180,6 +198,12 @@ defmodule Sidebar do
                 </a>
               </li>
 
+              <li>
+                <a href={~p"/dashboard/tasks"} class={active("tasks", @section)}>
+                  <.icon name="hero-clipboard-document-list" class="h-6 w-6 shrink-0" /> Tasks
+                </a>
+              </li>
+
               <li class="pt-10">
                 <div class="text-xs font-semibold leading-6 text-gray-400">Management</div>
                 <a href={~p"/dashboard/requests"} class={active("requests", @section)}>
@@ -289,5 +313,9 @@ defmodule Sidebar do
 
   def projects_list(current_user) do
     Ingest.Projects.list_own_projects_with_count(current_user.id)
+  end
+
+  def tasks_count(current_user) do
+    Ingest.Uploads.count_uploads_missing_metadata(current_user)
   end
 end

@@ -11,19 +11,31 @@ defmodule IngestWeb.MetadataEntryLive do
   def render(assigns) do
     ~H"""
     <div>
-      <%= @text %>
+      <.simple_form for={@form} phx-submit="save">
+        <.input field={@form[:email]} label="Email" />
+        <:actions>
+          <.button>Save</.button>
+        </:actions>
+      </.simple_form>
     </div>
     """
   end
 
   @impl true
-  def mount(params, session, socket) do
+  def mount(_params, _session, socket) do
     form = to_form(%{"name" => "test"})
 
     {:ok,
      socket
+     |> assign(:form, to_form(%{email: nil}))
      |> assign(:section, "metadata")
      |> assign(:text, HTML.Form.text_input(form, :name, class: "test")),
      layout: {IngestWeb.Layouts, :dashboard}}
+  end
+
+  @impl true
+  def handle_event("save", %{"email" => email}, socket) do
+    dbg(email)
+    {:noreply, socket}
   end
 end

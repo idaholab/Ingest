@@ -4,6 +4,7 @@ defmodule Ingest.Uploads do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Uploads.Metadata
   alias Ingest.Requests.Request
   alias Ingest.Accounts.User
   alias Ingest.Repo
@@ -24,7 +25,27 @@ defmodule Ingest.Uploads do
   end
 
   def recent_uploads_for_user(%User{} = user) do
-    Repo.all(from u in Upload, where: u.uploaded_by == ^user.id, limit: 10)
+    Repo.all(from u in Upload, where: u.uploaded_by == ^user.id, limit: 10, preload: :metadatas)
+  end
+
+  def uploads_missing_metadata(%User{} = user) do
+    Repo.all(
+      from u in Upload,
+        left_join: m in Metadata,
+        on: m.upload_id == u.id,
+        where: is_nil(m.id) and u.uploaded_by == ^user.id,
+        select: u
+    )
+  end
+
+  def count_uploads_missing_metadata(%User{} = user) do
+    Repo.one(
+      from u in Upload,
+        left_join: m in Metadata,
+        on: m.upload_id == u.id,
+        where: is_nil(m.id) and u.uploaded_by == ^user.id,
+        select: count()
+    )
   end
 
   @doc """
