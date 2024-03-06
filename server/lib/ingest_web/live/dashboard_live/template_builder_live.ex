@@ -138,7 +138,7 @@ defmodule IngestWeb.TemplateBuilderLive do
                 <ul
                   :if={@field.type == :select && @field.select_options}
                   role="list"
-                  class="divide-y divide-white/5 sm:col-span-3"
+                  class="divide-y divide-white/5 sm:col-span-4"
                 >
                   <li
                     :for={option <- @field.select_options}
@@ -160,6 +160,18 @@ defmodule IngestWeb.TemplateBuilderLive do
                     </.link>
                   </li>
                 </ul>
+                <div :if={@field.type == :select} class="sm:col-span-4">
+                  <.input type="text" field={@select_form[:option]} id="options" />
+
+                  <button
+                    name="save"
+                    phx-disable-with="Saving..."
+                    value="option"
+                    class="mt-3 rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                  >
+                    Add Option
+                  </button>
+                </div>
                 <div class="sm:col-span-4">
                   <label for="username" class="block text-sm font-medium leading-6 text-white">
                     Label
@@ -214,6 +226,8 @@ defmodule IngestWeb.TemplateBuilderLive do
           <div class="mt-6 flex items-center justify-end gap-x-6">
             <button type="button" class="text-sm font-semibold leading-6 text-white">Cancel</button>
             <button
+              name="save"
+              value="full"
               type="submit"
               phx-disable-with="Saving..."
               class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
@@ -263,6 +277,7 @@ defmodule IngestWeb.TemplateBuilderLive do
      socket
      |> assign(:field, field)
      |> assign(:template, template)
+     |> assign(:select_form, to_form(%{option: nil}))
      |> assign(:field_form, to_form(Requests.change_template_field(field)))}
   end
 
@@ -308,6 +323,22 @@ defmodule IngestWeb.TemplateBuilderLive do
   end
 
   @impl true
+  def handle_event(
+        "save",
+        %{"option" => option, "save" => "option", "template_field" => field_params},
+        socket
+      ) do
+    %{"file_extensions" => file_extensions} = field_params
+
+    field_params =
+      field_params
+      |> Map.replace("file_extensions", file_extensions |> String.split(","))
+      |> Map.put("select_options", [option | socket.assigns.field.select_options])
+
+    {:noreply, socket |> save_field(field_params)}
+  end
+
+  @impl true
   def handle_event("save", %{"template_field" => field_params}, socket) do
     %{"file_extensions" => file_extensions} = field_params
 
@@ -318,10 +349,10 @@ defmodule IngestWeb.TemplateBuilderLive do
   end
 
   @impl true
-  def handle_event("add_option", %{"option" => option}, socket) do
+  def handle_event("add_option", _params, socket) do
     field =
       Map.from_struct(socket.assigns.field)
-      |> Map.put("select_options", [option | socket.assigns.field.select_options])
+      |> Map.put("select_options", ["" | socket.assigns.field.select_options])
 
     {:noreply, socket |> save_field(field)}
   end
