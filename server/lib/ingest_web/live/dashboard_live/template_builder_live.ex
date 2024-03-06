@@ -103,7 +103,7 @@ defmodule IngestWeb.TemplateBuilderLive do
         </div>
       </div>
 
-      <div :if={@field} class=" bg-gray-800 p-8 basis-2/3 h-screen ml-10">
+      <div :if={@field} class=" bg-gray-800 p-8 basis-2/3 h-screen-full ml-10">
         <.form for={@field_form} phx-change="validate" id="field" phx-submit="save">
           <div class="space-y-12">
             <div class="border-b border-white/10 pb-12">
