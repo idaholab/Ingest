@@ -113,8 +113,6 @@ defmodule IngestWeb.UploadShowLive do
 
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
-    dbg(Uploads.recent_uploads_for_user(socket.assigns.current_user))
-
     {:noreply,
      socket
      |> assign(:request, Requests.get_request!(id))
