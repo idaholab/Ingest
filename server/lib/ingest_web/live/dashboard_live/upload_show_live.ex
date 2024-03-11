@@ -80,6 +80,7 @@ defmodule IngestWeb.UploadShowLive do
 
                 <:action :let={{_id, upload}}>
                   <.link
+                    :if={upload.metadatas == []}
                     navigate={~p"/dashboard/uploads/#{@request}/#{upload}"}
                     class="text-indigo-600 hover:text-indigo-900"
                   >

@@ -85,6 +85,7 @@ defmodule IngestWeb.Router do
       live "/dashboard/templates", TemplatesLive, :index
       live "/dashboard/templates/new", TemplatesLive, :new
       live "/dashboard/templates/:id", TemplateBuilderLive, :index
+      live "/dashboard/templates/:id/new", TemplateBuilderLive, :new
       live "/dashboard/templates/:id/fields/:field_id", TemplateBuilderLive, :field
 
       live "/dashboard/destinations", DestinationsLive, :index
@@ -101,6 +102,8 @@ defmodule IngestWeb.Router do
       live "/dashboard/uploads", UploadsLive, :index
       live "/dashboard/uploads/:id", UploadShowLive, :index
       live "/dashboard/uploads/:id/:upload_id", MetadataEntryLive, :index
+
+      live "/dashboard/tasks", TasksLive, :index
     end
   end
 

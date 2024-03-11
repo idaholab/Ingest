@@ -132,7 +132,8 @@ alias Ingest.Uploads
 {:ok, upload} =
   Uploads.create_upload(
     %{
-      filename: "Test.pdf"
+      filename: "Test.pdf",
+      ext: "application/test"
     },
     request,
     user

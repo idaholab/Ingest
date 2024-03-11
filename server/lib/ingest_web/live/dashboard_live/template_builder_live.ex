@@ -14,6 +14,13 @@ defmodule IngestWeb.TemplateBuilderLive do
 
     <div class="flex flex-row">
       <div class="basis-1/3">
+        <.link
+          patch={~p"/dashboard/templates/#{@template.id}/new"}
+          type="button"
+          class="relative block w-full mt-5 rounded-lg border-2 border-dashed border-gray-300 p-3 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          <span class="mt-2 block text-sm font-semibold text-gray-900">Add Field</span>
+        </.link>
         <ul
           id="fields"
           role="list"
@@ -54,8 +61,11 @@ defmodule IngestWeb.TemplateBuilderLive do
                   </p>
                 </div>
               </div>
-              <div class="py-2">
-                <span class="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+              <div :if={field.file_extensions} class="py-2">
+                <span
+                  :if={field.file_extensions == []}
+                  class="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
+                >
                   all
                 </span>
 
@@ -71,7 +81,29 @@ defmodule IngestWeb.TemplateBuilderLive do
         </ul>
       </div>
 
-      <div :if={@field} class=" bg-gray-800 p-8 basis-2/3">
+      <div :if={!@field} class="bg-gray-800 p-8 basis-2/3 h-screen ml-10">
+        <div class="text-center">
+          <svg
+            class="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              vector-effect="non-scaling-stroke"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+            />
+          </svg>
+          <h3 class="mt-2 text-sm font-semibold text-white">No field selected</h3>
+          <p class="mt-1 text-sm text-white">Get started by adding a new field on the left.</p>
+        </div>
+      </div>
+
+      <div :if={@field} class=" bg-gray-800 p-8 basis-2/3 h-screen-full ml-10">
         <.form for={@field_form} phx-change="validate" id="field" phx-submit="save">
           <div class="space-y-12">
             <div class="border-b border-white/10 pb-12">
@@ -89,13 +121,57 @@ defmodule IngestWeb.TemplateBuilderLive do
                       type="select"
                       field={@field_form[:type]}
                       id="label"
-                      options={[:select, :text, :number, :textarea, :checkbox, :date]}
+                      options={[
+                        Options: :select,
+                        Text: :text,
+                        Number: :number,
+                        "Large Text Area": :textarea,
+                        Checkbox: :checkbox,
+                        Date: :date
+                      ]}
                     />
                   </div>
                 </div>
               </div>
 
               <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                <ul
+                  :if={@field.type == :select && @field.select_options}
+                  role="list"
+                  class="divide-y divide-white/5 sm:col-span-4"
+                >
+                  <li
+                    :for={option <- @field.select_options}
+                    id={option}
+                    class="relative flex items-center space-x-4 py-4"
+                  >
+                    <div class="min-w-0 flex-auto">
+                      <div class="flex items-center gap-x-3">
+                        <h2 class="min-w-0 text-sm font-semibold leading-6 text-white">
+                          <a href="#" class="flex gap-x-2">
+                            <span class="truncate"><%= option %></span>
+                          </a>
+                        </h2>
+                      </div>
+                    </div>
+
+                    <.link phx-click="remove_option" phx-value-option={option}>
+                      <.icon name="hero-x-mark" class="h-5 w-5 flex-none text-gray-400" />
+                    </.link>
+                  </li>
+                </ul>
+                <div :if={@field.type == :select} class="sm:col-span-4">
+                  <.input type="text" field={@select_form[:option]} id="options" />
+
+                  <button
+                    name="save"
+                    phx-disable-with="Saving..."
+                    value="option"
+                    class="mt-3 rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                  >
+                    Add Option
+                  </button>
+                </div>
                 <div class="sm:col-span-4">
                   <label for="username" class="block text-sm font-medium leading-6 text-white">
                     Label
@@ -150,6 +226,8 @@ defmodule IngestWeb.TemplateBuilderLive do
           <div class="mt-6 flex items-center justify-end gap-x-6">
             <button type="button" class="text-sm font-semibold leading-6 text-white">Cancel</button>
             <button
+              name="save"
+              value="full"
               type="submit"
               phx-disable-with="Saving..."
               class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
@@ -159,6 +237,22 @@ defmodule IngestWeb.TemplateBuilderLive do
           </div>
         </.form>
       </div>
+
+      <.modal
+        :if={@live_action in [:new]}
+        id="template_field_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/templates/#{@template.id}")}
+      >
+        <.live_component
+          live_action={@live_action}
+          template={@template}
+          fields={@fields}
+          module={IngestWeb.LiveComponents.TemplateFieldForm}
+          id="template-field-modal-component"
+          current_user={@current_user}
+        />
+      </.modal>
     </div>
     """
   end
@@ -183,6 +277,7 @@ defmodule IngestWeb.TemplateBuilderLive do
      socket
      |> assign(:field, field)
      |> assign(:template, template)
+     |> assign(:select_form, to_form(%{option: nil}))
      |> assign(:field_form, to_form(Requests.change_template_field(field)))}
   end
 
@@ -210,7 +305,7 @@ defmodule IngestWeb.TemplateBuilderLive do
 
   @impl true
   def handle_event("validate", %{"template_field" => field_params}, socket) do
-    %{"file_extensions" => file_extensions} = field_params
+    %{"file_extensions" => file_extensions, "type" => type} = field_params
 
     field_params =
       field_params |> Map.replace("file_extensions", file_extensions |> String.split(","))
@@ -220,7 +315,27 @@ defmodule IngestWeb.TemplateBuilderLive do
       |> Ingest.Requests.change_template_field(field_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, socket |> assign(:field_form, to_form(changeset))}
+    if String.to_existing_atom(type) != socket.assigns.field.type do
+      {:noreply, socket |> save_field(field_params)}
+    else
+      {:noreply, socket |> assign(:field_form, to_form(changeset))}
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{"option" => option, "save" => "option", "template_field" => field_params},
+        socket
+      ) do
+    %{"file_extensions" => file_extensions} = field_params
+
+    field_params =
+      field_params
+      |> Map.replace("file_extensions", file_extensions |> String.split(","))
+      |> Map.put("select_options", [option | socket.assigns.field.select_options])
+
+    {:noreply, socket |> save_field(field_params)}
   end
 
   @impl true
@@ -230,6 +345,39 @@ defmodule IngestWeb.TemplateBuilderLive do
     field_params =
       field_params |> Map.replace("file_extensions", file_extensions |> String.split(","))
 
+    {:noreply, socket |> save_field(field_params)}
+  end
+
+  @impl true
+  def handle_event("add_option", _params, socket) do
+    field =
+      Map.from_struct(socket.assigns.field)
+      |> Map.put("select_options", ["" | socket.assigns.field.select_options])
+
+    {:noreply, socket |> save_field(field)}
+  end
+
+  @impl true
+  def handle_event("remove_option", %{"option" => option}, socket) do
+    field =
+      %{"id" => socket.assigns.field.id}
+      |> Map.put(
+        "select_options",
+        Enum.filter(socket.assigns.field.select_options, fn o -> o != option end)
+      )
+
+    {:noreply, socket |> save_field(field)}
+  end
+
+  defp active(current, field) do
+    if field && current == field.id do
+      "flex items-center justify-between gap-x-6 py-5 active active:bg-green-100 bg-green-100 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0"
+    else
+      "flex items-center justify-between gap-x-6 py-5 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0"
+    end
+  end
+
+  defp save_field(socket, field_params \\ %{}) do
     fields =
       Enum.map(socket.assigns.fields, fn f ->
         field = Map.from_struct(f)
@@ -244,24 +392,15 @@ defmodule IngestWeb.TemplateBuilderLive do
 
     case Ingest.Requests.update_template(socket.assigns.template, %{fields: fields}) do
       {:ok, _template} ->
-        {:noreply,
-         socket
-         |> push_patch(
-           to:
-             ~p"/dashboard/templates/#{socket.assigns.template.id}/fields/#{socket.assigns.field.id}"
-         )
-         |> put_flash(:info, "Template fields saved successfully")}
+        socket
+        |> push_patch(
+          to:
+            ~p"/dashboard/templates/#{socket.assigns.template.id}/fields/#{socket.assigns.field.id}"
+        )
+        |> put_flash(:info, "Template fields saved successfully")
 
       {:error, %Ecto.Changeset{} = _changeset} ->
-        {:noreply, socket |> assign(:field_form, to_form(socket.assigns.field))}
-    end
-  end
-
-  defp active(current, field) do
-    if field && current == field.id do
-      "flex items-center justify-between gap-x-6 py-5 active active:bg-green-100 bg-green-100 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0"
-    else
-      "flex items-center justify-between gap-x-6 py-5 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0"
+        socket |> assign(:field_form, to_form(socket.assigns.field))
     end
   end
 end

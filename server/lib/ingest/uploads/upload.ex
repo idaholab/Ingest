@@ -5,6 +5,7 @@ defmodule Ingest.Uploads.Upload do
   information can be either written in the metadata .json file - or captured later by a different
   program
   """
+  alias Ingest.Uploads.Metadata
   alias Ingest.Accounts.User
   alias Ingest.Requests.Request
   use Ecto.Schema
@@ -17,6 +18,7 @@ defmodule Ingest.Uploads.Upload do
     field :filename, :string
     field :ext, :string
 
+    has_many :metadatas, Metadata, foreign_key: :upload_id
     belongs_to :request, Request, type: :binary_id
     belongs_to :user, User, type: :binary_id, foreign_key: :uploaded_by
 
