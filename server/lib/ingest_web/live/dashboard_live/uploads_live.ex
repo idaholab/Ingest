@@ -114,7 +114,8 @@ defmodule IngestWeb.UploadsLive do
   def handle_params(_params, _uri, socket) do
     {:noreply,
      socket
-     |> assign(:requests, Requests.list_recent_requests(socket.assigns.current_user))}
+     |> assign(:requests, Requests.list_recent_requests(socket.assigns.current_user))
+     |> assign(:requests, Requests.list_invited_request(socket.assigns.current_user))}
   end
 
   @impl true

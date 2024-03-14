@@ -1,5 +1,9 @@
 defmodule IngestWeb.RequestShowLive do
+  import Ecto.Query
+  alias Ingest.Requests.RequestMembers
   alias Ingest.Requests
+  alias Ingest.Repo
+
   use IngestWeb, :live_view
 
   @impl true
@@ -404,7 +408,7 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
         <!-- STATUS -->
-        <div class=" ">
+        <div class="ml-4">
           <div class="relative ">
             <div class="absolute inset-0 flex items-center" aria-hidden="true"></div>
           </div>
@@ -498,8 +502,8 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
 
-        <div class="mx-auto max-w-lg ">
-          <div>
+        <div class="mx-auto max-w-lg">
+          <div class=" pt-4">
             <div class="text-center">
               <svg
                 class="mx-auto h-12 w-12 text-gray-400"
@@ -522,9 +526,36 @@ defmodule IngestWeb.RequestShowLive do
                 As the owner of this request, you can send direct invitations to upload data.
               </p>
             </div>
+            <ul role="list" class="divide-y divide-gray-100">
+              <%= for member <- @members do %>
+                <li class="flex items-center justify-between gap-x-6 py-5">
+                  <div class="flex min-w-0 gap-x-4">
+                    <div class="min-w-0 flex-auto">
+                      <p class="text-sm font-semibold leading-6 text-gray-900">
+                        <%= member.email %>
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                      Active
+                    </span>
+
+                    <span
+                      data-confirm="Are you sure?"
+                      phx-click="remove_member"
+                      phx-value-email={member.email}
+                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
+                    >
+                      Remove
+                    </span>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
             <form action="#" class="mt-12 flex text-center">
               <label id="listbox-label" class="sr-only">Change visibility </label>
-              <div class="relative pl-20">
+              <div class="relative pl-12">
                 <div class="inline-flex divide-x divide-white-700 rounded-md shadow-sm">
                   <div class={
                     if @request.visibility == :public do
@@ -689,15 +720,13 @@ defmodule IngestWeb.RequestShowLive do
                   </li>
                 </ul>
               </div>
-
-              <button
-                type="submit"
-                class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                <!-- TODO: Complete email section -->
-                    Send invite
-              </button>
-
+              <div>
+                <.link patch={~p"/dashboard/requests/#{@request.id}/invite"}>
+                  <button class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                    Send Invite
+                  </button>
+                </.link>
+              </div>
               <button
                 type="submit"
                 class="ml-4 flex-shrink-0 rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -739,6 +768,19 @@ defmodule IngestWeb.RequestShowLive do
           patch={~p"/dashboard/requests/#{@request.id}"}
         />
       </.modal>
+
+      <.modal
+        :if={@live_action in [:invite]}
+        id="invite_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/requests/#{@request.id}")}
+      >
+        <.live_component
+          module={IngestWeb.LiveComponents.InviteForm}
+          id="invite-modal-component"
+          request={@request}
+        />
+      </.modal>
     </div>
     """
   end
@@ -758,8 +800,14 @@ defmodule IngestWeb.RequestShowLive do
       Requests.update_request(request, %{status: :draft})
     end
 
+    members =
+      RequestMembers
+      |> where(request_id: ^request.id)
+      |> Repo.all()
+
     {:noreply,
      socket
+     |> assign(:members, members)
      |> assign(:request, request)
      |> assign(:request_form, to_form(changeset))
      |> stream(:templates, request.templates)
@@ -833,6 +881,17 @@ defmodule IngestWeb.RequestShowLive do
     {:noreply,
      socket
      |> assign(:request, Requests.get_request!(request.id))
+     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  def handle_event("remove_member", %{"email" => email}, socket) do
+    dbg(email)
+    Requests.delete_user(socket.assigns.request, email)
+
+    {:noreply,
+     socket
+     |> assign(:request, Requests.get_request!(socket.assigns.request.id))
+     |> put_flash(:info, "Member has been removed from this data request!")
      |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
   end
 end
