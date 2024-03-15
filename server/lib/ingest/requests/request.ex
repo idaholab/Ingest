@@ -11,7 +11,6 @@ defmodule Ingest.Requests.Request do
   alias Ingest.Accounts.User
   alias Ingest.Projects.Project
   alias Ingest.Requests.Template
-  alias Ingest.Requests.RequestMembers
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
