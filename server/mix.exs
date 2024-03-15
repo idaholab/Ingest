@@ -59,6 +59,7 @@ defmodule Ingest.MixProject do
       {:req, "~> 0.4.8"},
       {:timex, "~> 3.7.11"},
       {:gen_smtp, "~> 1.2"},
+      {:phoenix_html_helpers, "~> 1.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
