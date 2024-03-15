@@ -10,6 +10,7 @@ defmodule Ingest.Requests do
   alias Ingest.Projects.Project
   alias Ingest.Repo
   alias Ingest.Destinations.Destination
+  alias Ingest.Requests.RequestMembers
 
   alias Ingest.Requests.Template
 
@@ -27,7 +28,7 @@ defmodule Ingest.Requests do
   end
 
   def list_own_templates(%User{} = user) do
-    Repo.all(from t in Template, where: t.inserted_by == ^user.id)
+    Repo.all(from(t in Template, where: t.inserted_by == ^user.id))
   end
 
   @doc """
@@ -131,7 +132,28 @@ defmodule Ingest.Requests do
   end
 
   def list_own_requests(%User{} = user) do
-    Repo.all(from r in Request, where: r.inserted_by == ^user.id) |> Repo.preload(:project)
+    Repo.all(from(r in Request, where: r.inserted_by == ^user.id)) |> Repo.preload(:project)
+  end
+
+  def list_invited_request(%User{} = user) do
+    Repo.all(
+      from(r in Request,
+        join: m in RequestMembers,
+        on: r.id == m.request_id,
+        where: ^user.email == m.email
+      )
+    )
+    |> Repo.preload(:project)
+  end
+
+  def is_invited(%User{} = user) do
+    Repo.one(
+      from(r in Request,
+        join: m in RequestMembers,
+        on: r.id == m.request_id,
+        where: ^user.email == m.email
+      )
+    ) == nil
   end
 
   @doc """
@@ -238,19 +260,21 @@ defmodule Ingest.Requests do
 
   def remove_destination(%Request{} = request, %Destination{} = destination) do
     Repo.delete_all(
-      from d in "request_destinations",
+      from(d in "request_destinations",
         where:
           d.destination_id == type(^destination.id, :binary_id) and
             d.request_id == type(^request.id, :binary_id)
+      )
     )
   end
 
   def remove_template(%Request{} = request, %Template{} = template) do
     Repo.delete_all(
-      from d in "request_templates",
+      from(d in "request_templates",
         where:
           d.template_id == type(^template.id, :binary_id) and
             d.request_id == type(^request.id, :binary_id)
+      )
     )
   end
 
@@ -277,13 +301,14 @@ defmodule Ingest.Requests do
 
   def list_recent_requests(%User{} = user) do
     Repo.all(
-      from r in Request,
+      from(r in Request,
         join: u in Upload,
         on: u.request_id == r.id,
         where: r.inserted_by == ^user.id,
         group_by: r.id,
         limit: 50,
         select: r
+      )
     )
     |> Repo.preload(:project)
   end
@@ -313,7 +338,7 @@ defmodule Ingest.Requests do
 
   def search_requests_by_project(search_term) do
     Repo.all(
-      from r in Request,
+      from(r in Request,
         join: p in Project,
         on: p.id == r.project_id,
         where:
@@ -328,7 +353,23 @@ defmodule Ingest.Requests do
             ^search_term
           )
         }
+      )
     )
     |> Repo.preload(:project)
+  end
+
+  def invite_user_by_email(%Request{} = request, email) do
+    %RequestMembers{}
+    |> RequestMembers.email_changeset(%{email: email})
+    |> Ecto.Changeset.put_assoc(:request, request)
+    |> Repo.insert()
+  end
+
+  def delete_user(%Request{} = request, email) do
+    Repo.delete_all(
+      from(d in "request_members",
+        where: d.request_id == type(^request.id, :binary_id) and d.email == ^email
+      )
+    )
   end
 end

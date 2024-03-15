@@ -83,7 +83,9 @@ defmodule Ingest.ProjectsTest do
     test "create_project_invites/1 with valid data creates a project_invites" do
       valid_attrs = %{email: "some email"}
 
-      assert {:ok, %ProjectInvites{} = project_invites} = Projects.create_project_invites(valid_attrs)
+      assert {:ok, %ProjectInvites{} = project_invites} =
+               Projects.create_project_invites(valid_attrs)
+
       assert project_invites.email == "some email"
     end
 
@@ -95,20 +97,28 @@ defmodule Ingest.ProjectsTest do
       project_invites = project_invites_fixture()
       update_attrs = %{email: "some updated email"}
 
-      assert {:ok, %ProjectInvites{} = project_invites} = Projects.update_project_invites(project_invites, update_attrs)
+      assert {:ok, %ProjectInvites{} = project_invites} =
+               Projects.update_project_invites(project_invites, update_attrs)
+
       assert project_invites.email == "some updated email"
     end
 
     test "update_project_invites/2 with invalid data returns error changeset" do
       project_invites = project_invites_fixture()
-      assert {:error, %Ecto.Changeset{}} = Projects.update_project_invites(project_invites, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Projects.update_project_invites(project_invites, @invalid_attrs)
+
       assert project_invites == Projects.get_project_invites!(project_invites.id)
     end
 
     test "delete_project_invites/1 deletes the project_invites" do
       project_invites = project_invites_fixture()
       assert {:ok, %ProjectInvites{}} = Projects.delete_project_invites(project_invites)
-      assert_raise Ecto.NoResultsError, fn -> Projects.get_project_invites!(project_invites.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Projects.get_project_invites!(project_invites.id)
+      end
     end
 
     test "change_project_invites/1 returns a project_invites changeset" do

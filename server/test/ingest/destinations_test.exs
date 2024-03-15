@@ -84,7 +84,9 @@ defmodule Ingest.DestinationsTest do
       destination = destination_fixture()
       update_attrs = %{name: "some updated name", type: "some updated type", config: %{}}
 
-      assert {:ok, %Destination{} = destination} = Destinations.update_destination(destination, update_attrs)
+      assert {:ok, %Destination{} = destination} =
+               Destinations.update_destination(destination, update_attrs)
+
       assert destination.name == "some updated name"
       assert destination.type == "some updated type"
       assert destination.config == %{}
@@ -92,7 +94,10 @@ defmodule Ingest.DestinationsTest do
 
     test "update_destination/2 with invalid data returns error changeset" do
       destination = destination_fixture()
-      assert {:error, %Ecto.Changeset{}} = Destinations.update_destination(destination, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Destinations.update_destination(destination, @invalid_attrs)
+
       assert destination == Destinations.get_destination!(destination.id)
     end
 

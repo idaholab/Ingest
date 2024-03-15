@@ -146,12 +146,6 @@ defmodule IngestWeb.DestinationsLive do
     |> assign(:client, %Client{owner_id: socket.assigns.current_user.id, id: client_id})
   end
 
-  # need to cover the index action TODO: find a better way of streamlining this
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Data Destinations")
-  end
-
   @impl true
   def handle_info({IngestWeb.LiveComponents.DestinationForm, {:saved, project}}, socket) do
     {:noreply, stream_insert(socket, :destinations, project)}

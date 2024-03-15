@@ -18,19 +18,6 @@ defmodule Ingest.Access do
   @scope_priority [:global, :user, :group]
 
   @doc """
-  Returns the list of policies.
-
-  ## Examples
-
-      iex> list_policies()
-      [%Policy{}, ...]
-
-  """
-  def list_policies do
-    Repo.all(Policy)
-  end
-
-  @doc """
   Returns a list of policies matching the provided schemas, can be focused to also filter on scopes and actions
   """
   def list_policies(opts \\ []) do

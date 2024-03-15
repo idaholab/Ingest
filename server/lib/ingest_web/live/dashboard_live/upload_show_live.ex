@@ -98,17 +98,24 @@ defmodule IngestWeb.UploadShowLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> assign(:section, "uploads")
-     |> allow_upload(:files,
-       auto_upload: true,
-       progress: &handle_progress/3,
-       accept: :any,
-       max_entries: 100,
-       max_file_size: 1_000_000_000_000_000,
-       chunk_size: 5_242_880
-     ), layout: {IngestWeb.Layouts, :dashboard}}
+    if Requests.is_invited(socket.assigns.current_user) do
+      {:ok,
+       socket
+       |> Phoenix.LiveView.put_flash(:error, "Access denied!")
+       |> Phoenix.LiveView.redirect(to: ~p"/dashboard")}
+    else
+      {:ok,
+       socket
+       |> assign(:section, "uploads")
+       |> allow_upload(:files,
+         auto_upload: true,
+         progress: &handle_progress/3,
+         accept: :any,
+         max_entries: 100,
+         max_file_size: 1_000_000_000_000_000,
+         chunk_size: 5_242_880
+       ), layout: {IngestWeb.Layouts, :dashboard}}
+    end
   end
 
   @impl true

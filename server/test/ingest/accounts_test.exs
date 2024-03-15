@@ -540,7 +540,9 @@ defmodule Ingest.AccountsTest do
       notifications = notifications_fixture()
       update_attrs = %{body: "some updated body", seen: false, subject: "some updated subject"}
 
-      assert {:ok, %Notifications{} = notifications} = Accounts.update_notifications(notifications, update_attrs)
+      assert {:ok, %Notifications{} = notifications} =
+               Accounts.update_notifications(notifications, update_attrs)
+
       assert notifications.body == "some updated body"
       assert notifications.seen == false
       assert notifications.subject == "some updated subject"
@@ -548,7 +550,10 @@ defmodule Ingest.AccountsTest do
 
     test "update_notifications/2 with invalid data returns error changeset" do
       notifications = notifications_fixture()
-      assert {:error, %Ecto.Changeset{}} = Accounts.update_notifications(notifications, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Accounts.update_notifications(notifications, @invalid_attrs)
+
       assert notifications == Accounts.get_notifications!(notifications.id)
     end
 
