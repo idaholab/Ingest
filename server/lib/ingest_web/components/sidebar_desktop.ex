@@ -148,12 +148,6 @@ defmodule Sidebar do
               >
                 <.icon name="hero-bug-ant" class="bg-gray-400" /> Found a bug?
               </a>
-              <a
-                href="https://doe.responsibledisclosure.com/hc/en-us"
-                class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-              >
-                <.icon name="hero-flag" class="bg-gray-400" /> Report Vulnerability
-              </a>
             </li>
           </ul>
         </nav>

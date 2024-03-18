@@ -64,6 +64,12 @@ defmodule IngestWeb.UserLoginLive do
           </button>
         </div>
       </div>
+
+      <div class="mt-6">
+        <h2 class="font-bold text-center">*** WARNING ***</h2>
+        <p>This is a Department of Energy (DOE) computer system. DOE computer systems are provided for the processing of official U.S. Government information only. All data contained within DOE computer systems is owned by the DOE, and may be audited, intercepted, recorded, read, copied, or captured in any manner and disclosed in any manner, by authorized personnel. THERE IS NO RIGHT OF PRIVACY IN THIS SYSTEM. System personnel may disclose any potential evidence of crime found on DOE computer systems to appropriate authorities. USE OF THIS SYSTEM BY ANY USER, AUTHORIZED OR UNAUTHORIZED, CONSTITUTES CONSENT TO THIS AUDITING, INTERCEPTION, RECORDING, READING, COPYING, CAPTURING, and DISCLOSURE OF COMPUTER ACTIVITY.</p>
+        <p class="mt-6 text-center"><a target="_blank" href="https://doe.responsibledisclosure.com/hc/en-us">Vulnerability Disclosure Program</a></p>
+      </div>
     </div>
     """
   end
