@@ -4,6 +4,7 @@ defmodule Ingest.Uploads do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Requests.Template
   alias Ingest.Uploads.Metadata
   alias Ingest.Requests.Request
   alias Ingest.Accounts.User
@@ -33,7 +34,9 @@ defmodule Ingest.Uploads do
       from u in Upload,
         left_join: m in Metadata,
         on: m.upload_id == u.id,
-        where: is_nil(m.id) and u.uploaded_by == ^user.id,
+        where:
+          (is_nil(m.id) and u.uploaded_by == ^user.id) or
+            (u.uploaded_by == ^user.id and m.submitted == false),
         select: u
     )
   end
@@ -43,7 +46,9 @@ defmodule Ingest.Uploads do
       from u in Upload,
         left_join: m in Metadata,
         on: m.upload_id == u.id,
-        where: is_nil(m.id) and u.uploaded_by == ^user.id,
+        where:
+          (is_nil(m.id) and u.uploaded_by == ^user.id) or
+            (u.uploaded_by == ^user.id and m.submitted == false),
         select: count()
     )
   end
@@ -62,7 +67,10 @@ defmodule Ingest.Uploads do
       ** (Ecto.NoResultsError)
 
   """
-  def get_upload!(id), do: Repo.get!(Upload, id)
+  def get_upload!(id),
+    do:
+      Repo.get!(Upload, id)
+      |> Repo.preload(metadatas: from(m in Metadata, where: m.submitted == true))
 
   @doc """
   Creates a upload.
@@ -143,8 +151,12 @@ defmodule Ingest.Uploads do
       [%Metadata{}, ...]
 
   """
-  def list_metadata do
-    Repo.all(Metadata)
+  def list_metadata_by(%Upload{} = upload, %Template{} = template) do
+    Repo.one(
+      from m in Metadata,
+        where: m.upload_id == ^upload.id and m.template_id == ^template.id,
+        select: m
+    )
   end
 
   @doc """

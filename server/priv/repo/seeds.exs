@@ -108,6 +108,64 @@ alias Ingest.Uploads
     ]
   })
 
+{:ok, template_2} =
+  Requests.create_template(%{
+    name: "Test Template 2",
+    inserted_by: user.id,
+    description: "A testing template, again",
+    fields: [
+      %{
+        label: "Text Field",
+        help_text: "This is a testing field for testing purposes.",
+        type: :text,
+        required: true,
+        per_file: false,
+        file_extensions: []
+      },
+      %{
+        label: "Number Field",
+        help_text: "This is a testing field for testing purposes.",
+        type: :number,
+        required: false,
+        per_file: false,
+        file_extensions: [".pdf", ".xls"]
+      },
+      %{
+        label: "Select Field",
+        help_text: "This is a testing field for testing purposes.",
+        type: :select,
+        select_options: ["option 1", "option 2"],
+        required: false,
+        per_file: true,
+        file_extensions: []
+      },
+      %{
+        label: "Checkbox Field",
+        help_text: "This is a testing field for testing purposes.",
+        type: :checkbox,
+        required: false,
+        per_file: false,
+        file_extensions: []
+      },
+      %{
+        label: "Date Field",
+        help_text: "This is a testing field for testing purposes.",
+        type: :date,
+        required: false,
+        per_file: false,
+        file_extensions: []
+      },
+      %{
+        label: "Text Area Field",
+        help_text: "This is a testing field for testing purposes.",
+        type: :textarea,
+        required: false,
+        per_file: false,
+        file_extensions: []
+      }
+    ]
+  })
+
 {:ok, destination} =
   Destinations.create_destination_for_user(user, %{
     name: "Test Destination",

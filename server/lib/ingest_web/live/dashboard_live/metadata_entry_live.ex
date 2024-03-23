@@ -4,21 +4,86 @@ defmodule IngestWeb.MetadataEntryLive do
   data structure. Experience should be someone navigates to this page for an upload, and are met with a dynamic form on the right hand
   side already filled in with answers they may have given previously.
   """
+  alias Ingest.Uploads
+  alias Ingest.Requests
   use IngestWeb, :live_view
 
   @impl true
   def render(assigns) do
     ~H"""
     <div>
-      <.simple_form for={@form} phx-submit="save">
-        <.input field={@form[:email]} label="Email" />
-        <:actions>
-          <.button>Save</.button>
-        </:actions>
-      </.simple_form>
-
-      <button phx-click="test">Test</button>
-      <%= @test %>
+      <nav aria-label="Progress" class="sticky top-20 mb-10">
+        <p class="text-lg">Progress</p>
+        <ol role="list" class="flex items-center">
+          <a href="#">
+            <.icon name="hero-home" class="h-5 w-5 " />
+          </a>
+          <li class="relative pr-8 sm:pr-20 [&:not(:last-child)]:pr-8 [&:not(:last-child)]:sm:pr-20">
+            <!-- Completed Step -->
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+              <div class="h-0.5 w-full bg-indigo-600"></div>
+            </div>
+          </li>
+          <%= for template <- @templates do %>
+            <li
+              :if={Enum.find(@upload.metadatas, fn u -> u.template_id == template.id end)}
+              class="relative  [&:not(:last-child)]:pr-8 [&:not(:last-child)]:sm:pr-20"
+            >
+              <!-- Completed Step -->
+              <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="h-0.5 w-full bg-indigo-600"></div>
+              </div>
+              <a
+                href={"##{template.name}"}
+                class="relative flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-900"
+              >
+                <svg
+                  class="h-5 w-5 text-white"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <span class="sr-only">Step 1</span>
+              </a>
+            </li>
+            <li
+              :if={!Enum.find(@upload.metadatas, fn u -> u.template_id == template.id end)}
+              class="relative [&:not(:last-child)]:pr-8 [&:not(:last-child)]:sm:pr-20"
+            >
+              <!-- Upcoming Step -->
+              <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="h-0.5 w-full bg-gray-200"></div>
+              </div>
+              <a
+                href="#"
+                class="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white hover:border-gray-400"
+              >
+                <span
+                  class="h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-gray-300"
+                  aria-hidden="true"
+                >
+                </span>
+                <span class="sr-only">Step 4</span>
+              </a>
+            </li>
+          <% end %>
+        </ol>
+      </nav>
+      <%= for template <- @templates do %>
+        <div id={template.name} class="target:pt-40"></div>
+        <.live_component
+          module={IngestWeb.LiveComponents.MetadataEntryForm}
+          upload={@upload}
+          template={template}
+          id={"template-#{template.id}"}
+        />
+      <% end %>
     </div>
     """
   end
@@ -35,20 +100,10 @@ defmodule IngestWeb.MetadataEntryLive do
   end
 
   @impl true
-  def handle_params(%{"upload_id" => _upload_id, "id" => _req_id}, _uri, socket) do
-    # pull all the templates for this request
-    # combine all template fields that are duplicates? or should I section name?
-    {:noreply, socket}
-  end
+  def handle_params(%{"upload_id" => upload_id, "id" => req_id}, _uri, socket) do
+    request = Requests.get_request!(req_id)
+    upload = Uploads.get_upload!(upload_id)
 
-  @impl true
-  def handle_event("save", %{"email" => email}, socket) do
-    dbg(email)
-    {:noreply, socket}
-  end
-
-  @impl true
-  def handle_event("test", _params, socket) do
-    {:noreply, socket |> assign(:test, "test")}
+    {:noreply, socket |> assign(:templates, request.templates) |> assign(:upload, upload)}
   end
 end

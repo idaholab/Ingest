@@ -5,15 +5,17 @@ defmodule Ingest.Uploads.Metadata do
   """
   use Ecto.Schema
   import Ecto.Changeset
+  alias Ingest.Requests.Template
   alias Ingest.Uploads.Upload
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "metadata" do
     field :data, :map
-    field :uploaded, :boolean, default: false
+    field :submitted, :boolean, default: false
 
     belongs_to :upload, Upload, type: :binary_id, foreign_key: :upload_id
+    belongs_to :template, Template, type: :binary_id, foreign_key: :template_id
 
     timestamps()
   end
@@ -21,7 +23,7 @@ defmodule Ingest.Uploads.Metadata do
   @doc false
   def changeset(metadata, attrs) do
     metadata
-    |> cast(attrs, [:uploaded, :data])
-    |> validate_required([:uploaded])
+    |> cast(attrs, [:submitted, :data, :upload_id, :template_id])
+    |> validate_required([:upload_id, :template_id])
   end
 end
