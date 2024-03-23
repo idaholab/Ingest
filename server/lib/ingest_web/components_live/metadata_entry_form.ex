@@ -76,6 +76,7 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
                 </.error>
               </div>
               <p class="text-xs"><%= field.help_text %></p>
+              <p :if={field.required} class="text-xs text-red-400">*Required</p>
             </div>
 
             <div class="mt-6 flex items-center justify-end gap-x-6">
