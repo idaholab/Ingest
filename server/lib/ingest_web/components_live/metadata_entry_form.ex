@@ -12,20 +12,49 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
     <div>
       <div class="space-y-10 divide-y divide-gray-900/10">
         <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3">
-          <div class="px-4 sm:px-0">
+          <div :if={@metadata.submitted} class="px-4 sm:px-0">
+            <h2 class="text-base font-semibold leading-7 text-gray-500"><%= @title %></h2>
+            <p class="mt-1 text-sm leading-6 text-gray-400">
+              <%= @description %>
+            </p>
+          </div>
+
+          <div :if={!@metadata.submitted} class="px-4 sm:px-0">
             <h2 class="text-base font-semibold leading-7 text-gray-900"><%= @title %></h2>
             <p class="mt-1 text-sm leading-6 text-gray-600">
               <%= @description %>
             </p>
           </div>
 
+          <div :if={@metadata.submitted} class="rounded-md bg-green-50 p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg
+                  class="h-5 w-5 text-green-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm font-medium text-green-800">Section Submitted!</p>
+              </div>
+            </div>
+          </div>
+
           <.simple_form
+            :if={!@metadata.submitted}
             id="metadata_form"
             for={@metadata_form}
             phx-change="validate"
             phx-target={@myself}
             phx-submit="save"
-            class=""
           >
             <div :for={field <- @fields}>
               <.input
@@ -50,23 +79,64 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
             </div>
 
             <div class="mt-6 flex items-center justify-end gap-x-6">
+              <button
+                :if={@errors == nil && @metadata.data && map_size(@metadata.data) > 0}
+                class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                phx-disable-with="Saving..."
+                name="save"
+                value="submit"
+                data-confirm="Are you sure? You cannot edit your input after submission"
+              >
+                Submit Section
+              </button>
+              <button
+                :if={@errors != nil || (is_nil(@metadata.data) || map_size(@metadata.data) == 0)}
+                class="rounded-md bg-gray-300 px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                phx-disable-with="Saving..."
+                name="save"
+                value="submit"
+                disabled
+              >
+                Submit Section
+              </button>
               <.button
                 :if={@errors == nil}
                 class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 phx-disable-with="Saving..."
+                name="save"
+                value="save"
               >
                 Save Section
               </.button>
               <button
                 :if={@errors != nil}
-                class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:bg-gray-900 disabled:opacity-75"
+                class="rounded-md bg-gray-300 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:bg-gray-300 disabled:opacity-75"
                 phx-disable-with="Saving..."
+                name="save"
+                value="save"
                 disabled
               >
                 Save Section
               </button>
             </div>
           </.simple_form>
+        </div>
+      </div>
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+          <div class="w-full border-t border-gray-300"></div>
+        </div>
+        <div class="relative flex justify-center">
+          <span class="bg-white px-2 text-gray-500">
+            <svg
+              class="h-5 w-5 text-gray-500"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+            </svg>
+          </span>
         </div>
       </div>
     </div>
@@ -116,20 +186,24 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
       {:noreply,
        socket
        |> assign(:metadata_form, to_form(params))
-       |> assign(:errors, %{List.first(target) => "Test"})}
+       |> assign(:errors, %{List.first(target) => "Field is Required"})}
     else
       {:noreply, socket |> assign(:errors, nil)}
     end
   end
 
   @impl true
-  def handle_event("save", params, socket) do
-    case Uploads.update_metadata(socket.assigns.metadata, %{data: params}) do
+  def handle_event("save", %{"save" => save_type} = params, socket) do
+    case Uploads.update_metadata(socket.assigns.metadata, %{
+           data: params,
+           submitted: save_type == "submit"
+         }) do
       {:ok, metadata} ->
         notify_parent({:saved, metadata})
 
         {:noreply,
          socket
+         |> assign(:metadata, metadata)
          |> assign(:metadata_form, to_form(metadata.data))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
