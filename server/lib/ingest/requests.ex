@@ -177,8 +177,6 @@ defmodule Ingest.Requests do
       |> Repo.preload(:project)
       |> Repo.preload(:destinations)
 
-  # [comments: from(c in Comment, order_by: c.published_at)]
-
   @doc """
   Creates a request.
 

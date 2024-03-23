@@ -3,6 +3,7 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
   This form takes a template and data from its parent LiveView and dynamically renders a
   form based on the template and already provided data.
   """
+  alias Ingest.Uploads
   use IngestWeb, :live_component
 
   @impl true
@@ -73,14 +74,33 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
   end
 
   @impl true
-  def update(%{template: template, upload: upload} = assigns, socket) do
+  def update(%{template: template, upload: upload} = _assigns, socket) do
+    metadata = Ingest.Uploads.list_metadata_by(upload, template)
+
+    # if there's no metadata, means we need to quickly write a record for it
+    metadata =
+      if metadata do
+        metadata
+      else
+        {:ok, m} =
+          Uploads.create_metadata(%{
+            submitted: false,
+            data: %{},
+            upload_id: upload.id,
+            template_id: template.id
+          })
+
+        m
+      end
+
     {:ok,
      socket
      |> assign(:title, template.name)
      |> assign(:description, template.description)
+     |> assign(:metadata, metadata)
      |> assign(
        :metadata_form,
-       to_form(Ingest.Uploads.list_metadata_by(upload, template).data)
+       to_form(metadata.data)
      )
      |> assign(:errors, nil)
      |> assign(:fields, template.fields)}
@@ -88,10 +108,11 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
 
   @impl true
   def handle_event("validate", %{"_target" => target} = params, socket) do
+    field = Enum.find(socket.assigns.fields, fn f -> f.label == List.first(target) end)
+
     # basically all we need to verify currently is whether or not the field is required
     # and if it is, throw an error if it's empty
-
-    if params[List.first(target)] == "" do
+    if params[List.first(target)] == "" && field && field.required do
       {:noreply,
        socket
        |> assign(:metadata_form, to_form(params))
@@ -100,4 +121,24 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
       {:noreply, socket |> assign(:errors, nil)}
     end
   end
+
+  @impl true
+  def handle_event("save", params, socket) do
+    case Uploads.update_metadata(socket.assigns.metadata, %{data: params}) do
+      {:ok, metadata} ->
+        notify_parent({:saved, metadata})
+
+        {:noreply,
+         socket
+         |> assign(:metadata_form, to_form(metadata.data))}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        notify_parent({:error, changeset})
+        {:noreply, socket}
+    end
+
+    {:noreply, socket}
+  end
+
+  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

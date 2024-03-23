@@ -61,7 +61,7 @@ defmodule IngestWeb.MetadataEntryLive do
                 <div class="h-0.5 w-full bg-gray-200"></div>
               </div>
               <a
-                href="#"
+                href={"##{template.name}"}
                 class="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white hover:border-gray-400"
               >
                 <span
@@ -84,6 +84,25 @@ defmodule IngestWeb.MetadataEntryLive do
           id={"template-#{template.id}"}
         />
       <% end %>
+
+      <div class="flex bg-white shadow sm:rounded-lg justify-center">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-base font-semibold leading-6 text-gray-900">Complete Entry Task</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>
+              Finalize and submit the metadata you have provided. Once you have done this you cannot edit the data above, you must contact the data owner.
+            </p>
+          </div>
+          <div class="mt-5">
+            <button
+              type="button"
+              class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            >
+              Complete
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     """
   end
@@ -105,5 +124,15 @@ defmodule IngestWeb.MetadataEntryLive do
     upload = Uploads.get_upload!(upload_id)
 
     {:noreply, socket |> assign(:templates, request.templates) |> assign(:upload, upload)}
+  end
+
+  @impl true
+  def handle_info({IngestWeb.LiveComponents.MetadataEntryForm, {:saved, metadata}}, socket) do
+    {:noreply, socket |> put_flash(:info, "Section saved successfully")}
+  end
+
+  @impl true
+  def handle_info({IngestWeb.LiveComponents.MetadataEntryForm, {:error, _changeset}}, socket) do
+    {:noreply, socket |> put_flash(:error, "Unable to save section")}
   end
 end
