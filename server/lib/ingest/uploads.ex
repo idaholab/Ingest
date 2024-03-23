@@ -37,6 +37,7 @@ defmodule Ingest.Uploads do
         where:
           (is_nil(m.id) and u.uploaded_by == ^user.id) or
             (u.uploaded_by == ^user.id and m.submitted == false),
+        distinct: true,
         select: u
     )
   end
@@ -49,7 +50,7 @@ defmodule Ingest.Uploads do
         where:
           (is_nil(m.id) and u.uploaded_by == ^user.id) or
             (u.uploaded_by == ^user.id and m.submitted == false),
-        select: count()
+        select: count(u.id, :distinct)
     )
   end
 
