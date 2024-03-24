@@ -88,7 +88,8 @@ defmodule IngestWeb.MetadataEntryLive do
 
       <div
         :if={
-          length(Enum.filter(@upload.metadatas, fn u -> u.submitted end)) != length(@upload.metadatas)
+          length(Enum.filter(@upload.metadatas, fn u -> u.submitted end)) != length(@upload.metadatas) ||
+            @upload.metadatas == []
         }
         class="flex bg-white shadow sm:rounded-lg justify-center"
       >
@@ -104,7 +105,8 @@ defmodule IngestWeb.MetadataEntryLive do
 
       <div
         :if={
-          length(Enum.filter(@upload.metadatas, fn u -> u.submitted end)) == length(@upload.metadatas)
+          length(Enum.filter(@upload.metadatas, fn u -> u.submitted end)) == length(@upload.metadatas) &&
+            @upload.metadatas != []
         }
         class="rounded-md bg-green-50 p-4"
       >

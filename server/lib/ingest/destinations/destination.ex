@@ -18,8 +18,10 @@ defmodule Ingest.Destinations.Destination do
     field :type, Ecto.Enum, values: [:s3, :internal, :azure, :temporary], default: :temporary
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
-    embeds_one :s3_config, S3Config
-    embeds_one :azure_config, AzureConfig
+    embeds_one :s3_config_staging, S3Config
+    embeds_one :s3_config_final, S3Config
+    embeds_one :azure_config_staging, AzureConfig
+    embeds_one :azure_config_final, AzureConfig
     embeds_one :temporary_config, TemporaryConfig
 
     timestamps()
@@ -29,8 +31,10 @@ defmodule Ingest.Destinations.Destination do
   def changeset(destination, attrs) do
     destination
     |> cast(attrs, [:name, :type, :inserted_by])
-    |> cast_embed(:s3_config, require: false)
-    |> cast_embed(:azure_config, require: false)
+    |> cast_embed(:s3_config_staging, require: false)
+    |> cast_embed(:s3_config_final, require: false)
+    |> cast_embed(:azure_config_staging, require: false)
+    |> cast_embed(:azure_config_final, require: false)
     |> cast_embed(:temporary_config, required: false)
     |> validate_required([:name, :type])
   end
