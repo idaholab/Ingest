@@ -88,7 +88,7 @@ defmodule IngestWeb.MetadataEntryLive do
 
       <div
         :if={
-          length(Enum.filter(@upload.metadatas, fn u -> u.submitted end)) != length(@upload.metadatas) ||
+          length(Enum.filter(@upload.metadatas, fn u -> u.submitted end)) != length(@templates) ||
             @upload.metadatas == []
         }
         class="flex bg-white shadow sm:rounded-lg justify-center"
@@ -105,7 +105,7 @@ defmodule IngestWeb.MetadataEntryLive do
 
       <div
         :if={
-          length(Enum.filter(@upload.metadatas, fn u -> u.submitted end)) == length(@upload.metadatas) &&
+          length(Enum.filter(@upload.metadatas, fn u -> u.submitted end)) == length(@templates) &&
             @upload.metadatas != []
         }
         class="rounded-md bg-green-50 p-4"
@@ -154,6 +154,7 @@ defmodule IngestWeb.MetadataEntryLive do
   def handle_params(%{"upload_id" => upload_id, "id" => req_id}, _uri, socket) do
     request = Requests.get_request!(req_id)
     upload = Uploads.get_upload!(upload_id)
+    dbg(upload)
 
     {:noreply,
      socket
