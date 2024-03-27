@@ -1,9 +1,11 @@
 defmodule Ingest.Projects.Project do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Ingest.Destinations.Destination
   alias Ingest.Projects.ProjectInvites
   alias Ingest.Accounts.User
   alias Ingest.Requests.Request
+  alias Ingest.Requests.Template
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -18,6 +20,12 @@ defmodule Ingest.Projects.Project do
     many_to_many :project_members, Ingest.Accounts.User,
       join_through: "project_members",
       join_keys: [project_id: :id, member_id: :id]
+
+    many_to_many :templates, Template, join_through: "project_templates"
+
+    many_to_many :destinations, Destination,
+      join_through: "project_destinations",
+      join_keys: [project_id: :id, destination_id: :id]
 
     timestamps()
   end

@@ -1,10 +1,9 @@
-defmodule IngestWeb.LiveComponents.SearchForm do
+defmodule IngestWeb.LiveComponents.ProjectSearchForm do
   @moduledoc """
-  RequestModal is the modal for creating/editing Data Requests. Contains all logic
+  projectModal is the modal for creating/editing Data projects. Contains all logic
   needed for the operation.
   """
   use IngestWeb, :live_component
-  alias Ingest.Projects
 
   @impl true
   def render(assigns) do
@@ -86,47 +85,38 @@ defmodule IngestWeb.LiveComponents.SearchForm do
   end
 
   def add(socket, :search_templates, id) do
-    templates = [Ingest.Requests.get_template!(id) | socket.assigns.request.templates]
+    templates = [Ingest.Projects.get_template!(id) | socket.assigns.project.templates]
 
-    Ingest.Requests.update_request_templates(socket.assigns.request, templates)
+    Ingest.Projects.update_project_templates(socket.assigns.project, templates)
 
-    {:noreply, socket |> push_patch(to: ~p"/dashboard/requests/#{socket.assigns.request.id}")}
+    {:noreply, socket |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project.id}")}
   end
 
   def add(socket, :search_destinations, id) do
     destinations = [
-      Ingest.Destinations.get_destination!(id) | socket.assigns.request.destinations
+      Ingest.Destinations.get_destination!(id) | socket.assigns.project.destinations
     ]
 
-    Ingest.Requests.update_request_destinations(socket.assigns.request, destinations)
+    Ingest.Projects.update_project_destinations(socket.assigns.project, destinations)
 
-    {:noreply, socket |> push_patch(to: ~p"/dashboard/requests/#{socket.assigns.request.id}")}
-  end
-
-  def search(socket, :search_projects, value) do
-    {:noreply,
-     socket |> assign(:results, Projects.search(value, exclude: socket.assigns.request.projects))}
+    {:noreply, socket |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project.id}")}
   end
 
   def search(socket, :search_templates, value) do
-    excludes = [socket.assigns.request.templates, socket.assigns.project_templates]
-
     {:noreply,
      socket
      |> assign(
        :results,
-       Ingest.Requests.search_templates(value, exclude: Enum.flat_map(excludes, fn d -> d end))
+       Ingest.Requests.search_templates(value, exclude: socket.assigns.project.templates)
      )}
   end
 
   def search(socket, :search_destinations, value) do
-    excludes = [socket.assigns.request.destinations, socket.assigns.project_destinations]
-
     {:noreply,
      socket
      |> assign(
        :results,
-       Ingest.Destinations.search(value, exclude: Enum.flat_map(excludes, fn d -> d end))
+       Ingest.Destinations.search(value, exclude: socket.assigns.project.destinations)
      )}
   end
 end

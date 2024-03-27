@@ -3,7 +3,8 @@ defmodule IngestWeb.RequestShowLive do
   alias Ingest.Requests.RequestMembers
   alias Ingest.Requests
   alias Ingest.Repo
-
+  alias Ingest.Projects.Project
+  alias Ingest.Projects
   use IngestWeb, :live_view
 
   @impl true
@@ -381,21 +382,54 @@ defmodule IngestWeb.RequestShowLive do
             </div>
           </div>
 
-          <.table id="requests" rows={@streams.templates}>
-            <:col :let={{_id, template}} label="Name"><%= template.name %></:col>
-
-            <:action :let={{_id, template}}>
-              <.link
-                data-confirm="Are you sure?"
-                phx-click="remove_template"
-                phx-value-id={template.id}
-                class="text-red-600 hover:text-red-900"
+          <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
+            <table class="w-[40rem] mt-11 sm:w-full">
+              <thead class="text-sm text-left leading-6 text-zinc-500">
+                <tr>
+                  <th class="p-0 pr-6 pb-4 font-normal">Name</th>
+                  <th class="relative p-0 pb-4"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody
+                id="requests"
+                class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700"
               >
-                Remove
-              </.link>
-            </:action>
-          </.table>
-
+                <tr :for={template <- @project_templates}>
+                  <td class="p-0 pb-4 pr-6">
+                    <div class="py-4 pr-6 text-sm font-semibold leading-6 text-gray-900">
+                      <%= template.name %>
+                    </div>
+                  </td>
+                  <td class="relative w-14 p-0">
+                    <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
+                      <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                        Default
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+                <tr :for={template <- @request_templates}>
+                  <td class="p-0 pb-4 pr-6">
+                    <div class="py-4 pr-6 text-sm font-semibold leading-6 text-gray-900">
+                      <%= template.name %>
+                    </div>
+                  </td>
+                  <td class="relative w-14 p-0">
+                    <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
+                      <.link
+                        data-confirm="Are you sure?"
+                        phx-click="remove_template"
+                        phx-value-id={template.id}
+                        class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
+                      >
+                        Remove
+                      </.link>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div class="relative flex justify-center mt-10">
             <.link patch={~p"/dashboard/requests/#{@request.id}/search/templates"}>
               <button
@@ -447,47 +481,92 @@ defmodule IngestWeb.RequestShowLive do
           </div>
 
           <div>
-            <ul role="list" class="divide-y divide-gray-100">
-              <%= for {id, destination} <- @streams.destinations do %>
-                <li id={id} class="flex items-center justify-between gap-x-6 py-5">
-                  <div class="flex min-w-0 gap-x-4">
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
-                      <span class="font-medium leading-none text-white">
-                        <span :if={destination.type == :s3}>S3</span>
-                        <span :if={destination.type == :azure}>AZ</span>
-                        <span :if={destination.type == :internal}>I</span>
-                      </span>
-                    </span>
-                    <div class="min-w-0 flex-auto">
-                      <p class="text-sm font-semibold leading-6 text-gray-900">
-                        <%= destination.name %>
-                      </p>
-                      <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                        <%= destination.type %>
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                      Active
-                    </span>
-
-                    <span
-                      data-confirm="Are you sure?"
-                      phx-click="remove_destination"
-                      phx-value-id={destination.id}
-                      phx-click={
-                        JS.push("remove_destination", value: %{id: destination.id})
-                        |> hide("##{destination.id}")
-                      }
-                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
-                    >
-                      Remove
-                    </span>
-                  </div>
-                </li>
-              <% end %>
-            </ul>
+            <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
+              <table class="w-[40rem] mt-11 sm:w-full">
+                <thead class="text-sm text-left leading-6 text-zinc-500">
+                  <tr>
+                    <th class="p-0 pr-6 pb-4 font-normal">Name</th>
+                    <th class="relative p-0 pb-4"><span class="sr-only">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="requests"
+                  class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700"
+                >
+                  <tr :for={destination <- @project_destinations}>
+                    <td class="p-0 pb-4 pr-6">
+                      <div class="flex min-w-0 gap-x-4 mt-4">
+                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500 ">
+                          <span class="font-medium leading-none text-white">
+                            <span :if={destination.type == :s3}>S3</span>
+                            <span :if={destination.type == :azure}>AZ</span>
+                            <span :if={destination.type == :internal}>I</span>
+                          </span>
+                        </span>
+                        <div class="min-w-0 flex-auto">
+                          <p class="text-sm font-semibold leading-6 text-gray-900">
+                            <%= destination.name %>
+                          </p>
+                          <p class="mt-1 truncate text-xs leading-5 text-gray-500">
+                            <%= destination.type %>
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="relative w-14 p-0">
+                      <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
+                        <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                          Active
+                        </span>
+                        <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                          Default
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr :for={destination <- @request_destinations}>
+                    <td class="p-0 pb-4 pr-6">
+                      <div class="flex min-w-0 gap-x-4 mt-4">
+                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
+                          <span class="font-medium leading-none text-white">
+                            <span :if={destination.type == :s3}>S3</span>
+                            <span :if={destination.type == :azure}>AZ</span>
+                            <span :if={destination.type == :internal}>I</span>
+                          </span>
+                        </span>
+                        <div class="min-w-0 flex-auto">
+                          <p class="text-sm font-semibold leading-6 text-gray-900">
+                            <%= destination.name %>
+                          </p>
+                          <p class="mt-1 truncate text-xs leading-5 text-gray-500">
+                            <%= destination.type %>
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="relative w-14 p-0">
+                      <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
+                        <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                          Active
+                        </span>
+                        <span
+                          data-confirm="Are you sure?"
+                          phx-click="remove_destination"
+                          phx-value-id={destination.id}
+                          phx-click={
+                            JS.push("remove_destination", value: %{id: destination.id})
+                            |> hide("##{destination.id}")
+                          }
+                          class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
+                        >
+                          Remove
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <div class="relative flex justify-center mt-10">
               <.link patch={~p"/dashboard/requests/#{@request.id}/search/destinations"}>
@@ -749,6 +828,8 @@ defmodule IngestWeb.RequestShowLive do
           module={IngestWeb.LiveComponents.SearchForm}
           id="search-modal-component"
           current_user={@current_user}
+          project_templates={@project_templates}
+          project_destinations={@project_destinations}
         />
       </.modal>
 
@@ -795,6 +876,8 @@ defmodule IngestWeb.RequestShowLive do
     request = Requests.get_request!(id)
     changeset = Requests.change_request(request)
 
+    project = Projects.get_project!(request.project_id)
+
     # set back to draft if there are not enough parts - not a catch all, but works most of the time if they remove something
     if request.templates == [] || request.destinations == [] do
       Requests.update_request(request, %{status: :draft})
@@ -807,6 +890,10 @@ defmodule IngestWeb.RequestShowLive do
 
     {:noreply,
      socket
+     |> assign(:request_templates, request.templates)
+     |> assign(:request_destinations, request.destinations)
+     |> assign(:project_templates, project.templates)
+     |> assign(:project_destinations, project.destinations)
      |> assign(:members, members)
      |> assign(:request, request)
      |> assign(:request_form, to_form(changeset))
@@ -885,7 +972,6 @@ defmodule IngestWeb.RequestShowLive do
   end
 
   def handle_event("remove_member", %{"email" => email}, socket) do
-    dbg(email)
     Requests.delete_user(socket.assigns.request, email)
 
     {:noreply,

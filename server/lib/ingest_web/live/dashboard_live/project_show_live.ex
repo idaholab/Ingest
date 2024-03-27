@@ -39,6 +39,111 @@ defmodule IngestWeb.ProjectShowLive do
               </.link>
             </:action>
           </.table>
+          <div class="relative mt-10">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center">
+              <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+                Default Data Templates
+              </span>
+            </div>
+          </div>
+
+          <.table id="templates" rows={@streams.templates}>
+            <:col :let={{_id, template}} label="Name"><%= template.name %></:col>
+
+            <:action :let={{_id, template}}>
+              <.link
+                data-confirm={check_use(@project, "Template")}
+                phx-click="remove_template"
+                phx-value-id={template.id}
+                class="text-red-600 hover:text-red-900"
+                phx-click={
+                  JS.push("remove_template", value: %{id: template.id})
+                  |> hide("##{template.id}")
+                }
+              >
+                Remove
+              </.link>
+            </:action>
+          </.table>
+
+          <div class="relative flex justify-center mt-10">
+            <.link patch={~p"/dashboard/projects/#{@project.id}/search/templates"}>
+              <button
+                type="button"
+                class="inline-flex items-center rounded-md bg-gray-600 hover:text-white text-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                <.icon name="hero-plus" /> Add Default Template
+              </button>
+            </.link>
+          </div>
+          <div class="relative mt-10">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center">
+              <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+                Default Destination
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <ul role="list" class="divide-y divide-gray-100">
+              <%= for {_id, destination} <- @streams.destinations do %>
+                <li class="flex items-center justify-between gap-x-6 py-5">
+                  <div class="flex min-w-0 gap-x-4">
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
+                      <span class="font-medium leading-none text-white">
+                        <span :if={destination.type == :s3}>S3</span>
+                        <span :if={destination.type == :azure}>AZ</span>
+                        <span :if={destination.type == :internal}>I</span>
+                      </span>
+                    </span>
+                    <div class="min-w-0 flex-auto">
+                      <p class="text-sm font-semibold leading-6 text-gray-900">
+                        <%= destination.name %>
+                      </p>
+                      <p class="mt-1 truncate text-xs leading-5 text-gray-500">
+                        <%= destination.type %>
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                      Active
+                    </span>
+
+                    <span
+                      data-confirm={check_use(@project, "Destination")}
+                      phx-click="remove_destination"
+                      phx-value-id={destination.id}
+                      phx-click={
+                        JS.push("remove_destination", value: %{id: destination.id})
+                        |> hide("##{destination.id}")
+                      }
+                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
+                    >
+                      Remove
+                    </span>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+
+            <div class="relative flex justify-center mt-10">
+              <.link patch={~p"/dashboard/projects/#{@project.id}/search/destinations"}>
+                <button
+                  type="button"
+                  class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm text-black hover:text-white font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  <.icon name="hero-plus" /> Add Default Destination
+                </button>
+              </.link>
+            </div>
+          </div>
         </div>
 
         <div :if={@current_user.roles in [:admin, :manager]} class="pl-5">
@@ -207,6 +312,21 @@ defmodule IngestWeb.ProjectShowLive do
         </div>
       </div>
     </div>
+
+    <.modal
+      :if={@live_action in [:search_destinations, :search_templates]}
+      id="project-search_modal"
+      show
+      on_cancel={JS.patch(~p"/dashboard/projects/#{@project.id}")}
+    >
+      <.live_component
+        live_action={@live_action}
+        project={@project}
+        module={IngestWeb.LiveComponents.ProjectSearchForm}
+        id="project-search-modal-component"
+        current_user={@current_user}
+      />
+    </.modal>
     """
   end
 
@@ -224,7 +344,13 @@ defmodule IngestWeb.ProjectShowLive do
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
     project = Projects.get_project!(id)
-    {:noreply, socket |> assign(:project, project) |> assign(:invites, project.invites)}
+
+    {:noreply,
+     socket
+     |> stream(:destinations, project.destinations)
+     |> stream(:templates, project.templates)
+     |> assign(:project, project)
+     |> assign(:invites, project.invites)}
   end
 
   @impl true
@@ -280,7 +406,41 @@ defmodule IngestWeb.ProjectShowLive do
      |> put_flash(:info, "Invite sent successfully")}
   end
 
+  @impl true
+  def handle_event("remove_destination", %{"id" => id}, socket) do
+    destination = Ingest.Destinations.get_destination!(id)
+
+    {1, _} = Ingest.Projects.remove_destination(socket.assigns.project, destination)
+
+    {:noreply,
+     stream_delete(socket, :destinations, destination)
+     |> push_patch(to: "/dashboard/projects/#{socket.assigns.project.id}")}
+  end
+
+  @impl true
+  def handle_event("remove_template", %{"id" => id}, socket) do
+    template = Ingest.Projects.get_template!(id)
+    {deleted_count, _} = Ingest.Projects.remove_template(socket.assigns.project, template)
+
+    case deleted_count do
+      1 ->
+        {:noreply,
+         stream_delete(socket, :templates, template)
+         |> push_patch(to: "/dashboard/projects/#{socket.assigns.project.id}")}
+
+      _ ->
+        put_flash(socket, :error, "Failed to delete template with id: #{id}")
+        {:noreply}
+    end
+  end
+
   defp get_upload_count(request) do
     Uploads.uploads_for_request_count(request)
+  end
+
+  defp check_use(project, flavour) do
+    if Ingest.Projects.request_count(project) > 0,
+      do: "#{flavour} is in use are you sure you want to delete?",
+      else: "Are you sure you want to delete?"
   end
 end

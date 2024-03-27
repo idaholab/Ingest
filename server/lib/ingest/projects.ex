@@ -9,6 +9,7 @@ defmodule Ingest.Projects do
   alias Ingest.Projects.Project
   alias Ingest.Projects.ProjectMembers
   alias Ingest.Accounts.User
+  alias Ingest.Requests.Template
 
   @doc """
   Returns the list of project.
@@ -70,6 +71,8 @@ defmodule Ingest.Projects do
       |> Repo.preload(project_members: :project_roles)
       |> Repo.preload(invites: :invited_user)
       |> Repo.preload(:requests)
+      |> Repo.preload(:templates)
+      |> Repo.preload(:destinations)
 
   @doc """
   Creates a project.
@@ -314,5 +317,47 @@ defmodule Ingest.Projects do
         IngestWeb.Notifications.notify(:project_invite, user, i.project)
       end)
     end
+  end
+
+  def get_template!(id), do: Repo.get!(Template, id)
+
+  def update_project_templates(%Project{} = request, templates) do
+    request
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:templates, templates)
+    |> Repo.update()
+  end
+
+  def update_project_destinations(%Project{} = request, destinations) do
+    request
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:destinations, destinations)
+    |> Repo.update()
+  end
+
+  def remove_destination(%Project{} = project, destination) do
+    Repo.delete_all(
+      from d in "project_destinations",
+        where:
+          d.project_id == type(^project.id, :binary_id) and
+            d.destination_id == type(^destination.id, :binary_id)
+    )
+  end
+
+  def remove_template(%Project{} = project, template) do
+    Repo.delete_all(
+      from d in "project_templates",
+        where:
+          d.project_id == type(^project.id, :binary_id) and
+            d.template_id == type(^template.id, :binary_id)
+    )
+  end
+
+  def request_count(%Project{} = project) do
+    Repo.all(
+      from r in "requests",
+        where: r.project_id == type(^project.id, :binary_id),
+        select: count()
+    )
   end
 end

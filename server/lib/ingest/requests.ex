@@ -147,13 +147,21 @@ defmodule Ingest.Requests do
   end
 
   def is_invited(%User{} = user) do
-    Repo.one(
-      from(r in Request,
-        join: m in RequestMembers,
-        on: r.id == m.request_id,
-        where: ^user.email == m.email
+    request_for_creator =
+      Repo.all(
+        from r in Request,
+          where: ^user.id == r.inserted_by
       )
-    ) == nil
+
+    request_for_invited =
+      Repo.one(
+        from r in Request,
+          join: m in RequestMembers,
+          on: r.id == m.request_id,
+          where: ^user.email == m.email
+      )
+
+    request_for_creator == nil and request_for_invited == nil
   end
 
   @doc """
@@ -318,7 +326,7 @@ defmodule Ingest.Requests do
     %{exclude: exclude} = Enum.into(opts, @defaults)
 
     query =
-      from(t in Template,
+      from t in Template,
         where:
           fragment(
             "searchable @@ websearch_to_tsquery(?)",
@@ -331,7 +339,6 @@ defmodule Ingest.Requests do
             ^search_term
           )
         }
-      )
 
     Repo.all(query)
   end
