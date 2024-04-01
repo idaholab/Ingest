@@ -7,6 +7,18 @@ defmodule IngestWeb.UploadShowLive do
   def render(assigns) do
     ~H"""
     <div>
+      <div class="flex flex-row-reverse mb-2">
+        <.link navigate={~p"/dashboard/uploads/#{@request}/import"}>
+          <button
+            type="button"
+            id="import-data"
+            class="mt-5 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Import Data
+          </button>
+        </.link>
+      </div>
+
       <form id="upload-form" phx-submit="save" phx-change="validate">
         <div class="mb-10" phx-drop-target={@uploads.files.ref}>
           <button
@@ -71,7 +83,9 @@ defmodule IngestWeb.UploadShowLive do
                 id="requests"
                 rows={@streams.uploads}
                 row_click={
-                  fn {_id, upload} -> JS.navigate(~p"/dashboard/uploads/#{@request}/#{upload}") end
+                  fn {_id, upload} ->
+                    JS.navigate(~p"/dashboard/uploads/#{@request}/upload/#{upload}")
+                  end
                 }
               >
                 <:col :let={{_id, upload}} label="File Name"><%= upload.filename %></:col>
@@ -92,6 +106,18 @@ defmodule IngestWeb.UploadShowLive do
           </div>
         </div>
       </div>
+      <.modal
+        :if={@live_action in [:import]}
+        id="import_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/uploads/#{@request.id}")}
+      >
+        <.live_component
+          module={IngestWeb.LiveComponents.ImportData}
+          id="import-modal-component"
+          request={@request}
+        />
+      </.modal>
     </div>
     """
   end

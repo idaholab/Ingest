@@ -73,6 +73,13 @@ if config_env() == :prod do
     scope: "openid email profile",
     ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
 
+  # Configure oauth2 for box integration
+  # config :ingest, :box_oauth_creds,
+  #   base_url: "https://ent.box.com/api/oauth2/authorize",
+  #   client_id: "System.get_env("BOX_OAUTH_CLIENT_ID")",
+  #   client_secret: System.get_env("BOX_OAUTH_CLIENT_SECRET"),
+  #   redirect_uri: "https://#{System.get_env("PHX_HOST")}/box/oauth"
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

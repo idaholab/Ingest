@@ -103,5 +103,12 @@ config :ingest, :openid_connect_okta,
   scope: "openid email profile",
   ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
 
+# Configure oauth2 for box integration
+config :ingest, :box_oauth_creds,
+  base_url: "https://ent.box.com/api/oauth2/authorize",
+  client_id: "",
+  client_secret: "",
+  redirect_uri: "http://localhost:4000/box/oauth"
+
 config :ingest, :ca_certfile_path, "/etc/ssl/certs/CAINLROOT.cer"
 config :ingest, :environment, :dev

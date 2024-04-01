@@ -26,6 +26,12 @@ defmodule IngestWeb.Router do
     get "/users/log_in/okta", OidcController, :okta
   end
 
+  scope "/", IngestWeb do
+    pipe_through [:browser]
+
+    get "/box/oauth", OAuthController, :oauth
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", IngestWeb do
   #   pipe_through :api
@@ -104,7 +110,8 @@ defmodule IngestWeb.Router do
 
       live "/dashboard/uploads", UploadsLive, :index
       live "/dashboard/uploads/:id", UploadShowLive, :index
-      live "/dashboard/uploads/:id/:upload_id", MetadataEntryLive, :index
+      live "/dashboard/uploads/:id/upload/:upload_id", MetadataEntryLive, :index
+      live "/dashboard/uploads/:id/import", UploadShowLive, :import
 
       live "/dashboard/tasks", TasksLive, :index
     end
