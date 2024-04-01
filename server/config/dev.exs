@@ -3,10 +3,10 @@ import Config
 # Configure your database
 config :ingest, Ingest.Repo,
   username: "postgres",
-  password: "monkwer88",
+  password: "",
   hostname: "localhost",
   port: 5432,
-  database: "ingest_dev",
+  database: "ingest",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
