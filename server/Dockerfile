@@ -1,3 +1,9 @@
+# Note: This image needs to be build from the root folder
+# since we include resources from the root folder
+#
+# docker build -t ingest -f ./server/Dockerfile
+#
+#
 # Find eligible builder and runner images on Docker Hub. We use Ubuntu/Debian
 # instead of Alpine to avoid DNS resolution issues in production.
 #
@@ -24,6 +30,8 @@ FROM hexpm/elixir:1.15.6-erlang-26.0.2-debian-bullseye-20230612-slim as builder
 RUN apt-get update -y && apt-get install -y build-essential git \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
+COPY azure_storage azure_storage
+
 # prepare build dir
 WORKDIR /app
 
@@ -35,14 +43,14 @@ RUN mix local.hex --force && \
 ENV MIX_ENV="prod"
 
 # install mix dependencies
-COPY mix.exs mix.lock ./
+COPY ./server/mix.exs ./server/mix.lock ./
 RUN mix deps.get --only $MIX_ENV
 RUN mkdir config
 
 # copy compile-time config files before we compile dependencies
 # to ensure any relevant config change will trigger the dependencies
 # to be re-compiled.
-COPY config/config.exs config/prod.exs config/
+COPY ./server/config/config.exs ./server/config/prod.exs config/
 RUN mix deps.compile
 
 COPY priv priv
@@ -58,7 +66,7 @@ RUN mix assets.deploy
 RUN mix compile
 
 # Changes to config/runtime.exs don't require recompiling the code
-COPY config/runtime.exs config/
+COPY ./server/config/runtime.exs config/
 
 COPY rel rel
 RUN mix release
