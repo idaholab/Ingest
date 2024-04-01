@@ -53,11 +53,11 @@ RUN mkdir config
 COPY ./server/config/config.exs ./server/config/prod.exs config/
 RUN mix deps.compile
 
-COPY priv priv
+COPY ./server/priv priv
 
-COPY lib lib
+COPY ./server/lib lib
 
-COPY assets assets
+COPY ./server/assets assets
 
 # compile assets
 RUN mix assets.deploy
@@ -68,7 +68,7 @@ RUN mix compile
 # Changes to config/runtime.exs don't require recompiling the code
 COPY ./server/config/runtime.exs config/
 
-COPY rel rel
+COPY ./server/rel rel
 RUN mix release
 
 # start a new build stage so that the final image will only contain
