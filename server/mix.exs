@@ -60,6 +60,7 @@ defmodule Ingest.MixProject do
       {:timex, "~> 3.7.11"},
       {:gen_smtp, "~> 1.2"},
       {:phoenix_html_helpers, "~> 1.0"},
+      {:azure_storage, path: "../azure_storage"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]
