@@ -23,10 +23,13 @@ defmodule Ingest.OAuth.Util do
       "client_secret" => Keyword.get(box_auth_creds, :client_secret)
     }
 
-    {:ok, resp} = Req.post(auth_url, form: params)
+    resp =
+      Req.post!(auth_url,
+        form: params,
+        connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
+      )
 
     access_token = resp.body["access_token"]
-
     access_token
   end
 end
