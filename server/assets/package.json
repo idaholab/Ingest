@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@mux/upchunk": "^3.3.2"
+  }
+}

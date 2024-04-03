@@ -94,6 +94,18 @@ defmodule IngestWeb.UserAuth do
     assign(conn, :current_user, user)
   end
 
+  def fetch_current_user_api(conn, _opts) do
+    with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
+         {:ok, user_id} <- Phoenix.Token.verify(conn, "user socket", token) do
+      assign(conn, :current_user, user_id)
+    else
+      _ ->
+        conn
+        |> send_resp(:unauthorized, "No access")
+        |> halt()
+    end
+  end
+
   defp ensure_user_token(conn) do
     if token = get_session(conn, :user_token) do
       {token, conn}
