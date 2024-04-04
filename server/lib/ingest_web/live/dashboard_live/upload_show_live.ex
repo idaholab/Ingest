@@ -95,7 +95,7 @@ defmodule IngestWeb.UploadShowLive do
                 <:action :let={{_id, upload}}>
                   <.link
                     :if={upload.metadatas == []}
-                    navigate={~p"/dashboard/uploads/#{@request}/#{upload}"}
+                    navigate={~p"/dashboard/uploads/#{@request}/upload/#{upload}"}
                     class="text-indigo-600 hover:text-indigo-900"
                   >
                     Input Metadata
@@ -116,6 +116,7 @@ defmodule IngestWeb.UploadShowLive do
           module={IngestWeb.LiveComponents.ImportData}
           id="import-modal-component"
           request={@request}
+          current_user={@current_user}
         />
       </.modal>
     </div>

@@ -4,8 +4,8 @@ defmodule IngestWeb.OAuthController do
   def oauth(conn, %{"code" => code}) do
     auth_code = code
     userid = conn.assigns.current_user.id
-    access_token = Ingest.OAuth.Util.get_access_token(auth_code)
-    Cachex.put!(:server, "Box_Access_Token:#{userid}", access_token)
+    {access_token, refresh_token} = Ingest.OAuth.Util.get_tokens(auth_code)
+    Cachex.put!(:server, "Box_Tokens:#{userid}", {access_token, refresh_token})
     redirect(conn, to: ~p"/dashboard")
   end
 end
