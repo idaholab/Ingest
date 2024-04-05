@@ -19,6 +19,7 @@ defmodule Ingest.Application do
       {Finch, name: Ingest.Finch},
       Supervisor.child_spec({Cachex, name: :server}, id: :cachex_server),
       Supervisor.child_spec({Cachex, name: :clients}, id: :cachex_clients),
+      {Task.Supervisor, name: :upload_tasks},
       # Start the Endpoint (http/https)
       IngestWeb.Endpoint,
       Ingest.Vault

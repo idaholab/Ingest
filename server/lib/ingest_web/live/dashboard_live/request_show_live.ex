@@ -3,7 +3,6 @@ defmodule IngestWeb.RequestShowLive do
   alias Ingest.Requests.RequestMembers
   alias Ingest.Requests
   alias Ingest.Repo
-  alias Ingest.Projects.Project
   alias Ingest.Projects
   use IngestWeb, :live_view
 
