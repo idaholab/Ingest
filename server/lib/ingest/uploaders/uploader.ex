@@ -35,7 +35,6 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
     # should be found on the destination and as part of the user provided filename
     {statuses, destinations} =
       Enum.map(state.destinations, &upload_chunk(&1, state.filename, data))
-      |> Enum.map(&Task.await/1)
       |> Enum.unzip()
 
     if Enum.member?(statuses, :error) do
@@ -52,7 +51,6 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
       :done ->
         {statuses, destinations} =
           Enum.map(state.destinations, &finalize_upload(&1, state.filename))
-          |> Enum.map(&Task.await/1)
           |> Enum.unzip()
 
         if Enum.member?(statuses, :error) do
@@ -71,20 +69,16 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
   end
 
   defp upload_chunk({destination, parts}, filename, data) do
-    Task.Supervisor.async(:upload_tasks, fn ->
-      case destination.type do
-        :azure -> Azure.upload_chunk(destination, filename, parts, data)
-        _ -> {:error, :unknown_destination_type}
-      end
-    end)
+    case destination.type do
+      :azure -> Azure.upload_chunk(destination, filename, parts, data)
+      _ -> {:error, :unknown_destination_type}
+    end
   end
 
   defp finalize_upload({destination, parts}, filename) do
-    Task.Supervisor.async(:upload_tasks, fn ->
-      case destination.type do
-        :azure -> Azure.commit_blocklist(destination, filename, parts)
-        _ -> {:error, :unknown_destination_type}
-      end
-    end)
+    case destination.type do
+      :azure -> Azure.commit_blocklist(destination, filename, parts)
+      _ -> {:error, :unknown_destination_type}
+    end
   end
 end
