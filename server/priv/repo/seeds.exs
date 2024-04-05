@@ -169,7 +169,16 @@ alias Ingest.Uploads
 {:ok, destination} =
   Destinations.create_destination_for_user(user, %{
     name: "Test Destination",
-    type: :internal
+    type: :azure,
+    azure_config_staging: %{
+      account_name: "devstoreaccount1",
+      # DON'T PANIC - this is a well known development key published on Microsoft's website for the Azurite emulator
+      account_key:
+        "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+      base_url: "127.0.0.1:10000/devstoreaccount1",
+      ssl: false,
+      container: "test"
+    }
   })
 
 {:ok, request} =

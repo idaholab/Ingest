@@ -36,6 +36,7 @@ defmodule IngestWeb.UploadShowLive do
           </button>
         </div>
       </form>
+
       <div class="mb-10">
         <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <%= for entry <- @uploads.files.entries do %>
@@ -124,7 +125,9 @@ defmodule IngestWeb.UploadShowLive do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(%{"id" => id}, _session, socket) do
+    request = Requests.get_request!(id)
+
     if Requests.is_invited(socket.assigns.current_user) do
       {:ok,
        socket
@@ -133,50 +136,32 @@ defmodule IngestWeb.UploadShowLive do
     else
       {:ok,
        socket
-       |> assign(:section, "uploads")
+       |> assign(:request, request)
        |> allow_upload(:files,
          auto_upload: true,
          progress: &handle_progress/3,
          accept: :any,
          max_entries: 100,
          max_file_size: 1_000_000_000_000_000,
-         chunk_size: 5_242_880
-       ), layout: {IngestWeb.Layouts, :dashboard}}
+         chunk_size: 4_000_000,
+         chunk_timeout: 90_000_000,
+         writer: fn _name, entry, _socket ->
+           {Ingest.Uploaders.MultiDestinationWriter,
+            filename:
+              "#{request.project.name}/#{socket.assigns.current_user.name}/#{entry.client_name}",
+            destinations: request.destinations}
+         end
+       )
+       |> stream(:uploads, Uploads.recent_uploads_for_user(socket.assigns.current_user))
+       |> assign(:section, "uploads"), layout: {IngestWeb.Layouts, :dashboard}}
     end
-  end
-
-  @impl true
-  def handle_params(%{"id" => id}, _uri, socket) do
-    {:noreply,
-     socket
-     |> assign(:request, Requests.get_request!(id))
-     |> stream(:uploads, Uploads.recent_uploads_for_user(socket.assigns.current_user))}
   end
 
   defp handle_progress(:files, entry, socket) do
     if entry.done? do
-      uploaded_file =
-        consume_uploaded_entry(socket, entry, fn %{path: path} ->
-          dest = Path.join("uploads", Path.basename(entry.client_name))
-          File.cp!(path, dest)
-          {:ok, dest}
-        end)
-
-      {:ok, file} =
-        Uploads.create_upload(
-          %{
-            filename: entry.client_name,
-            ext: entry.client_type,
-            size: entry.client_size
-          },
-          socket.assigns.request,
-          socket.assigns.current_user
-        )
-
       {:noreply,
        socket
-       |> stream_insert(:uploads, file)
-       |> put_flash(:info, "file #{uploaded_file} uploaded")}
+       |> put_flash(:info, "file  uploaded")}
     else
       {:noreply, socket}
     end

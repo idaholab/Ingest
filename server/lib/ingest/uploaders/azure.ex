@@ -4,50 +4,48 @@ defmodule Ingest.Uploaders.Azure do
   on top of blob, so this will work just fine for Gen2 as long as things are formatted correctly in
   the filename (as a path)
   """
-  @behaviour Phoenix.LiveView.UploadWriter
-  alias AzureStorage.Container
-  alias AzureStorage.Blob
+  alias Ingest.Destinations.AzureConfig
+  alias Ingest.Destinations
 
-  @impl true
-  def init(opts) do
-    # we try to put the caller in charge of ensuring no clashes with the file structure
-    # we don't want to make many assumptions in the uploader
-    filename = Keyword.fetch!(opts, :name)
+  def upload_chunk(%Destinations.Destination{} = destination, filename, parts, data) do
+    %AzureConfig{} = d_config = destination.azure_config_staging
 
-    # we also pass the azure config and container from the caller since it's coming from the destinations
-    # in our case and we don't want to deal with db calls here in this call
-    config = Keyword.fetch!(opts, :config)
-    container_name = Keyword.fetch!(opts, :container_name)
+    config = %AzureStorage.Config{
+      account_name: d_config.account_name,
+      account_key: d_config.account_key,
+      # base service URL is an optional field, so don't fail if we don't have it
+      base_service_url: Map.get(d_config, :base_url),
+      ssl: Map.get(d_config, :ssl, true)
+    }
 
-    blob = Container.new(container_name) |> Blob.new(filename)
+    blob =
+      AzureStorage.Container.new(d_config.container)
+      |> AzureStorage.Blob.new("#{d_config.path}/#{filename}")
 
-    {:ok, %{chunk: 1, parts: [], config: config, blob: blob}}
-  end
+    case AzureStorage.Blob.put_block(blob, config, data) do
+      {:ok, block_id} ->
+        {:ok, {destination, [block_id | parts]}}
 
-  @impl true
-  def meta(state) do
-    %{filename: state.filename, blob: state.blob}
-  end
-
-  @impl true
-  def write_chunk(data, state) do
-    case Blob.put_block(state.blob, state.config, data) do
-      {:ok, block_id} -> {:ok, %{state | chunk: state.chunk + 1, parts: [block_id | state.parts]}}
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  @impl true
-  def close(state, reason) do
-    case reason do
-      :done ->
-        case Blob.put_block_list(state.parts, state.blob, state.config) do
-          {:ok, _list} -> {:ok, state}
-          {:error, reason} -> {:error, reason}
-        end
-
-      _ ->
+      {:error, reason} ->
         {:error, reason}
     end
+  end
+
+  def commit_blocklist(%Destinations.Destination{} = destination, filename, parts) do
+    %AzureConfig{} = d_config = destination.azure_config_staging
+
+    config = %AzureStorage.Config{
+      account_name: d_config.account_name,
+      account_key: d_config.account_key,
+      # base service URL is an optional field, so don't fail if we don't have it
+      base_service_url: Map.get(d_config, :base_url),
+      ssl: Map.get(d_config, :ssl, true)
+    }
+
+    blob =
+      AzureStorage.Container.new(d_config.container)
+      |> AzureStorage.Blob.new("#{d_config.path}/#{filename}")
+
+    AzureStorage.Blob.put_block_list(parts, blob, config)
   end
 end

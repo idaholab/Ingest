@@ -70,15 +70,19 @@ defmodule Ingest.Destinations.AzureConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :connection_string, Ingest.Encrypted.Binary
+    field :account_name, Ingest.Encrypted.Binary
+    field :account_key, Ingest.Encrypted.Binary
+    field :base_url, Ingest.Encrypted.Binary
+    field :ssl, :boolean
+    field :container, Ingest.Encrypted.Binary
     field :path, Ingest.Encrypted.Binary
   end
 
   @doc false
   def changeset(config, attrs) do
     config
-    |> cast(attrs, [:connection_string, :path])
-    |> validate_required([:connection_string, :path])
+    |> cast(attrs, [:account_name, :account_key, :base_url, :container, :path, :ssl])
+    |> validate_required([:account_name, :account_key, :container])
   end
 end
 
