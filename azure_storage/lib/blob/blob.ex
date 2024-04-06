@@ -81,11 +81,15 @@ defmodule AzureStorage.Blob do
     end
   end
 
+  defp blob_url(%Blob{} = blob, %Config{} = config) do
+    "#{build_base_url(config)}/#{URI.encode(blob.container.name)}/#{URI.encode(blob.name)}"
+  end
+
   @doc """
   put_block_list allows a user to commit previously uploaded blocks to a blob.
   https://learn.microsoft.com/en-us/rest/api/storageservices/put-block-list
 
-  {:ok, nil} on success
+  {:ok, blob_url} on success
   {:error, %Req.Response{}} on error
   """
   def put_block_list(block_ids, %Blob{} = blob, %Config{} = config, _opts \\ [])
@@ -124,7 +128,7 @@ defmodule AzureStorage.Blob do
       |> Req.Request.run_request()
 
     case response.status do
-      201 -> {:ok, blob}
+      201 -> {:ok, blob_url(blob, config)}
       _ -> {:error, response}
     end
   end
