@@ -170,7 +170,7 @@ alias Ingest.Uploads
   Destinations.create_destination_for_user(user, %{
     name: "Test Destination",
     type: :azure,
-    azure_config_staging: %{
+    azure_config: %{
       account_name: "devstoreaccount1",
       # DON'T PANIC - this is a well known development key published on Microsoft's website for the Azurite emulator
       account_key:

@@ -8,7 +8,7 @@ defmodule Ingest.Uploaders.Azure do
   alias Ingest.Destinations
 
   def upload_chunk(%Destinations.Destination{} = destination, filename, parts, data) do
-    %AzureConfig{} = d_config = destination.azure_config_staging
+    %AzureConfig{} = d_config = destination.azure_config
 
     config = %AzureStorage.Config{
       account_name: d_config.account_name,
@@ -32,7 +32,7 @@ defmodule Ingest.Uploaders.Azure do
   end
 
   def commit_blocklist(%Destinations.Destination{} = destination, filename, parts) do
-    %AzureConfig{} = d_config = destination.azure_config_staging
+    %AzureConfig{} = d_config = destination.azure_config
 
     config = %AzureStorage.Config{
       account_name: d_config.account_name,

@@ -159,8 +159,24 @@ defmodule IngestWeb.UploadShowLive do
 
   defp handle_progress(:files, entry, socket) do
     if entry.done? do
+      consume_uploaded_entry(socket, entry, fn %{} = meta ->
+        {:ok, meta}
+      end)
+
+      {:ok, upload} =
+        Uploads.create_upload(
+          %{
+            size: entry.client_size,
+            filename: entry.client_name,
+            ext: entry.client_type
+          },
+          socket.assigns.request,
+          socket.assigns.current_user
+        )
+
       {:noreply,
        socket
+       |> stream_insert(:uploads, upload)
        |> put_flash(:info, "file  uploaded")}
     else
       {:noreply, socket}

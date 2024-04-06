@@ -39,7 +39,11 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                 <.input
                   type="select"
                   field={@destination_form[:type]}
-                  options={[:temporary, :s3, :azure]}
+                  options={[
+                    {"Temporary", :temporary},
+                    {"AWS S3", :s3},
+                    {"Azure Blob Storage", :azure}
+                  ]}
                 />
               </div>
             </div>
@@ -76,7 +80,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
           >
             <div>
               <h2 class="text-base font-semibold leading-7 text-gray-900">
-                AWS S3 Credentials: <b>Staging</b>
+                AWS S3 Credentials
               </h2>
               <p class="mt-1 text-sm leading-6 text-gray-600">
                 Your AWS S3 credentials for the data's location after it's been uploaded by the user, and before you review and potentially modify it.
@@ -85,51 +89,16 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
               <div class="sm:col-span-4">
-                <.inputs_for :let={config} field={@destination_form[:s3_config_staging]}>
+                <.inputs_for :let={config} field={@destination_form[:s3_config]}>
                   <.label for="status-select">
                     API Key
                   </.label>
-                  <.input type="text" field={config[:api_key]} />
+                  <.input type="text" value={nil} field={config[:api_key]} />
 
                   <.label for="status-select">
                     API Secret
                   </.label>
-                  <.input type="text" field={config[:api_secret]} />
-
-                  <.label for="status-select">
-                    Bucket
-                  </.label>
-                  <.input type="text" field={config[:bucket]} />
-
-                  <.label for="status-select">
-                    Root Path
-                  </.label>
-                  <.input type="text" field={config[:path]} />
-                </.inputs_for>
-              </div>
-            </div>
-
-            <div>
-              <h2 class="text-base font-semibold leading-7 text-gray-900">
-                AWS S3 Credentials: <b>Final Destination</b>
-              </h2>
-              <p class="mt-1 text-sm leading-6 text-gray-600">
-                Your AWS S3 credentials for the final resting place of the data and outputted the metadata.
-              </p>
-            </div>
-
-            <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-              <div class="sm:col-span-4">
-                <.inputs_for :let={config} field={@destination_form[:s3_config_staging]}>
-                  <.label for="status-select">
-                    API Key
-                  </.label>
-                  <.input type="text" field={config[:api_key]} />
-
-                  <.label for="status-select">
-                    API Secret
-                  </.label>
-                  <.input type="text" field={config[:api_secret]} />
+                  <.input type="text" value={nil} field={config[:api_secret]} />
 
                   <.label for="status-select">
                     Bucket
@@ -151,7 +120,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
           >
             <div>
               <h2 class="text-base font-semibold leading-7 text-gray-900">
-                Azure Data Lake Credentials: <b>Staging</b>
+                Azure Data Lake Credentials
               </h2>
               <p class="mt-1 text-sm leading-6 text-gray-600">
                 Your Azure credentials for the data's location after it's been uploaded by the user, and before you review and potentially modify it.
@@ -160,41 +129,59 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
               <div class="sm:col-span-4">
-                <.inputs_for :let={config} field={@destination_form[:azure_config_staging]}>
+                <.inputs_for :let={config} field={@destination_form[:azure_config]}>
                   <.label for="status-select">
-                    Connection String
+                    Account Name
                   </.label>
-                  <.input type="text" field={config[:connection_string]} />
+                  <.input type="text" value={nil} field={config[:account_name]} />
+                  <p class="text-xs">
+                    This field is stored in an encrypted state and will not be made available to other users of the destination
+                  </p>
 
                   <.label for="status-select">
-                    Root Path
+                    Account Key
+                  </.label>
+                  <.input type="text" value={nil} field={config[:account_key]} />
+                  <p class="text-xs">
+                    This field is stored in an encrypted state and will not be made available to other users of the destination
+                  </p>
+
+                  <.label for="status-select">
+                    Base Service URL
+                  </.label>
+                  <.input type="text" field={config[:base_url]} />
+                  <p class="text-xs">
+                    Leave blank to use the service's default option.
+                  </p>
+
+                  <.label for="status-select">
+                    SSL
+                  </.label>
+                  <.input type="checkbox" field={config[:ssl]} />
+                  <p class="text-xs">
+                    When in doubt, enable this setting.
+                  </p>
+
+                  <.label for="status-select">
+                    Container
+                  </.label>
+                  <.input type="text" field={config[:container]} />
+
+                  <.label for="status-select">
+                    Staging Path
                   </.label>
                   <.input type="text" field={config[:path]} />
-                </.inputs_for>
-              </div>
-            </div>
-
-            <div>
-              <h2 class="text-base font-semibold leading-7 text-gray-900">
-                Azure Data Lake Credentials: <b>Final Destination</b>
-              </h2>
-              <p class="mt-1 text-sm leading-6 text-gray-600">
-                Your Azure credentials for the final resting place of the data and outputted the metadata.
-              </p>
-            </div>
-
-            <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-              <div class="sm:col-span-4">
-                <.inputs_for :let={config} field={@destination_form[:azure_config_final]}>
-                  <.label for="status-select">
-                    Connection String
-                  </.label>
-                  <.input type="text" field={config[:connection_string]} />
+                  <p class="text-xs">
+                    Where data should be put while awaiting metadata entry and any modification by the request owner.
+                  </p>
 
                   <.label for="status-select">
-                    Root Path
+                    Final Path
                   </.label>
-                  <.input type="text" field={config[:path]} />
+                  <.input type="text" field={config[:final_path]} />
+                  <p class="text-xs">
+                    Where data should be put once all tasks and modifications are complete. Once data is put here, it can no longer be manipulated by Ingest.
+                  </p>
                 </.inputs_for>
               </div>
             </div>
