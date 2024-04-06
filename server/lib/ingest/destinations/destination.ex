@@ -15,13 +15,11 @@ defmodule Ingest.Destinations.Destination do
   schema "destinations" do
     field :name, :string
     # internal storage are those methods provided by the Ingest application administrators
-    field :type, Ecto.Enum, values: [:s3, :internal, :azure, :temporary], default: :temporary
+    field :type, Ecto.Enum, values: [:s3, :azure, :temporary], default: :temporary
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
-    embeds_one :s3_config_staging, S3Config
-    embeds_one :s3_config_final, S3Config
-    embeds_one :azure_config_staging, AzureConfig
-    embeds_one :azure_config_final, AzureConfig
+    embeds_one :s3_config, S3Config
+    embeds_one :azure_config, AzureConfig
     embeds_one :temporary_config, TemporaryConfig
 
     timestamps()
@@ -31,10 +29,8 @@ defmodule Ingest.Destinations.Destination do
   def changeset(destination, attrs) do
     destination
     |> cast(attrs, [:name, :type, :inserted_by])
-    |> cast_embed(:s3_config_staging, require: false)
-    |> cast_embed(:s3_config_final, require: false)
-    |> cast_embed(:azure_config_staging, require: false)
-    |> cast_embed(:azure_config_final, require: false)
+    |> cast_embed(:s3_config, require: false)
+    |> cast_embed(:azure_config, require: false)
     |> cast_embed(:temporary_config, required: false)
     |> validate_required([:name, :type])
   end
@@ -52,6 +48,7 @@ defmodule Ingest.Destinations.S3Config do
     field :api_secret, Ingest.Encrypted.Binary
     field :bucket, Ingest.Encrypted.Binary
     field :path, Ingest.Encrypted.Binary
+    field :final_path, Ingest.Encrypted.Binary
   end
 
   @doc false
@@ -70,12 +67,13 @@ defmodule Ingest.Destinations.AzureConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :account_name, Ingest.Encrypted.Binary
-    field :account_key, Ingest.Encrypted.Binary
+    field :account_name, Ingest.Encrypted.Binary, redact: true
+    field :account_key, Ingest.Encrypted.Binary, redact: true
     field :base_url, Ingest.Encrypted.Binary
-    field :ssl, :boolean
+    field :ssl, :boolean, default: true
     field :container, Ingest.Encrypted.Binary
     field :path, Ingest.Encrypted.Binary
+    field :final_path, Ingest.Encrypted.Binary
   end
 
   @doc false
