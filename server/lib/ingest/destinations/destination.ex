@@ -44,8 +44,10 @@ defmodule Ingest.Destinations.S3Config do
   import Ecto.Changeset
 
   embedded_schema do
-    field :api_key, Ingest.Encrypted.Binary
-    field :api_secret, Ingest.Encrypted.Binary
+    field :access_key_id, Ingest.Encrypted.Binary
+    field :secret_access_key, Ingest.Encrypted.Binary
+    field :region, Ingest.Encrypted.Binary
+    field :base_url, Ingest.Encrypted.Binary
     field :bucket, Ingest.Encrypted.Binary
     field :path, Ingest.Encrypted.Binary
     field :final_path, Ingest.Encrypted.Binary
@@ -54,8 +56,8 @@ defmodule Ingest.Destinations.S3Config do
   @doc false
   def changeset(config, attrs) do
     config
-    |> cast(attrs, [:api_key, :api_secret, :bucket, :path])
-    |> validate_required([:api_key, :api_secret, :bucket, :path])
+    |> cast(attrs, [:access_key_id, :secret_access_key, :bucket, :path])
+    |> validate_required([:access_key_id, :secret_access_key, :bucket, :path])
   end
 end
 

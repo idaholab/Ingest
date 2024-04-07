@@ -116,7 +116,7 @@ defmodule IngestWeb.UploadShowLive do
          accept: :any,
          max_entries: 100,
          max_file_size: 1_000_000_000_000_000,
-         chunk_size: 4_000_000,
+         chunk_size: 5_242_880,
          chunk_timeout: 90_000_000,
          writer: fn _name, entry, _socket ->
            {Ingest.Uploaders.MultiDestinationWriter,
