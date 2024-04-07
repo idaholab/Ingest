@@ -16,11 +16,17 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
     # %Destination{}[] we don't need to overwrite the original destination because each of
     # them already have their configs stored within them - and because this is the UploadWriter
     # we know this is using the staging environment of each
-    destinations = Keyword.fetch!(opts, :destinations)
+    destinations = Keyword.fetch!(opts, :destinations) |> Enum.map(fn d -> {d, %{}} end)
 
-    # keep track of the parts of each individual part information
-    {:ok,
-     %{chunk: 1, filename: filename, destinations: Enum.map(destinations, fn d -> {d, []} end)}}
+    {statuses, destinations} =
+      Enum.map(destinations, &init_chunk_upload(&1, filename))
+      |> Enum.unzip()
+
+    if Enum.member?(statuses, :error) do
+      {:error, destinations, %{}}
+    else
+      {:ok, %{chunk: 1, destinations: destinations, filename: filename}}
+    end
   end
 
   @impl true
@@ -56,8 +62,7 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
         if Enum.member?(statuses, :error) do
           {:error, destinations}
         else
-          {:ok,
-           %{state | chunk: state.chunk + 1, destinations: destinations, filename: state.filename}}
+          {:ok, %{filename: state.filename}}
         end
 
       :cancel ->
@@ -68,16 +73,30 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
     end
   end
 
-  defp upload_chunk({destination, parts}, filename, data) do
+  # returns {:ok, {destination, state}} or {:error, error}
+  # we return the full destination so we can simply rebuild the list
+  # without having to keep track of the association between state and destination
+  defp init_chunk_upload({destination, state}, filename) do
     case destination.type do
-      :azure -> Azure.upload_chunk(destination, filename, parts, data)
+      :azure -> Azure.init(destination, filename, state)
       _ -> {:error, :unknown_destination_type}
     end
   end
 
-  defp finalize_upload({destination, parts}, filename) do
+  # returns {:ok, {destination, state}} or {:error, error}
+  # we return the full destination so we can simply rebuild the list
+  # without having to keep track of the association between state and destination
+  defp upload_chunk({destination, state}, filename, data) do
     case destination.type do
-      :azure -> Azure.commit_blocklist(destination, filename, parts)
+      :azure -> Azure.upload_chunk(destination, filename, state, data)
+      _ -> {:error, :unknown_destination_type}
+    end
+  end
+
+  # returns {:ok, state} or {:error, error}
+  defp finalize_upload({destination, state}, filename) do
+    case destination.type do
+      :azure -> Azure.commit_blocklist(destination, filename, state)
       _ -> {:error, :unknown_destination_type}
     end
   end

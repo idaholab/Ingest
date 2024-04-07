@@ -61,6 +61,9 @@ defmodule Ingest.MixProject do
       {:gen_smtp, "~> 1.2"},
       {:phoenix_html_helpers, "~> 1.0"},
       {:azure_storage, path: "../azure_storage"},
+      {:ex_aws, "~> 2.5"},
+      {:ex_aws_s3, "~> 2.5"},
+      {:sweet_xml, "~> 0.7.4"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]
