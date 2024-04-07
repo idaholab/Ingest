@@ -96,7 +96,7 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
   # returns {:ok, state} or {:error, error}
   defp finalize_upload({destination, state}, filename) do
     case destination.type do
-      :azure -> Azure.commit_blocklist(destination, filename, state)
+      :azure -> Azure.commit(destination, filename, state)
       _ -> {:error, :unknown_destination_type}
     end
   end
