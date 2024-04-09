@@ -51,6 +51,7 @@ defmodule Ingest.Destinations.S3Config do
     field :bucket, Ingest.Encrypted.Binary
     field :path, Ingest.Encrypted.Binary
     field :final_path, Ingest.Encrypted.Binary
+    field :ssl, :boolean, default: true
   end
 
   @doc false
