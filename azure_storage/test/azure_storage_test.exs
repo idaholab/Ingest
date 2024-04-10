@@ -15,6 +15,14 @@ defmodule AzureStorageTest do
     }
   end
 
+  describe "containers" do
+    test "can list blobs in the container" do
+      {:ok, nil} =
+        Container.new("test")
+        |> Container.list_blobs(azurite_config())
+    end
+  end
+
   describe "blobs" do
     test "can upload a simple blob" do
       {:ok, _blob} =
