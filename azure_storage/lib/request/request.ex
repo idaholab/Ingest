@@ -35,7 +35,11 @@ defmodule AzureStorage.Request do
             # Content-Language
             "",
             # Content-Length
-            byte_size(req.body),
+            if req.body do
+              byte_size(req.body)
+            else
+              ""
+            end,
             # Content-MD5
             "",
             # Content-Type
