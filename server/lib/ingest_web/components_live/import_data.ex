@@ -6,6 +6,7 @@ defmodule IngestWeb.LiveComponents.ImportData do
   use IngestWeb, :live_component
 
   alias Ingest.OAuth.Util
+  alias Ingest.Imports
 
   @impl true
   def render(assigns) do
@@ -46,14 +47,6 @@ defmodule IngestWeb.LiveComponents.ImportData do
                 A list of all the folders in your Box.com account.
               </p>
             </div>
-            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-              <button
-                type="button"
-                class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Import Folder
-              </button>
-            </div>
           </div>
           <div class="mt-8 flow-root">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -75,25 +68,38 @@ defmodule IngestWeb.LiveComponents.ImportData do
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
                       <%= for folder <- fetch_root_folders(@current_user) do %>
-                        <tr>
-                          <td class="whitespace-nowrap py-4 pl-4 text-sm font-medium text-gray-900 sm:pl-6">
-                            <%= folder["name"] %>
-                          </td>
-                          <td class="whitespace-nowrap py-4 text-sm text-gray-500">
-                            <div class="ml-3 flex h-6 items-center">
-                              <input
-                                id="account-savings"
-                                aria-describedby="account-savings-description"
-                                name="account"
-                                type="radio"
-                                class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                              />
-                            </div>
-                          </td>
-                        </tr>
+                        <fieldset>
+                          <tr>
+                            <td class="whitespace-nowrap py-4 pl-4 text-sm font-medium text-gray-900 sm:pl-6">
+                              <%= folder["name"] %>
+                            </td>
+                            <td class="whitespace-nowrap py-4 text-sm text-gray-500">
+                              <div class="ml-3 flex h-6 items-center">
+                                <input
+                                  type="radio"
+                                  phx-click="folder_selected"
+                                  phx-target={@myself}
+                                  phx-value-folder_id={folder["id"]}
+                                  id={folder["id"]}
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        </fieldset>
                       <% end %>
                     </tbody>
                   </table>
+                </div>
+                <div class="mt-4 flex flex-row-reverse">
+                  <button
+                    phx-click="import_selected_folder"
+                    phx-target={@myself}
+                    phx-value-folder_id={@selected_folder_id}
+                    type="button"
+                    class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Import Folder
+                  </button>
                 </div>
               </div>
             </div>
@@ -106,7 +112,10 @@ defmodule IngestWeb.LiveComponents.ImportData do
 
   @impl true
   def update(assigns, socket) do
-    {:ok, socket |> assign(assigns)}
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(selected_folder_id: nil)}
   end
 
   @impl true
@@ -116,6 +125,32 @@ defmodule IngestWeb.LiveComponents.ImportData do
     {:noreply,
      socket
      |> redirect(external: auth_url)}
+  end
+
+  def handle_event("import_selected_folder", %{"folder_id" => folder_id}, socket) do
+    {:ok, {access_token, refresh_token}} =
+      Cachex.get(:server, "Box_Tokens:#{socket.assigns.current_user.id}")
+
+    attrs = %{
+      request_id: socket.assigns.request.id,
+      inserted_by: socket.assigns.current_user.id,
+      box_config: %{
+        access_token: access_token,
+        refresh_token: refresh_token,
+        folder_id: folder_id
+      }
+    }
+
+    start_import(attrs)
+
+    {:noreply,
+     socket
+     |> put_flash(:info, "Succesfully Started Import!")
+     |> redirect(to: ~p"/dashboard/uploads/#{socket.assigns.request.id}")}
+  end
+
+  def handle_event("folder_selected", %{"folder_id" => folder_id}, socket) do
+    {:noreply, assign(socket, selected_folder_id: folder_id)}
   end
 
   def fetch_root_folders(current_user) do
@@ -133,6 +168,10 @@ defmodule IngestWeb.LiveComponents.ImportData do
       )
 
     folders.body["item_collection"]["entries"]
+  end
+
+  defp start_import(import_params) do
+    Imports.create_import(import_params)
   end
 
   defp authed(current_user) do
