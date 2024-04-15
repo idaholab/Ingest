@@ -1,4 +1,8 @@
-defmodule Ingest.OAuth.Util do
+defmodule Ingest.OAuth.Box do
+  @moduledoc """
+  Functions to do actions needed to get/refresh box OAuth tokens
+  """
+
   def get_auth_url() do
     box_auth_creds = Application.get_env(:ingest, :box_oauth_creds)
     base_url = Keyword.get(box_auth_creds, :base_url)
@@ -72,6 +76,41 @@ defmodule Ingest.OAuth.Util do
 
       _ ->
         {:error, "Unknown Error"}
+    end
+  end
+
+  def is_authenticated(access_token) do
+    test_auth_url = "https://api.box.com/2.0/users/me"
+
+    headers = [
+      Authorization: "Bearer #{access_token}"
+    ]
+
+    resp =
+      Req.get!(test_auth_url,
+        headers: headers,
+        connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
+      )
+
+    case resp do
+      %{status: 200} ->
+        true
+
+      %{status: 400} ->
+        {:error, "Bad Request"}
+        false
+
+      %{status: 401} ->
+        {:error, "Unauthorized"}
+        false
+
+      %{status: 500} ->
+        {:error, "Internal Server Error"}
+        false
+
+      _ ->
+        {:error, "Unknown Error"}
+        false
     end
   end
 end

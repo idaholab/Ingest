@@ -1,11 +1,11 @@
 defmodule IngestWeb.LiveComponents.ImportData do
   @moduledoc """
-  InviteModal is the modal for Inviting Users to Data Requests. Contains all logic
+  ImportData is the modal for Importing Data to Data Requests. Contains all logic
   needed for the operation.
   """
   use IngestWeb, :live_component
 
-  alias Ingest.OAuth.Util
+  alias Ingest.OAuth.Box
   alias Ingest.Imports
 
   @impl true
@@ -120,7 +120,7 @@ defmodule IngestWeb.LiveComponents.ImportData do
 
   @impl true
   def handle_event("import-box-data", _params, socket) do
-    auth_url = Ingest.OAuth.Util.get_auth_url()
+    auth_url = Ingest.OAuth.Box.get_auth_url()
 
     {:noreply,
      socket
@@ -175,9 +175,9 @@ defmodule IngestWeb.LiveComponents.ImportData do
   end
 
   defp authed(current_user) do
-    {:ok, {_access_token, refresh_token}} =
+    {:ok, {access_token, _refresh_token}} =
       Cachex.get(:server, "Box_Tokens:#{current_user.id}")
 
-    Util.refresh_access_token(refresh_token, current_user.id)
+    Box.is_authenticated(access_token)
   end
 end
