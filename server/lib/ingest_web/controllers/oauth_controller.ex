@@ -7,9 +7,11 @@ defmodule IngestWeb.OAuthController do
 
     case {auth_code, userid} do
       {nil, _} ->
+        IO.puts("Auth code is #{auth_code}")
         redirect(conn, to: ~p"/dashboard")
 
       {_, nil} ->
+        IO.puts("User ID is #{userid}")
         redirect(conn, to: ~p"/dashboard")
 
       _ ->
