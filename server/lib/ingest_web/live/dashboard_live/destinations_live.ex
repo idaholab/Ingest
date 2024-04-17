@@ -152,14 +152,6 @@ defmodule IngestWeb.DestinationsLive do
   end
 
   @impl true
-  def handle_info(
-        {IngestWeb.LiveComponents.DestinationForm, {:successful_connection, _nil}},
-        socket
-      ) do
-    {:noreply, put_flash(socket, :info, "Connections to LakeFS Successful!")}
-  end
-
-  @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     destination = Ingest.Destinations.get_destination!(id)
     {:ok, _} = Ingest.Destinations.delete_destination(destination)
