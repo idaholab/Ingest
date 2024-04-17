@@ -22,7 +22,7 @@ defmodule Ingest.Uploaders.S3 do
     end
   end
 
-  def upload_chunk(%Destination{} = destination, filename, state, data) do
+  def upload_chunk(%Destination{} = destination, _filename, state, data) do
     part = ExAws.S3.Upload.upload_chunk({data, state.chunk}, state.op, state.config)
 
     case part do
@@ -31,7 +31,7 @@ defmodule Ingest.Uploaders.S3 do
     end
   end
 
-  def commit(%Destination{} = destination, filename, state) do
+  def commit(%Destination{} = _destination, _filename, state) do
     result = ExAws.S3.Upload.complete(state.parts, state.op, state.config)
 
     case result do

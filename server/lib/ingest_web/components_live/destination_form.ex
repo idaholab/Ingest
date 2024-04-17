@@ -40,9 +40,9 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   type="select"
                   field={@destination_form[:type]}
                   options={[
-                    {"Temporary", :temporary},
                     {"AWS S3", :s3},
-                    {"Azure Blob Storage", :azure}
+                    {"Azure Blob Storage", :azure},
+                    {"LakeFS Repository", :lakefs}
                   ]}
                 />
               </div>
@@ -83,7 +83,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                 AWS S3 Credentials
               </h2>
               <p class="mt-1 text-sm leading-6 text-gray-600">
-                Your AWS S3 credentials for the data's location after it's been uploaded by the user, and before you review and potentially modify it.
+                Your AWS S3 credentials for the data's location after it's been uploaded by the user.
               </p>
             </div>
 
@@ -91,14 +91,19 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
               <div class="sm:col-span-4">
                 <.inputs_for :let={config} field={@destination_form[:s3_config]}>
                   <.label for="status-select">
-                    API Key
+                    Access Key ID
                   </.label>
-                  <.input type="text" value={nil} field={config[:api_key]} />
+                  <.input type="text" value={nil} field={config[:access_key_id]} />
 
                   <.label for="status-select">
-                    API Secret
+                    Secret Access Key
                   </.label>
-                  <.input type="text" value={nil} field={config[:api_secret]} />
+                  <.input type="text" value={nil} field={config[:secret_access_key]} />
+
+                  <.label for="status-select">
+                    URL
+                  </.label>
+                  <.input type="text" field={config[:base_url]} />
 
                   <.label for="status-select">
                     Bucket
@@ -106,10 +111,75 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.input type="text" field={config[:bucket]} />
 
                   <.label for="status-select">
+                    Region
+                  </.label>
+                  <.input type="text" field={config[:region]} />
+
+                  <.label for="status-select">
                     Root Path
                   </.label>
                   <.input type="text" field={config[:path]} />
                 </.inputs_for>
+              </div>
+            </div>
+          </div>
+
+          <div
+            :if={@type == "lakefs"}
+            class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3"
+          >
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">
+                LakeFS Credentials
+              </h2>
+              <p class="mt-1 text-sm leading-6 text-gray-600">
+                Your LakeFS credentials - make sure that you have sufficient permissions to work with the repository you choose.
+              </p>
+            </div>
+
+            <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
+              <div class="sm:col-span-4">
+                <.inputs_for :let={config} field={@destination_form[:lakefs_config]}>
+                  <.label for="status-select">
+                    Access Key ID
+                  </.label>
+                  <.input type="text" field={config[:access_key_id]} />
+
+                  <.label for="status-select">
+                    Secret Access Key
+                  </.label>
+                  <.input type="text" field={config[:secret_access_key]} />
+
+                  <.label for="status-select">
+                    URL
+                  </.label>
+                  <.input type="text" field={config[:base_url]} />
+
+                  <.button
+                    class="rounded-md bg-indigo-600 px-3 py-2 mt-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    phx-disable-with="Saving..."
+                    name="save"
+                    value="test_connection"
+                  >
+                    Test Connection
+                  </.button>
+
+                  <.label for="status-select">
+                    Repositories
+                  </.label>
+                  <.input
+                    :if={@lakefs_repos != [] || config[:repository]}
+                    type="select"
+                    options={[
+                      @destination.lakefs_config.repository
+                      | @lakefs_repos |> Enum.map(fn r -> r["id"] end)
+                    ]}
+                    field={config[:repository]}
+                  />
+                </.inputs_for>
+                <p :if={@lakefs_repos == []} class="text-xs">
+                  Test connection to load repositories for selection
+                </p>
               </div>
             </div>
           </div>
@@ -133,7 +203,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.label for="status-select">
                     Account Name
                   </.label>
-                  <.input type="text" value={nil} field={config[:account_name]} />
+                  <.input type="text" field={config[:account_name]} />
                   <p class="text-xs">
                     This field is stored in an encrypted state and will not be made available to other users of the destination
                   </p>
@@ -141,7 +211,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.label for="status-select">
                     Account Key
                   </.label>
-                  <.input type="text" value={nil} field={config[:account_key]} />
+                  <.input type="text" field={config[:account_key]} />
                   <p class="text-xs">
                     This field is stored in an encrypted state and will not be made available to other users of the destination
                   </p>
@@ -192,6 +262,8 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
           <.button
             class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             phx-disable-with="Saving..."
+            name="save"
+            value="save"
           >
             Save
           </.button>
@@ -209,6 +281,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
      socket
      |> assign(:type, Atom.to_string(destination.type))
      |> assign(assigns)
+     |> assign(:lakefs_repos, [])
      |> assign_form(changeset)}
   end
 
@@ -223,8 +296,29 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
      assign_form(socket |> assign(:type, Map.get(destination_params, "type")), changeset)}
   end
 
-  def handle_event("save", %{"destination" => destination_params}, socket) do
-    save_destination(socket, socket.assigns.live_action, destination_params)
+  def handle_event(
+        "save",
+        %{"save" => save_type, "destination" => destination_params} = _params,
+        socket
+      ) do
+    case save_type do
+      "save" ->
+        save_destination(socket, socket.assigns.live_action, destination_params)
+
+      # currently this only applies to the LakeFS destination, and will populate the repositories and remove the disabled tag
+      "test_connection" ->
+        client =
+          Ingest.Destinations.Lakefs.new_client(destination_params["lakefs_config"]["base_url"], {
+            destination_params["lakefs_config"]["access_key_id"],
+            destination_params["lakefs_config"]["secret_access_key"]
+          })
+
+        {:ok, repos} = Ingest.Destinations.Lakefs.list_repos(client)
+
+        {:noreply,
+         socket
+         |> assign(:lakefs_repos, repos)}
+    end
   end
 
   defp save_destination(socket, :edit, destination_params) do
