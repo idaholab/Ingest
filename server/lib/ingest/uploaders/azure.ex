@@ -27,7 +27,7 @@ defmodule Ingest.Uploaders.Azure do
       state |> Map.put(:blob, blob) |> Map.put(:config, config) |> Map.put(:parts, [])}}
   end
 
-  def upload_chunk(%Destinations.Destination{} = destination, filename, state, data) do
+  def upload_chunk(%Destinations.Destination{} = destination, _filename, state, data) do
     case AzureStorage.Blob.put_block(state.blob, state.config, data) do
       {:ok, block_id} ->
         {:ok, {destination, %{state | parts: [block_id | state.parts]}}}
@@ -37,7 +37,7 @@ defmodule Ingest.Uploaders.Azure do
     end
   end
 
-  def commit(%Destinations.Destination{} = destination, filename, state) do
+  def commit(%Destinations.Destination{} = _destination, _filename, state) do
     AzureStorage.Blob.put_block_list(state.parts, state.blob, state.config)
   end
 end

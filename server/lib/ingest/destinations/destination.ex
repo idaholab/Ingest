@@ -4,6 +4,7 @@ defmodule Ingest.Destinations.Destination do
   Typically this reflects the HTTP uploads, but can hopefully be configured in the future
   to work with the high-speed UDP file transers as well.
   """
+  alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.TemporaryConfig
   alias Ingest.Destinations.AzureConfig
   alias Ingest.Destinations.S3Config
@@ -15,11 +16,12 @@ defmodule Ingest.Destinations.Destination do
   schema "destinations" do
     field :name, :string
     # internal storage are those methods provided by the Ingest application administrators
-    field :type, Ecto.Enum, values: [:s3, :azure, :temporary], default: :temporary
+    field :type, Ecto.Enum, values: [:s3, :azure, :temporary, :lakefs], default: :s3
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
     embeds_one :s3_config, S3Config
     embeds_one :azure_config, AzureConfig
+    embeds_one :lakefs_config, LakeFSConfig
     embeds_one :temporary_config, TemporaryConfig
 
     timestamps()
@@ -31,6 +33,7 @@ defmodule Ingest.Destinations.Destination do
     |> cast(attrs, [:name, :type, :inserted_by])
     |> cast_embed(:s3_config, require: false)
     |> cast_embed(:azure_config, require: false)
+    |> cast_embed(:lakefs_config, required: false)
     |> cast_embed(:temporary_config, required: false)
     |> validate_required([:name, :type])
   end
@@ -57,7 +60,16 @@ defmodule Ingest.Destinations.S3Config do
   @doc false
   def changeset(config, attrs) do
     config
-    |> cast(attrs, [:access_key_id, :secret_access_key, :bucket, :path])
+    |> cast(attrs, [
+      :access_key_id,
+      :secret_access_key,
+      :bucket,
+      :region,
+      :base_url,
+      :path,
+      :final_path,
+      :ssl
+    ])
     |> validate_required([:access_key_id, :secret_access_key, :bucket, :path])
   end
 end
@@ -82,8 +94,32 @@ defmodule Ingest.Destinations.AzureConfig do
   @doc false
   def changeset(config, attrs) do
     config
-    |> cast(attrs, [:account_name, :account_key, :base_url, :container, :path, :ssl])
+    |> cast(attrs, [:account_name, :account_key, :base_url, :container, :path, :ssl, :final_path])
     |> validate_required([:account_name, :account_key, :container])
+  end
+end
+
+defmodule Ingest.Destinations.LakeFSConfig do
+  @moduledoc """
+  LakeFS configuration storage
+  """
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  embedded_schema do
+    field :access_key_id, Ingest.Encrypted.Binary
+    field :secret_access_key, Ingest.Encrypted.Binary
+    field :region, Ingest.Encrypted.Binary
+    field :base_url, Ingest.Encrypted.Binary
+    field :repository, Ingest.Encrypted.Binary
+    field :ssl, :boolean, default: true
+  end
+
+  @doc false
+  def changeset(config, attrs) do
+    config
+    |> cast(attrs, [:access_key_id, :secret_access_key, :repository, :base_url])
+    |> validate_required([:access_key_id, :secret_access_key, :base_url, :repository])
   end
 end
 
