@@ -3,6 +3,7 @@ defmodule Ingest.Uploaders.S3 do
   Used for uploading to S3 storage.
   """
   alias Ingest.Destinations.S3Config
+  alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.Destination
 
   def init(%Destination{} = destination, filename, state) do
@@ -53,6 +54,25 @@ defmodule Ingest.Uploaders.S3 do
           host: Map.get(s3_config, s3_config.base_url, nil),
           scheme:
             if Map.get(s3_config, s3_config.ssl, true) do
+              "https://"
+            else
+              "http://"
+            end
+        ]
+      ]
+    })
+  end
+
+  defp build_config(%LakeFSConfig{} = config) do
+    ExAws.Config.new(:s3, %{
+      ex_aws: [
+        access_key_id: config.access_key_id,
+        secret_access_key: config.secret_access_key,
+        region: Map.get(config, config.region, "us-east-1"),
+        s3: [
+          host: Map.get(config, config.base_url, nil),
+          scheme:
+            if Map.get(config, config.ssl, true) do
               "https://"
             else
               "http://"
