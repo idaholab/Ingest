@@ -154,6 +154,25 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     URL
                   </.label>
                   <.input type="text" field={config[:base_url]} />
+                  <p class="text-xs">
+                    Leave the trailing / off the url.
+                  </p>
+
+                  <.label for="status-select">
+                    Port
+                  </.label>
+                  <.input type="text" field={config[:port]} />
+                  <p class="text-xs">
+                    When in doubt, leave blank.
+                  </p>
+
+                  <.label for="status-select">
+                    SSL
+                  </.label>
+                  <.input type="checkbox" field={config[:ssl]} />
+                  <p class="text-xs">
+                    When in doubt, enable this setting.
+                  </p>
 
                   <.button
                     class="rounded-md bg-indigo-600 px-3 py-2 mt-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"

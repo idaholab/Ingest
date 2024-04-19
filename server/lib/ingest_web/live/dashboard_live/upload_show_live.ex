@@ -147,9 +147,10 @@ defmodule IngestWeb.UploadShowLive do
          chunk_timeout: 90_000_000,
          writer: fn _name, entry, _socket ->
            {Ingest.Uploaders.MultiDestinationWriter,
-            filename:
-              "#{request.project.name}/#{socket.assigns.current_user.name}/#{entry.client_name}",
-            destinations: request.destinations}
+            filename: "#{entry.client_name}",
+            user: socket.assigns.current_user,
+            destinations: request.destinations,
+            request: request}
          end
        )
        |> stream(:uploads, Uploads.recent_uploads_for_user(socket.assigns.current_user))

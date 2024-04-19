@@ -112,13 +112,22 @@ defmodule Ingest.Destinations.LakeFSConfig do
     field :region, Ingest.Encrypted.Binary
     field :base_url, Ingest.Encrypted.Binary
     field :repository, Ingest.Encrypted.Binary
+    field :port, :integer, default: nil
     field :ssl, :boolean, default: true
   end
 
   @doc false
   def changeset(config, attrs) do
     config
-    |> cast(attrs, [:access_key_id, :secret_access_key, :repository, :base_url])
+    |> cast(attrs, [
+      :access_key_id,
+      :secret_access_key,
+      :repository,
+      :base_url,
+      :port,
+      :ssl,
+      :region
+    ])
     |> validate_required([:access_key_id, :secret_access_key, :base_url, :repository])
   end
 end
