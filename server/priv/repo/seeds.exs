@@ -34,8 +34,8 @@ alias Ingest.Uploads
 
 {:ok, project} =
   Projects.create_project(%{
-    name: "Test Project",
-    description: "A testing project",
+    name: "Sapphire",
+    description: "A standard project",
     inserted_by: user.id
   })
 
@@ -45,61 +45,61 @@ alias Ingest.Uploads
 # build a second project owned by the second_user so we can see how invites look
 {:ok, project2} =
   Projects.create_project(%{
-    name: "Test Project 2 ",
-    description: "A testing project for invites",
+    name: "Emerald",
+    description: "Standard project",
     inserted_by: second_user.id
   })
 
 {:ok, template} =
   Requests.create_template(%{
-    name: "Test Template",
+    name: "Standard Questions",
     inserted_by: user.id,
-    description: "A testing template",
+    description: "Common questions about your data",
     fields: [
       %{
-        label: "Text Field",
-        help_text: "This is a testing field for testing purposes.",
+        label: "Name",
+        help_text: "Name of the data.",
         type: :text,
         required: true,
         per_file: false,
         file_extensions: []
       },
       %{
-        label: "Number Field",
-        help_text: "This is a testing field for testing purposes.",
+        label: "Number of data points",
+        help_text: "Whole number representing amount of data points",
         type: :number,
         required: false,
         per_file: false,
-        file_extensions: [".pdf", ".xls"]
+        file_extensions: [".parquet"]
       },
       %{
-        label: "Select Field",
-        help_text: "This is a testing field for testing purposes.",
+        label: "Location Collected",
+        help_text: "Options of location of collection",
         type: :select,
-        select_options: ["option 1", "option 2"],
+        select_options: ["United States", "Canada"],
         required: false,
         per_file: true,
         file_extensions: []
       },
       %{
-        label: "Checkbox Field",
-        help_text: "This is a testing field for testing purposes.",
+        label: "Secure Data",
+        help_text: "Is this data considered secure?",
         type: :checkbox,
         required: false,
         per_file: false,
         file_extensions: []
       },
       %{
-        label: "Date Field",
-        help_text: "This is a testing field for testing purposes.",
+        label: "Date Collected",
+        help_text: "When was this data collected",
         type: :date,
         required: false,
         per_file: false,
         file_extensions: []
       },
       %{
-        label: "Text Area Field",
-        help_text: "This is a testing field for testing purposes.",
+        label: "Additional Comments",
+        help_text: "Make your comments here",
         type: :textarea,
         required: false,
         per_file: false,
@@ -168,7 +168,7 @@ alias Ingest.Uploads
 
 {:ok, destination} =
   Destinations.create_destination_for_user(user, %{
-    name: "Test Destination",
+    name: "Azure Storage Emulation",
     type: :azure,
     azure_config: %{
       account_name: "devstoreaccount1",
@@ -181,26 +181,42 @@ alias Ingest.Uploads
     }
   })
 
+{:ok, destination2} =
+  Destinations.create_destination_for_user(user, %{
+    name: "LakeFS Storage",
+    type: :lakefs,
+    lakefs_config: %{
+      # DON'T PANIC - this is a well known development key published by LakeFS
+      access_key_id: "AKIAIOSFOLQUICKSTART",
+      # DON'T PANIC - this is a well known development key published by LakeFS
+      secret_access_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+      base_url: "127.0.0.1",
+      port: 8000,
+      repository: "sapphire",
+      ssl: false
+    }
+  })
+
 {:ok, request} =
   Requests.create_request(
     %{
-      name: "Test Request",
-      description: "A testing request",
+      name: "Sapphire Data Request",
+      description: "A standard request for data",
       status: :draft,
       public: true,
       project_id: project.id
     },
     project,
     [template],
-    [destination],
+    [destination2],
     user
   )
 
 {:ok, upload} =
   Uploads.create_upload(
     %{
-      filename: "Test.pdf",
-      ext: "application/test"
+      filename: "data.parquet",
+      ext: "application/parquet"
     },
     request,
     user
@@ -209,8 +225,8 @@ alias Ingest.Uploads
 {:ok, notification} =
   Accounts.create_notifications(
     %{
-      body: "Test body",
-      subject: "Test Subject"
+      body: "Upload Requires Metadata",
+      subject: "You must now submit metadata for your uploaded data."
     },
     user
   )
