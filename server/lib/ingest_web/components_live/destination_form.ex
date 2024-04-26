@@ -189,10 +189,16 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.input
                     :if={@lakefs_repos != [] || config[:repository]}
                     type="select"
-                    options={[
-                      @destination.lakefs_config.repository
-                      | @lakefs_repos |> Enum.map(fn r -> r["id"] end)
-                    ]}
+                    options={
+                      if @destination.lakefs_config do
+                        [
+                          @destination.lakefs_config.repository
+                          | @lakefs_repos |> Enum.map(fn r -> r["id"] end)
+                        ]
+                      else
+                        @lakefs_repos |> Enum.map(fn r -> r["id"] end)
+                      end
+                    }
                     field={config[:repository]}
                   />
                 </.inputs_for>
@@ -326,11 +332,22 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
       # currently this only applies to the LakeFS destination, and will populate the repositories and remove the disabled tag
       "test_connection" ->
+        base_url =
+          if destination_params["lakefs_config"]["ssl"] == true do
+            "https://#{destination_params["lakefs_config"]["base_url"]}"
+          else
+            "http://#{destination_params["lakefs_config"]["base_url"]}"
+          end
+
         client =
-          Ingest.Destinations.Lakefs.new_client(destination_params["lakefs_config"]["base_url"], {
-            destination_params["lakefs_config"]["access_key_id"],
-            destination_params["lakefs_config"]["secret_access_key"]
-          })
+          Ingest.Destinations.Lakefs.new_client(
+            base_url,
+            {
+              destination_params["lakefs_config"]["access_key_id"],
+              destination_params["lakefs_config"]["secret_access_key"]
+            },
+            port: destination_params["lakefs_config"]["port"]
+          )
 
         {:ok, repos} = Ingest.Destinations.Lakefs.list_repos(client)
 
