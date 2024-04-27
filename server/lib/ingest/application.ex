@@ -13,6 +13,8 @@ defmodule Ingest.Application do
       IngestWeb.Telemetry,
       # Start the Ecto repository
       Ingest.Repo,
+      # Start OBAN
+      {Oban, Application.fetch_env!(:ingest, Oban)},
       # Start the PubSub system
       {Phoenix.PubSub, name: Ingest.PubSub},
       # Start Finch

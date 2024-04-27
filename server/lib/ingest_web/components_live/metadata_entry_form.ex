@@ -169,6 +169,7 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
      |> assign(:title, template.name)
      |> assign(:description, template.description)
      |> assign(:metadata, metadata)
+     |> assign(:upload, upload)
      |> assign(
        :metadata_form,
        to_form(metadata.data)
@@ -200,6 +201,10 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
            submitted: save_type == "submit"
          }) do
       {:ok, metadata} ->
+        %{upload_id: socket.assigns.upload.id}
+        |> Ingest.Workers.Metadata.new()
+        |> Oban.insert()
+
         notify_parent({:saved, metadata})
 
         {:noreply,

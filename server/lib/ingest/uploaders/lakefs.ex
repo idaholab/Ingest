@@ -33,6 +33,30 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
+  def upload_full_object(
+        %Destination{} = destination,
+        %Request{} = request,
+        %User{} = user,
+        filename,
+        data
+      ) do
+    # we need validate/create if not exists a branch for the request & user email
+    branch_name = upsert_branch(destination.lakefs_config, request, user)
+
+    with s3_op <-
+           ExAws.S3.put_object(
+             "#{destination.lakefs_config.repository}/#{branch_name}",
+             filename,
+             data
+           ),
+         s3_config <- ExAws.Config.new(:s3, build_config(destination.lakefs_config)),
+         {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
+      {:ok, upload_id}
+    else
+      err -> {:error, err}
+    end
+  end
+
   def upload_chunk(%Destination{} = destination, _filename, state, data) do
     part = ExAws.S3.Upload.upload_chunk({data, state.chunk}, state.op, state.config)
 
