@@ -23,6 +23,16 @@ defmodule Ingest.Uploaders.S3 do
     end
   end
 
+  def upload_full_object(%Destination{} = destination, filename, data) do
+    with s3_op <- ExAws.S3.put_object(destination.s3_config.bucket, filename, data),
+         s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
+         {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
+      {:ok, upload_id}
+    else
+      err -> {:error, err}
+    end
+  end
+
   def upload_chunk(%Destination{} = destination, _filename, state, data) do
     part = ExAws.S3.Upload.upload_chunk({data, state.chunk}, state.op, state.config)
 

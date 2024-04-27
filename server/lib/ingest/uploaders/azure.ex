@@ -27,6 +27,22 @@ defmodule Ingest.Uploaders.Azure do
       state |> Map.put(:blob, blob) |> Map.put(:config, config) |> Map.put(:parts, [])}}
   end
 
+  def upload_full_object(%Destinations.Destination{} = destination, filename, data) do
+    %AzureConfig{} = d_config = destination.azure_config
+
+    config = %AzureStorage.Config{
+      account_name: d_config.account_name,
+      account_key: d_config.account_key,
+      # base service URL is an optional field, so don't fail if we don't have it
+      base_service_url: Map.get(d_config, :base_url),
+      ssl: Map.get(d_config, :ssl, true)
+    }
+
+    AzureStorage.Container.new(d_config.container)
+    |> AzureStorage.Blob.new("#{d_config.path}/#{filename}")
+    |> AzureStorage.Blob.put_blob(config, data)
+  end
+
   def upload_chunk(%Destinations.Destination{} = destination, _filename, state, data) do
     case AzureStorage.Blob.put_block(state.blob, state.config, data) do
       {:ok, block_id} ->

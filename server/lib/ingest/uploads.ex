@@ -71,7 +71,16 @@ defmodule Ingest.Uploads do
   def get_upload!(id),
     do:
       Repo.get!(Upload, id)
+      |> Repo.preload(:user)
       |> Repo.preload(metadatas: from(m in Metadata, where: m.submitted == true))
+      |> Repo.preload(request: [:destinations, project: :user])
+
+  def get_upload(id),
+    do:
+      Repo.get(Upload, id)
+      |> Repo.preload(:user)
+      |> Repo.preload(metadatas: from(m in Metadata, where: m.submitted == true))
+      |> Repo.preload(request: [:destinations, project: :user])
 
   @doc """
   Creates a upload.
@@ -156,6 +165,14 @@ defmodule Ingest.Uploads do
     Repo.one(
       from m in Metadata,
         where: m.upload_id == ^upload.id and m.template_id == ^template.id,
+        select: m
+    )
+  end
+
+  def list_metadata(%Upload{} = upload) do
+    Repo.all(
+      from m in Metadata,
+        where: m.upload_id == ^upload.id,
         select: m
     )
   end

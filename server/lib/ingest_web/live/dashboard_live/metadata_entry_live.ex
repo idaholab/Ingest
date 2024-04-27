@@ -141,8 +141,6 @@ defmodule IngestWeb.MetadataEntryLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    _form = to_form(%{"name" => "test"})
-
     {:ok,
      socket
      |> assign(:form, to_form(%{email: nil}))
@@ -154,7 +152,6 @@ defmodule IngestWeb.MetadataEntryLive do
   def handle_params(%{"upload_id" => upload_id, "id" => req_id}, _uri, socket) do
     request = Requests.get_request!(req_id)
     upload = Uploads.get_upload!(upload_id)
-    dbg(upload)
 
     {:noreply,
      socket
