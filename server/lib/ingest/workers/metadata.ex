@@ -40,7 +40,7 @@ defmodule Ingest.Workers.Metadata do
         "user_provided_metadata" => Enum.map(upload.metadatas, fn m -> m.data end)
       })
 
-    filename = "#{upload.filename}_metadata.json"
+    filename = "#{upload.filename}.m.json"
 
     for destination <- upload.request.destinations do
       case destination.type do
