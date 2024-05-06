@@ -70,7 +70,7 @@ defmodule Ingest.Destinations.S3Config do
       :final_path,
       :ssl
     ])
-    |> validate_required([:access_key_id, :secret_access_key, :bucket, :path])
+    |> validate_required([:bucket, :path])
   end
 end
 
@@ -95,7 +95,7 @@ defmodule Ingest.Destinations.AzureConfig do
   def changeset(config, attrs) do
     config
     |> cast(attrs, [:account_name, :account_key, :base_url, :container, :path, :ssl, :final_path])
-    |> validate_required([:account_name, :account_key, :container])
+    |> validate_required([:container])
   end
 end
 
@@ -128,7 +128,7 @@ defmodule Ingest.Destinations.LakeFSConfig do
       :ssl,
       :region
     ])
-    |> validate_required([:access_key_id, :secret_access_key, :base_url, :repository])
+    |> validate_required([:base_url, :repository])
   end
 end
 
