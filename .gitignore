@@ -1,0 +1,5 @@
+/client/target/
+/client/.idea
+.ingest_client_config.yml
+server/__azurite_db_blob__.json
+server/__azurite_db_blob_extent__.json
