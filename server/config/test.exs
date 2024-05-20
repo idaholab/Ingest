@@ -9,8 +9,8 @@ config :argon2_elixir, t_cost: 1, m_cost: 8
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :ingest, Ingest.Repo,
-  username: "postgres",
-  password: "monkwer88",
+  username: "",
+  password: "",
   hostname: "localhost",
   database: "ingest_test#{System.get_env("MIX_TEST_PARTITION")}",
   port: 5432,
