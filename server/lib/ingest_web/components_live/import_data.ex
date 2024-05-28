@@ -7,6 +7,7 @@ defmodule IngestWeb.LiveComponents.ImportData do
 
   alias Ingest.OAuth.Box
   alias Ingest.Imports
+  alias BoxImporter
 
   @impl true
   def render(assigns) do
@@ -141,7 +142,10 @@ defmodule IngestWeb.LiveComponents.ImportData do
       }
     }
 
-    start_import(attrs)
+    {:ok, pid} = BoxImporter.start_link(access_token: access_token)
+    {:ok, file} = BoxImporter.get_file(pid, folder_id)
+    dbg(access_token)
+    # start_import(attrs)
 
     {:noreply,
      socket
@@ -162,7 +166,7 @@ defmodule IngestWeb.LiveComponents.ImportData do
     }
 
     folders =
-      Req.get!("https://api.box.com/2.0/folders/0",
+      Req.get!("https://api.box.com/2.0/folders/243658772896",
         headers: headers,
         connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
       )
@@ -175,9 +179,18 @@ defmodule IngestWeb.LiveComponents.ImportData do
   end
 
   defp authed(current_user) do
-    {:ok, {access_token, _refresh_token}} =
-      Cachex.get(:server, "Box_Tokens:#{current_user.id}")
+    case grab_tokens(current_user.id) do
+      {access_token, _} -> Box.authenticated?(access_token)
+    end
+  end
 
-    Box.is_authenticated(access_token)
+  defp grab_tokens(curr_user_id) do
+    case Cachex.get(:server, "Box_Tokens:#{curr_user_id}") do
+      {:ok, {access_token, refresh_token}} ->
+        {access_token, refresh_token}
+
+      _ ->
+        {nil, nil}
+    end
   end
 end

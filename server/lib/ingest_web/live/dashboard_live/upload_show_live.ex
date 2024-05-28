@@ -185,6 +185,12 @@ defmodule IngestWeb.UploadShowLive do
   end
 
   @impl true
+  def handle_params(_params, _uri, socket) do
+    # Your logic here
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
   end

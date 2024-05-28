@@ -79,7 +79,11 @@ defmodule Ingest.OAuth.Box do
     end
   end
 
-  def is_authenticated(access_token) do
+  def authenticated?(access_token) do
+    if access_token == nil do
+      false
+    end
+
     test_auth_url = "https://api.box.com/2.0/users/me"
 
     headers = [
