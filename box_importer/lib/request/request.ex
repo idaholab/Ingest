@@ -51,6 +51,7 @@ defmodule BoxImporter.Request do
       end
 
       defp build_base_url(%Config{} = config) do
+        dbg(config.base_service_url)
         {config.base_service_url}
       end
     end

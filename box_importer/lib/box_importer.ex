@@ -5,7 +5,7 @@ defmodule BoxImporter do
   use GenServer
 
   alias BoxImporter.Config
-  alias BoxImporter.File
+  alias BoxImporter.Files
 
   defmodule State do
     @moduledoc """
@@ -23,17 +23,17 @@ defmodule BoxImporter do
     })
   end
 
-  def get_file(pid, name) do
-    GenServer.call(pid, {:get_file, name})
+  def get_file(pid, file_id) do
+    GenServer.call(pid, {:get_file, file_id})
   end
 
-  @impl true
+  # Server API
+
   def init(%State{} = state) do
     {:ok, state}
   end
 
-  @impl true
-  def handle_call({:get_file, file_id}, _from, state) do
-    {:reply, {:ok, File.new(file_id)}, state}
+  def handle_call({:get_file, file_id}, _from, %State{config: config} = state) do
+    {:reply, Files.get_file(config, file_id), state}
   end
 end
