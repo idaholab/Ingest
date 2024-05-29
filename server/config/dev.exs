@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :ingest, Ingest.Repo,
-  username: "postgres",
-  password: "monkwer88",
+  username: "",
+  password: "",
   hostname: "localhost",
   port: 5432,
   database: "ingest_dev",
@@ -24,7 +24,7 @@ config :ingest, IngestWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "Sg9tsmN+KuK/v/QYU/99QkrTr6092P2rgafhEZrVpYdDlkLSUuciszbSsxzMN/wb",
+  secret_key_base: "",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
