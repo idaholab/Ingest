@@ -132,20 +132,65 @@ defmodule IngestWeb.LiveComponents.ImportData do
     {:ok, {access_token, refresh_token}} =
       Cachex.get(:server, "Box_Tokens:#{socket.assigns.current_user.id}")
 
-    attrs = %{
-      request_id: socket.assigns.request.id,
-      inserted_by: socket.assigns.current_user.id,
-      box_config: %{
-        access_token: access_token,
-        refresh_token: refresh_token,
-        folder_id: folder_id
-      }
-    }
+    # attrs = %{
+    #   request_id: socket.assigns.request.id,
+    #   inserted_by: socket.assigns.current_user.id,
+    #   box_config: %{
+    #     access_token: access_token,
+    #     refresh_token: refresh_token,
+    #     folder_id: folder_id
+    #   }
+    # }
 
-    {:ok, pid} = BoxImporter.start_link(access_token: access_token)
-    {:ok, file} = BoxImporter.get_file(pid, folder_id)
+    config = [
+      access_token: access_token,
+      base_service_url: "https://api.box.com/2.0"
+    ]
+
     dbg(access_token)
-    # start_import(attrs)
+
+    {:ok, pid} =
+      BoxImporter.start_link(
+        access_token: access_token,
+        base_service_url: "https://api.box.com/2.0"
+      )
+
+    {:ok, _} = BoxImporter.get_file(pid, folder_id)
+
+    {:noreply,
+     socket
+     |> put_flash(:info, "Succesfully Started Import!")
+     |> redirect(to: ~p"/dashboard/uploads/#{socket.assigns.request.id}")}
+  end
+
+  def handle_event("import_selected_folder", %{"folder_id" => folder_id}, socket) do
+    {:ok, {access_token, refresh_token}} =
+      Cachex.get(:server, "Box_Tokens:#{socket.assigns.current_user.id}")
+
+    # attrs = %{
+    #   request_id: socket.assigns.request.id,
+    #   inserted_by: socket.assigns.current_user.id,
+    #   box_config: %{
+    #     access_token: access_token,
+    #     refresh_token: refresh_token,
+    #     folder_id: folder_id
+    #   }
+    # }
+
+    config = [
+      access_token: access_token,
+      base_service_url: "https://api.box.com/2.0"
+    ]
+
+    dbg(access_token)
+
+    {:ok, pid} =
+      BoxImporter.start_link(
+        access_token: access_token,
+        base_service_url: "https://api.box.com/2.0"
+      )
+
+    {:ok, _} = BoxImporter.get_file(pid, folder_id)
 
     {:noreply,
      socket
