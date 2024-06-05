@@ -1,4 +1,4 @@
-defmodule BoxImporter do
+defmodule Ingest.BoxImporter do
   @moduledoc """
   Implementation for Box Importer in Elixir.
   """
