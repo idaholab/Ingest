@@ -3,7 +3,6 @@ defmodule AzureStorageTest do
   doctest AzureStorage
   alias AzureStorage.Container
   alias AzureStorage.Blob
-  import Config
 
   defp azurite_config do
     %AzureStorage.Config{

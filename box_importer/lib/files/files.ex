@@ -9,7 +9,8 @@ defmodule BoxImporter.Files do
   def new() do
   end
 
-  def get_file(%Config{} = config, file_id) do
+  # If Lakefs / Azure / S3 Destinations
+  def get_file(%Config{} = config, destinationConfig, type, file_id) do
     {_request, response} =
       Req.Request.new(
         method: :get,
@@ -21,40 +22,54 @@ defmodule BoxImporter.Files do
       |> sign(config)
       |> Req.Request.run_request()
 
-    dbg(config)
-
     file_url = response.headers["location"] |> List.first()
 
     {_request, response} =
       Req.Request.new(
         method: :get,
-        url: file_url,
+        url: "https://api.box.com/2.0/files/#{file_id}/",
         options: [
           connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
         ]
       )
+      |> sign(config)
       |> Req.Request.run_request()
 
-    content_disposition =
-      response.headers["content-disposition"]
-      |> List.first()
+    file_name = response.body["name"]
 
-    pattern = ~r/filename\*=UTF-8''([\w%\-\.]+)(?:; ?|$)/i
+    if type == "azure" do
+      {:ok, pid} = AzureStorage.start_link(destinationConfig)
+      {:ok, container} = AzureStorage.new_container(pid, destinationConfig.container)
+      {:ok, blob} = AzureStorage.new_blob(pid, container, file_name)
 
-    # Set default filename
-    case Regex.run(pattern, content_disposition) do
-      [_, filename] ->
-        case response do
-          %{status: 200} ->
-            File.write("#{filename}", IO.iodata_to_binary(response.body))
-            {:ok, filename}
+      list_of_blocks = []
 
-          _ ->
-            {:error, "Failed to download file"}
-        end
+      {_request, response} =
+        Req.Request.new(
+          method: :get,
+          url: file_url,
+          options: [
+            connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
+          ],
+          into: fn {:data, data}, {req, resp} ->
+            {:ok, block_id} =
+              pid |> AzureStorage.put_block(blob, data)
 
-      _ ->
-        {:error, "Failed to get filename"}
+            list_of_blocks = [block_id | list_of_blocks]
+
+            {:cont, {req, resp}}
+          end
+        )
+        |> Req.Request.run_request()
+
+      {:ok, _nil} =
+        pid |> AzureStorage.commit_blocklist(blob, list_of_blocks)
+    end
+
+    if type == "s3" do
+    end
+
+    if type == "lakefs" do
     end
   end
 end
