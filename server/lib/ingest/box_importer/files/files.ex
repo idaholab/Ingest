@@ -1,4 +1,7 @@
 defmodule BoxImporter.Files do
+  @moduledoc """
+  File uploader
+  """
   alias BoxImporter.Request
   alias BoxImporter.Config
   alias __MODULE__
@@ -6,7 +9,11 @@ defmodule BoxImporter.Files do
 
   use BoxImporter.Request
 
-  alias Ingest.Uploaders
+  alias Ingest.Uploaders.S3
+
+  alias Ingest.Uploaders.Lakefs
+
+  alias Ingest.Uploaders.Azure
 
   def new() do
   end
@@ -40,13 +47,10 @@ defmodule BoxImporter.Files do
     file_name = response.body["name"]
 
     if type == "azure" do
-      {:ok, pid} = AzureStorage.start_link(destinationConfig)
-      {:ok, container} = AzureStorage.new_container(pid, destinationConfig.container)
-      {:ok, blob} = AzureStorage.new_blob(pid, container, file_name)
+      state = %{}
+      state = Azure.init(destinationConfig, file_name, state)
 
-      list_of_blocks = []
-
-      {_request, response} =
+      {_request, _response} =
         Req.Request.new(
           method: :get,
           url: file_url,
@@ -54,25 +58,24 @@ defmodule BoxImporter.Files do
             connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
           ],
           into: fn {:data, data}, {req, resp} ->
-            {:ok, block_id} =
-              pid |> AzureStorage.put_block(blob, data)
+            {:ok, block_id} = Azure.upload_chunk(destinationConfig, file_name, state, data)
 
-            list_of_blocks = [block_id | list_of_blocks]
+            Map.update!(state, :parts, fn parts -> [block_id | parts] end)
 
             {:cont, {req, resp}}
           end
         )
         |> Req.Request.run_request()
 
-      {:ok, _nil} =
-        pid |> AzureStorage.commit_blocklist(blob, list_of_blocks)
+      {:ok, _location} = Azure.commit(destinationConfig, file_name, state)
     end
 
     if type == "s3" do
+      state = %{}
 
-      {:ok, state} = S3.init(destinationConfig, file_name, state)
+      state = S3.init(destinationConfig, file_name, state)
 
-      {_request, response} =
+      {_request, _response} =
         Req.Request.new(
           method: :get,
           url: file_url,
@@ -80,21 +83,22 @@ defmodule BoxImporter.Files do
             connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
           ],
           into: fn {:data, data}, {req, resp} ->
-            {:ok, new_state} = S3.upload_chunk(destinationConfig, file_name, state, data)
-
+            {:ok, chunk_id} = S3.upload_chunk(destinationConfig, file_name, state, data)
+            Map.update!(state, :parts, fn parts -> [chunk_id | parts] end)
             {:cont, {req, resp}}
           end
         )
         |> Req.Request.run_request()
 
-      {:ok, location} = S3.commit(destinationConfig, file_name, state)
-
+      {:ok, _location} = S3.commit(destinationConfig, file_name, state)
     end
 
     if type == "lakefs" do
-      {:ok, state} = Lakefs.init(destinationConfig, file_name, state)
+      state = %{}
 
-      {_request, response} =
+      state = Lakefs.init(destinationConfig, file_name, state)
+
+      {_request, _response} =
         Req.Request.new(
           method: :get,
           url: file_url,
@@ -102,15 +106,18 @@ defmodule BoxImporter.Files do
             connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
           ],
           into: fn {:data, data}, {req, resp} ->
-            {:ok, new_state} = Lakefs.upload_chunk(destinationConfig, file_name, state, data)
+            {:ok, chunk_id} = Lakefs.upload_chunk(destinationConfig, file_name, state, data)
+
+            Map.update!(state, :parts, fn parts -> [chunk_id | parts] end)
 
             {:cont, {req, resp}}
           end
         )
         |> Req.Request.run_request()
 
-      {:ok, location} = Lakefs.commit(destinationConfig, file_name, state)
-
+      {:ok, _location} = Lakefs.commit(destinationConfig, file_name, state)
     end
+
+    {:ok}
   end
 end

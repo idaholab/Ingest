@@ -67,7 +67,6 @@ defmodule Ingest.MixProject do
       {:oban, "~> 2.17"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
-      {:box_importer, "~> 0.1.0", path: "../box_importer"}
     ]
   end
 

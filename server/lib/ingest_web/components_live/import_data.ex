@@ -129,7 +129,7 @@ defmodule IngestWeb.LiveComponents.ImportData do
   end
 
   def handle_event("import_selected_folder", %{"folder_id" => folder_id}, socket) do
-    {:ok, {access_token, refresh_token}} =
+    {:ok, {access_token, _refresh_token}} =
       Cachex.get(:server, "Box_Tokens:#{socket.assigns.current_user.id}")
 
     # attrs = %{
