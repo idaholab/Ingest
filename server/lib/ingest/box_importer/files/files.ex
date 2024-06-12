@@ -6,6 +6,8 @@ defmodule BoxImporter.Files do
 
   use BoxImporter.Request
 
+  alias Ingest.Uploaders
+
   def new() do
   end
 
@@ -67,9 +69,48 @@ defmodule BoxImporter.Files do
     end
 
     if type == "s3" do
+
+      {:ok, state} = S3.init(destinationConfig, file_name, state)
+
+      {_request, response} =
+        Req.Request.new(
+          method: :get,
+          url: file_url,
+          options: [
+            connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
+          ],
+          into: fn {:data, data}, {req, resp} ->
+            {:ok, new_state} = S3.upload_chunk(destinationConfig, file_name, state, data)
+
+            {:cont, {req, resp}}
+          end
+        )
+        |> Req.Request.run_request()
+
+      {:ok, location} = S3.commit(destinationConfig, file_name, state)
+
     end
 
     if type == "lakefs" do
+      {:ok, state} = Lakefs.init(destinationConfig, file_name, state)
+
+      {_request, response} =
+        Req.Request.new(
+          method: :get,
+          url: file_url,
+          options: [
+            connect_options: [transport_opts: [cacertfile: "/etc/ssl/certs/CAINLROOT.cer"]]
+          ],
+          into: fn {:data, data}, {req, resp} ->
+            {:ok, new_state} = Lakefs.upload_chunk(destinationConfig, file_name, state, data)
+
+            {:cont, {req, resp}}
+          end
+        )
+        |> Req.Request.run_request()
+
+      {:ok, location} = Lakefs.commit(destinationConfig, file_name, state)
+
     end
   end
 end
