@@ -44,7 +44,7 @@ defmodule IngestWeb.TasksLive do
                     navigate={~p"/dashboard/uploads/#{upload.request_id}/#{upload}"}
                     class="text-indigo-600 hover:text-indigo-900"
                   >
-                    Input Metadata
+                    Input Supporting Data
                   </.link>
                 </:action>
               </.table>

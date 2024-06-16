@@ -12,7 +12,7 @@ defmodule Ingest.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
 
-    # these are general roles, admin: has all roles, manager: can build data requests, member: can only upload and input metadata
+    # these are general roles, admin: has all roles, manager: can build data requests, member: can only upload and input supporting data
     field :roles, Ecto.Enum, values: [:admin, :manager, :member]
     field :identity_provider, Ecto.Enum, values: [:oidc, :internal], default: :internal
 

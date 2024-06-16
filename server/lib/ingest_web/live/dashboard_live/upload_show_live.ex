@@ -85,7 +85,7 @@ defmodule IngestWeb.UploadShowLive do
                     navigate={~p"/dashboard/uploads/#{@request}/#{upload}"}
                     class="text-indigo-600 hover:text-indigo-900"
                   >
-                    Input Metadata
+                    Input Supporting Data
                   </.link>
                 </:action>
               </.table>

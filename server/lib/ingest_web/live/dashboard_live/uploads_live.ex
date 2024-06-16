@@ -10,7 +10,7 @@ defmodule IngestWeb.UploadsLive do
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900">Recent Project Uploads</h1>
           <p class="mt-2 text-sm text-gray-700">
-            A list of requests you've recently uploaded to.
+            A list of projects you've recently uploaded to.
           </p>
         </div>
       </div>
@@ -22,8 +22,8 @@ defmodule IngestWeb.UploadsLive do
               rows={@requests}
               row_click={fn request -> JS.navigate(~p"/dashboard/uploads/#{request}") end}
             >
-              <:col :let={request} label="Name"><%= request.name %></:col>
               <:col :let={request} label="Project"><%= request.project.name %></:col>
+              <:col :let={request} label="Name"><%= request.name %></:col>
               <:col :let={request} label="Description">
                 <%= request.description %>
               </:col>
@@ -63,8 +63,13 @@ defmodule IngestWeb.UploadsLive do
         </form>
       </div>
       <div class="mt-10">
-        <h3 class="text-sm font-medium text-gray-500">Active Data Requests</h3>
-        <div :if={@results == []}>No results...</div>
+        <h3 class="text-sm font-medium text-gray-500">Active Data Requests by Project</h3>
+        <div :if={@results == [] && @searched}>
+          <p class="text-xs italic">No results...</p>
+        </div>
+        <div :if={@results == [] && !@searched}>
+          <p class="text-xs italic">Begin typing to search for active projects or requests..</p>
+        </div>
         <ul role="list" class="mt-4 divide-y divide-gray-200 border-b border-t border-gray-200">
           <%= for request <- @results do %>
             <li
@@ -73,9 +78,11 @@ defmodule IngestWeb.UploadsLive do
             >
               <div class="flex min-w-0 flex-1 items-center space-x-3">
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-medium text-gray-900"><%= request.name %></p>
-                  <p class="truncate text-sm font-medium text-gray-500">
+                  <p class="truncate text-sm font-medium text-gray-900">
                     <%= request.project.name %>
+                  </p>
+                  <p class="truncate text-sm font-medium text-gray-500">
+                    <%= request.name %>
                   </p>
                 </div>
               </div>
@@ -106,22 +113,30 @@ defmodule IngestWeb.UploadsLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:section, "uploads") |> stream(:requests, []) |> assign(:results, []),
-     layout: {IngestWeb.Layouts, :dashboard}}
+    {:ok,
+     socket
+     |> assign(:section, "uploads")
+     |> stream(:requests, [])
+     |> assign(:results, [])
+     |> assign(:searched, false), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
   @impl true
   def handle_params(_params, _uri, socket) do
+    requests =
+      Requests.list_recent_requests(socket.assigns.current_user) ++
+        Requests.list_invited_request(socket.assigns.current_user)
+
     {:noreply,
      socket
-     |> assign(:requests, Requests.list_recent_requests(socket.assigns.current_user))
-     |> assign(:requests, Requests.list_invited_request(socket.assigns.current_user))}
+     |> assign(:requests, requests)}
   end
 
   @impl true
   def handle_event("search", %{"value" => value}, socket) do
     {:noreply,
      socket
+     |> assign(:searched, true)
      |> assign(
        :results,
        Ingest.Requests.search_requests_by_project(value)

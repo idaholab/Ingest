@@ -1,21 +1,22 @@
 # Ingest
 
-Ingest is desisgned to be the upload point for various data management solutions in the DOE space and beyond. It takes the placed of Box and hopefully Globus both. With an emphasis on gathering metadata along with the actual data, we hope that this tool becomes a powerhouse for enabling experiments to extract and collect data from various groups and sources more easily than before.
+Ingest is desisgned to be the upload point for various data management solutions in the DOE space and beyond. It takes the place of Box and eventually Globus both. With an emphasis on gathering metadata along with the actual data, we hope that this tool becomes a powerhouse for enabling experiments to extract and collect data from various groups and sources more easily than before.
 
 ## Requirements
-- [asdf](https://asdf-vm.com/) - used for managing Elixir/Erlang/OTP versions so that you can keep this project separate from your main installations
-- [asdf-elixir](https://github.com/asdf-vm/asdf-elixir) and [asdf-erlang](https://github.com/asdf-vm/asdf-erlang)
+- Elixir 1.16.x
+- Erlang OTP 27+
+- [asdf](https://asdf-vm.com/) **optional** - used for managing Elixir/Erlang/OTP versions so that you can keep this project separate from your main installations
+- [asdf-elixir](https://github.com/asdf-vm/asdf-elixir) and [asdf-erlang](https://github.com/asdf-vm/asdf-erlang) **optional**
 - [Mix](https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html) - should be installed if you use asdf
 - Postgres 14+
-- *INL network or ZScaler Only* - you will need to download the CAINLROOT.cer from your certificate manager. This is needed for the common gotchas and getting setup steps below if you work behind a proxy, like INL does via ZScaler and their internal network
 
 ## Installation
-1. Navigate to the root of the project and run `asdf install` - this will install all the toolchain and language dependencies needed locally. (In order for VSCode's Elixir plugin to work you must also set the global erlang and elixir versions via `asdf global {erlang/elixir} {latest/version in .tool-versions}`)
-2. Run `mix deps.get` & `mix deps.compile`
-3. Install the `phx_new` generator - `mix archive.install hex phx_new`
-4. Modify the configuration file in `config/dev.exs` - you will at least need to modify the database configuration to point to your local Postgres server.
-5. Run `mix ecto.reset && mix ecto.migrate` - this will run all the required migrations to setup your database.
-6. If you're on VSCode you can use the default run configuration to run your application from the editor, or you may start your server by running `mix phx.server` in either your terminal or an iEX instance
+0. **optional** Navigate to the root of the project and run `asdf install` - this will install all the toolchain and language dependencies needed locally. (In order for VSCode's Elixir plugin to work you must also set the global erlang and elixir versions via `asdf global {erlang/elixir} {latest/version in .tool-versions}`)
+1. Run `mix deps.get` & `mix deps.compile`
+2. Install the `phx_new` generator - `mix archive.install hex phx_new`
+3. Modify the configuration file in `config/dev.exs` - you will at least need to modify the database configuration to point to your local Postgres server.
+4. Run `mix ecto.reset && mix ecto.migrate` - this will run all the required migrations to setup your database.
+5. If you're on VSCode you can use the default run configuration to run your application from the editor, or you may start your server by running `mix phx.server` in either your terminal or an iEX instance
 
 
 ## Common Problems and Solutions
