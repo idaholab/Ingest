@@ -76,6 +76,9 @@ defmodule IngestWeb.UploadShowLive do
                 }
               >
                 <:col :let={{_id, upload}} label="File Name"><%= upload.filename %></:col>
+                <:col :let={{_id, upload}} label="Upload Date">
+                  <%= "#{upload.inserted_at.day}-#{upload.inserted_at.month}-#{upload.inserted_at.year}" %>
+                </:col>
                 <:col :let={{_id, upload}} label="Size"><%= mb(upload.size) %>mb</:col>
                 <:col :let={{_id, upload}} label="Extension"><%= upload.ext %></:col>
 
@@ -87,6 +90,11 @@ defmodule IngestWeb.UploadShowLive do
                   >
                     Input Supporting Data
                   </.link>
+                  <div :if={upload.metadatas != []}>
+                    <p class="text-green-900">
+                      <.icon name="hero-check-circle" class="bg-green-900" /> Supporting Data Entered
+                    </p>
+                  </div>
                 </:action>
               </.table>
             </div>

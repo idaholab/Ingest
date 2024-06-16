@@ -17,9 +17,11 @@ defmodule IngestWeb.TasksLive do
       >
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
-            <h1 class="text-base font-semibold leading-6 text-gray-900">Metadata Tasks</h1>
+            <h1 class="text-base font-semibold leading-6 text-gray-900">
+              Supporting Data Entry Tasks
+            </h1>
             <p class="mt-2 text-sm text-gray-700">
-              A list of all uploads you've made that require metadata entry.
+              A list of all uploads you've made that require additional data entry.
             </p>
           </div>
         </div>
@@ -36,6 +38,9 @@ defmodule IngestWeb.TasksLive do
                 }
               >
                 <:col :let={{_id, upload}} label="File Name"><%= upload.filename %></:col>
+                <:col :let={{_id, upload}} label="Date">
+                  <%= "#{upload.inserted_at.day}-#{upload.inserted_at.month}-#{upload.inserted_at.year}" %>
+                </:col>
                 <:col :let={{_id, upload}} label="Size"><%= mb(upload.size) %>mb</:col>
                 <:col :let={{_id, upload}} label="Extension"><%= upload.ext %></:col>
 
