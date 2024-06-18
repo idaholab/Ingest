@@ -81,6 +81,10 @@ config :ingest, Oban,
   queues: [default: 10, metadata: 10],
   repo: Ingest.Repo
 
+# classification acronyms - NOTE: if you change these, ensure that you're not removing any \
+# which are currently in use, or the system will break
+config :ingest, :data_classifications, [:ouo, :pii, :ec, :ucni, :cui, :uur]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

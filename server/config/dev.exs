@@ -105,3 +105,5 @@ config :ingest, :openid_connect_okta,
 
 config :ingest, :ca_certfile_path, "/etc/ssl/certs/CAINLROOT.cer"
 config :ingest, :environment, :dev
+# display the classification of data warning banner
+config :ingest, :show_classifications, true

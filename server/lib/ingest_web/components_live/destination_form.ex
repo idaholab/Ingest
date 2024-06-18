@@ -2,6 +2,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   @moduledoc """
   Destination Form is the form for creating/editing Destinations
   """
+  alias Ingest.Destinations.Destination
   use IngestWeb, :live_component
 
   @impl true
@@ -34,7 +35,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
               <div class="sm:col-span-4">
                 <.label for="project-type">
-                  Project Type
+                  Destination Type
                 </.label>
                 <.input
                   type="select"
@@ -44,6 +45,41 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     {"Azure Blob Storage", :azure},
                     {"LakeFS Repository", :lakefs}
                   ]}
+                />
+              </div>
+
+              <div :if={Application.get_env(:ingest, :show_classifications)} class="sm:col-span-6">
+                <.label for="project-type">Data Classifications Allowed</.label>
+                <.input
+                  type="checkbox"
+                  field={@destination_form[:ouo]}
+                  label="OUO - Official Use Only"
+                />
+
+                <.input
+                  type="checkbox"
+                  field={@destination_form[:pii]}
+                  label="PII - Personally Identifiable Information"
+                />
+
+                <.input type="checkbox" field={@destination_form[:ec]} label="EC - Export Controlled" />
+
+                <.input
+                  type="checkbox"
+                  field={@destination_form[:ucni]}
+                  label="UCNI - Unclassified Controlled Nuclear Information"
+                />
+
+                <.input
+                  type="checkbox"
+                  field={@destination_form[:cui]}
+                  label="CUI - Controlled Unclassifed Information"
+                />
+
+                <.input
+                  type="checkbox"
+                  field={@destination_form[:uur]}
+                  label="UUR - Unclassified Unlimited Release"
                 />
               </div>
             </div>
@@ -88,7 +124,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
             </div>
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-              <div class="sm:col-span-4">
+              <div class="sm:col-span-6">
                 <.inputs_for :let={config} field={@destination_form[:s3_config]}>
                   <.label for="status-select">
                     Access Key ID
@@ -137,7 +173,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
             </div>
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-              <div class="sm:col-span-4">
+              <div class="sm:col-span-6">
                 <.inputs_for :let={config} field={@destination_form[:s3_config]}>
                   <.label for="status-select">
                     Access Key ID
@@ -197,7 +233,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
             </div>
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-              <div class="sm:col-span-4">
+              <div class="sm:col-span-6">
                 <.inputs_for :let={config} field={@destination_form[:lakefs_config]}>
                   <.label for="status-select">
                     Access Key ID
@@ -282,7 +318,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
             </div>
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-              <div class="sm:col-span-4">
+              <div class="sm:col-span-6">
                 <.inputs_for :let={config} field={@destination_form[:lakefs_config]}>
                   <.label for="status-select">
                     Access Key ID
@@ -377,7 +413,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
             </div>
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-              <div class="sm:col-span-4">
+              <div class="sm:col-span-6">
                 <.inputs_for :let={config} field={@destination_form[:azure_config]}>
                   <.label for="status-select">
                     Account Name
@@ -415,22 +451,6 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     Container
                   </.label>
                   <.input type="text" field={config[:container]} />
-
-                  <.label for="status-select">
-                    Staging Path
-                  </.label>
-                  <.input type="text" field={config[:path]} />
-                  <p class="text-xs">
-                    Where data should be put while awaiting metadata entry and any modification by the request owner.
-                  </p>
-
-                  <.label for="status-select">
-                    Final Path
-                  </.label>
-                  <.input type="text" field={config[:final_path]} />
-                  <p class="text-xs">
-                    Where data should be put once all tasks and modifications are complete. Once data is put here, it can no longer be manipulated by Ingest.
-                  </p>
                 </.inputs_for>
               </div>
             </div>
@@ -450,7 +470,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
             </div>
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-              <div class="sm:col-span-4">
+              <div class="sm:col-span-6">
                 <.inputs_for :let={config} field={@destination_form[:azure_config]}>
                   <.label for="status-select">
                     Account Name
@@ -498,22 +518,6 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     Container
                   </.label>
                   <.input type="text" field={config[:container]} />
-
-                  <.label for="status-select">
-                    Staging Path
-                  </.label>
-                  <.input type="text" field={config[:path]} />
-                  <p class="text-xs">
-                    Where data should be put while awaiting metadata entry and any modification by the request owner.
-                  </p>
-
-                  <.label for="status-select">
-                    Final Path
-                  </.label>
-                  <.input type="text" field={config[:final_path]} />
-                  <p class="text-xs">
-                    Where data should be put once all tasks and modifications are complete. Once data is put here, it can no longer be manipulated by Ingest.
-                  </p>
                 </.inputs_for>
               </div>
             </div>
@@ -537,7 +541,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
   @impl true
   def update(%{destination: destination} = assigns, socket) do
-    changeset = Ingest.Destinations.change_destination(destination)
+    changeset = Ingest.Destinations.display_destination(destination)
 
     {:ok,
      socket
@@ -595,6 +599,13 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   end
 
   defp save_destination(socket, :edit, destination_params) do
+    destination_params =
+      Map.put(
+        destination_params,
+        "classifications_allowed",
+        collect_classifications(destination_params)
+      )
+
     case Ingest.Destinations.update_destination(socket.assigns.destination, destination_params) do
       {:ok, destination} ->
         notify_parent({:saved, destination})
@@ -610,6 +621,13 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   end
 
   defp save_destination(socket, :new, destination_params) do
+    destination_params =
+      Map.put(
+        destination_params,
+        "classifications_allowed",
+        collect_classifications(destination_params)
+      )
+
     case Map.put(destination_params, "inserted_by", socket.assigns.current_user.id)
          |> Ingest.Destinations.create_destination() do
       {:ok, destination} ->
@@ -627,6 +645,19 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :destination_form, to_form(changeset))
+  end
+
+  defp collect_classifications(form) do
+    elems =
+      :maps.filter(fn k, v -> v == "true" end, %{
+        ouo: form["ouo"],
+        pii: form["pii"],
+        ucni: form["ucni"],
+        cui: form["cui"],
+        uur: form["uur"]
+      })
+
+    Map.keys(elems)
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})

@@ -18,6 +18,9 @@ defmodule Ingest.Destinations.Destination do
     # internal storage are those methods provided by the Ingest application administrators
     field :type, Ecto.Enum, values: [:s3, :azure, :temporary, :lakefs], default: :s3
 
+    field :classifications_allowed, {:array, Ecto.Enum},
+      values: Application.compile_env(:ingest, :data_classifications)
+
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
     embeds_one :s3_config, S3Config
     embeds_one :azure_config, AzureConfig
@@ -28,9 +31,33 @@ defmodule Ingest.Destinations.Destination do
   end
 
   @doc false
+  def display_changeset(destination, attrs) do
+    if destination.classifications_allowed do
+      destination
+      |> cast(attrs, [:name, :type, :inserted_by, :classifications_allowed])
+      |> cast(
+        Enum.map(destination.classifications_allowed, fn c -> {c, true} end) |> Map.new(),
+        []
+      )
+      |> cast_embed(:s3_config, require: false)
+      |> cast_embed(:azure_config, require: false)
+      |> cast_embed(:lakefs_config, required: false)
+      |> cast_embed(:temporary_config, required: false)
+      |> validate_required([:name, :type])
+    else
+      destination
+      |> cast(attrs, [:name, :type, :inserted_by, :classifications_allowed])
+      |> cast_embed(:s3_config, require: false)
+      |> cast_embed(:azure_config, require: false)
+      |> cast_embed(:lakefs_config, required: false)
+      |> cast_embed(:temporary_config, required: false)
+      |> validate_required([:name, :type])
+    end
+  end
+
   def changeset(destination, attrs) do
     destination
-    |> cast(attrs, [:name, :type, :inserted_by])
+    |> cast(attrs, [:name, :type, :inserted_by, :classifications_allowed])
     |> cast_embed(:s3_config, require: false)
     |> cast_embed(:azure_config, require: false)
     |> cast_embed(:lakefs_config, required: false)

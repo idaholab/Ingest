@@ -246,6 +246,10 @@ defmodule Ingest.Destinations do
     Destination.changeset(destination, attrs)
   end
 
+  def display_destination(%Destination{} = destination, attrs \\ %{}) do
+    Destination.display_changeset(destination, attrs)
+  end
+
   def change_s3_config(%S3Config{} = s3_config, attrs \\ %{}) do
     S3Config.changeset(s3_config, attrs)
   end

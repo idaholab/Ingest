@@ -7,6 +7,27 @@ defmodule IngestWeb.UploadShowLive do
   def render(assigns) do
     ~H"""
     <div>
+      <div :if={Application.get_env(:ingest, :show_classifications)} class="flex justify-center pb-5">
+        <div>
+          <p>
+            The destination for your uploads is cleared to hold the following classifications of data
+          </p>
+          <div>
+            <span
+              :if={@classifications_allowed == []}
+              class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10"
+            >
+              UUR - Unclassified Unlimited Release
+            </span>
+            <span
+              :for={classification <- @classifications_allowed}
+              class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 mx-2"
+            >
+              <%= Atom.to_string(classification) |> String.upcase() %>
+            </span>
+          </div>
+        </div>
+      </div>
       <form id="upload-form" phx-submit="save" phx-change="validate">
         <div class="mb-10" phx-drop-target={@uploads.files.ref}>
           <button
@@ -109,6 +130,12 @@ defmodule IngestWeb.UploadShowLive do
   def mount(%{"id" => id}, _session, socket) do
     request = Requests.get_request!(id)
 
+    classifications_allowed =
+      request.destinations
+      |> Enum.map(fn d -> d.classifications_allowed end)
+      |> List.flatten()
+      |> Enum.uniq()
+
     if Requests.is_invited(socket.assigns.current_user) do
       {:ok,
        socket
@@ -118,6 +145,7 @@ defmodule IngestWeb.UploadShowLive do
       {:ok,
        socket
        |> assign(:request, request)
+       |> assign(:classifications_allowed, classifications_allowed)
        |> allow_upload(:files,
          auto_upload: true,
          progress: &handle_progress/3,

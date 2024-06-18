@@ -193,7 +193,8 @@ alias Ingest.Uploads
       base_url: "127.0.0.1",
       port: 8000,
       repository: "sapphire",
-      ssl: false
+      ssl: false,
+      classifications_allowed: [:ouo, :pii]
     }
   })
 
