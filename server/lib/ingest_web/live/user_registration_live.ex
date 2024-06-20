@@ -21,6 +21,7 @@ defmodule IngestWeb.UserRegistrationLive do
       </.header>
 
       <.simple_form
+        :if={!Application.get_env(:ingest, :hide_public_login)}
         for={@form}
         id="registration_form"
         phx-submit="save"
@@ -59,7 +60,7 @@ defmodule IngestWeb.UserRegistrationLive do
       </.simple_form>
 
       <div>
-        <div class="relative mt-10">
+        <div :if={!Application.get_env(:ingest, :hide_public_login)} class="relative mt-10">
           <div class="absolute inset-0 flex items-center" aria-hidden="true">
             <div class="w-full border-t border-gray-200"></div>
           </div>
@@ -68,13 +69,9 @@ defmodule IngestWeb.UserRegistrationLive do
           </div>
         </div>
 
-        <div class="mt-6 grid grid-cols-2 gap-4">
+        <div class="mt-6 flex justify-center items-center">
           <button phx-click="login_oneid">
             <img src="/images/oneid_logo.png" />
-          </button>
-
-          <button phx-click="login_okta">
-            <img src="/images/inllogo.png" />
           </button>
         </div>
       </div>

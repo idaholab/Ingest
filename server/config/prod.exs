@@ -31,3 +31,4 @@ config :ingest, :ca_certfile_path, "/etc/ssl/certs/CAINLROOT.cer"
 config :ingest, :environment, :prod
 # display the classification of data warning banner
 config :ingest, :show_classifications, true
+config :ingest, :hide_public_login, false

@@ -73,6 +73,9 @@ if config_env() == :prod do
     scope: "openid email profile",
     ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
 
+  # Hide the main login form and force users to use OneID or other OIDC provider
+  config :ingest, :hide_public_login, System.get_env("HIDE_PUBLIC_LOGIN")
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

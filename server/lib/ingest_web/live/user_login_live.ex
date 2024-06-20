@@ -7,7 +7,7 @@ defmodule IngestWeb.UserLoginLive do
       <.header class="text-center">
         <img class="mx-auto h-10 w-auto" src="/images/logo.png" alt="Your Company" />
         Sign in to account
-        <:subtitle>
+        <:subtitle :if={!Application.get_env(:ingest, :hide_public_login)}>
           Don't have an account?
           <.link navigate={~p"/users/register"} class="font-semibold text-brand hover:underline">
             Sign up
@@ -16,7 +16,13 @@ defmodule IngestWeb.UserLoginLive do
         </:subtitle>
       </.header>
 
-      <.simple_form for={@form} id="login_form" action={~p"/users/log_in"} phx-update="ignore">
+      <.simple_form
+        :if={!Application.get_env(:ingest, :hide_public_login)}
+        for={@form}
+        id="login_form"
+        action={~p"/users/log_in"}
+        phx-update="ignore"
+      >
         <.input
           field={@form[:email]}
           type="email"
@@ -48,7 +54,7 @@ defmodule IngestWeb.UserLoginLive do
         </:actions>
       </.simple_form>
       <div>
-        <div class="relative mt-10">
+        <div :if={!Application.get_env(:ingest, :hide_public_login)} class="relative mt-10">
           <div class="absolute inset-0 flex items-center" aria-hidden="true">
             <div class="w-full border-t border-gray-200"></div>
           </div>
@@ -67,8 +73,14 @@ defmodule IngestWeb.UserLoginLive do
 
       <div class="mt-6">
         <h2 class="font-bold text-center">*** WARNING ***</h2>
-        <p>This is a Department of Energy (DOE) computer system. DOE computer systems are provided for the processing of official U.S. Government information only. All data contained within DOE computer systems is owned by the DOE, and may be audited, intercepted, recorded, read, copied, or captured in any manner and disclosed in any manner, by authorized personnel. THERE IS NO RIGHT OF PRIVACY IN THIS SYSTEM. System personnel may disclose any potential evidence of crime found on DOE computer systems to appropriate authorities. USE OF THIS SYSTEM BY ANY USER, AUTHORIZED OR UNAUTHORIZED, CONSTITUTES CONSENT TO THIS AUDITING, INTERCEPTION, RECORDING, READING, COPYING, CAPTURING, and DISCLOSURE OF COMPUTER ACTIVITY.</p>
-        <p class="mt-6 text-center"><a target="_blank" href="https://doe.responsibledisclosure.com/hc/en-us">Vulnerability Disclosure Program</a></p>
+        <p>
+          This is a Department of Energy (DOE) computer system. DOE computer systems are provided for the processing of official U.S. Government information only. All data contained within DOE computer systems is owned by the DOE, and may be audited, intercepted, recorded, read, copied, or captured in any manner and disclosed in any manner, by authorized personnel. THERE IS NO RIGHT OF PRIVACY IN THIS SYSTEM. System personnel may disclose any potential evidence of crime found on DOE computer systems to appropriate authorities. USE OF THIS SYSTEM BY ANY USER, AUTHORIZED OR UNAUTHORIZED, CONSTITUTES CONSENT TO THIS AUDITING, INTERCEPTION, RECORDING, READING, COPYING, CAPTURING, and DISCLOSURE OF COMPUTER ACTIVITY.
+        </p>
+        <p class="mt-6 text-center">
+          <a target="_blank" href="https://doe.responsibledisclosure.com/hc/en-us">
+            Vulnerability Disclosure Program
+          </a>
+        </p>
       </div>
     </div>
     """
