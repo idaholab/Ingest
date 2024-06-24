@@ -94,6 +94,9 @@ defmodule IngestWeb.Router do
       live "/dashboard/destinations/:id", DestinationsLive, :edit
       live "/dashboard/destinations/register_client", DestinationsLive, :register_client
 
+      live "/dashboard/member/projects", MembersProjectsLive, :index
+      live "/dashboard/member/projects/:id", MembersProjectShowLive, :index
+
       live "/dashboard/projects", ProjectsLive, :index
       live "/dashboard/projects/accept/:id", ProjectsLive, :invite
       live "/dashboard/projects/new", ProjectsLive, :new
