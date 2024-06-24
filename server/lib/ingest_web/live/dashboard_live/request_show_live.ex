@@ -340,7 +340,6 @@ defmodule IngestWeb.RequestShowLive do
                 >
                   <div class="flex flex-col cursor-pointer">
                     <div class="flex justify-between">
-                      <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
                       <p class="font-normal">Published</p>
 
                       <span :if={@request.status == :published}>
@@ -365,6 +364,28 @@ defmodule IngestWeb.RequestShowLive do
                 </li>
               </ul>
             </div>
+          </div>
+        </div>
+        <div>
+          <div class="relative ">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true"></div>
+          </div>
+          <div class="relative flex justify-center">
+            <.icon
+              :if={@request.status == :published}
+              name="hero-check-circle"
+              class="text-green-600 w-40 h-40"
+            />
+            <.icon
+              :if={@request.status == :draft}
+              name="hero-exclamation-circle"
+              class="text-gray-600 w-40 h-40"
+            />
+          </div>
+
+          <div class="relative flex justify-center">
+            <p :if={@request.status == :published}>Request Published and Acting Normally</p>
+            <p :if={@request.status == :draft}>Request Not Published</p>
           </div>
         </div>
       </div>
@@ -441,26 +462,212 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
         <!-- STATUS -->
-        <div class="ml-4">
-          <div class="relative ">
-            <div class="absolute inset-0 flex items-center" aria-hidden="true"></div>
+        <div class="mx-auto max-w-lg">
+          <div class="relative mt-10">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center">
+              <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+                Share
+              </span>
+            </div>
           </div>
-          <div class="relative flex justify-center">
-            <.icon
-              :if={@request.status == :published}
-              name="hero-check-circle"
-              class="text-green-600 w-40 h-40"
-            />
-            <.icon
-              :if={@request.status == :draft}
-              name="hero-exclamation-circle"
-              class="text-gray-600 w-40 h-40"
-            />
-          </div>
+          <div class=" pt-4">
+            <div class="text-center">
+              <svg
+                class="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+              <h2 class="mt-2 text-base font-semibold leading-6 text-gray-900">
+                Share Data Request
+              </h2>
+              <p class="mt-1 text-sm text-gray-500">
+                As the owner of this request, you can send direct invitations to upload data.
+              </p>
+            </div>
+            <ul role="list" class="divide-y divide-gray-100">
+              <%= for member <- @members do %>
+                <li class="flex items-center justify-between gap-x-6 py-5">
+                  <div class="flex min-w-0 gap-x-4">
+                    <div class="min-w-0 flex-auto">
+                      <p class="text-sm font-semibold leading-6 text-gray-900">
+                        <%= member.email %>
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                      Active
+                    </span>
 
-          <div class="relative flex justify-center">
-            <p :if={@request.status == :published}>Request Published and Acting Normally</p>
-            <p :if={@request.status == :draft}>Request Not Published</p>
+                    <span
+                      data-confirm="Are you sure?"
+                      phx-click="remove_member"
+                      phx-value-email={member.email}
+                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
+                    >
+                      Remove
+                    </span>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+            <form action="#" class="mt-12 flex text-center">
+              <label id="listbox-label" class="sr-only">Change visibility </label>
+              <div class="relative pl-12">
+                <div class="inline-flex divide-x divide-white-700 rounded-md shadow-sm">
+                  <div class={
+                    if @request.visibility == :public do
+                      "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
+                    else
+                      "inline-flex items-center gap-x-1.5 rounded-l-md bg-indigo-600 px-3 py-2 text-white shadow-sm"
+                    end
+                  }>
+                    <svg
+                      class="-ml-0.5 h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <p :if={@request.visibility == :public} class="text-sm font-semibold">Public</p>
+                    <p :if={@request.visibility == :private} class="text-sm font-semibold">Private</p>
+                  </div>
+                  <button
+                    phx-click={
+                      JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
+                    }
+                    type="button"
+                    class={
+                      if @request.visibility == :public do
+                        "inline-flex items-center rounded-l-none rounded-r-md bg-green-600 p-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                      else
+                        "inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                      end
+                    }
+                    aria-haspopup="listbox"
+                    aria-expanded="true"
+                    aria-labelledby="listbox-label"
+                  >
+                    <span class="sr-only">Change published status</span>
+                    <svg
+                      class="h-5 w-5 text-white"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <ul
+                  phx-click-away={
+                    JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
+                  }
+                  id="visibility_dropdown"
+                  class=" hidden absolute left-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  tabindex="-1"
+                  role="listbox"
+                  aria-labelledby="listbox-label"
+                  aria-activedescendant="listbox-option-0"
+                >
+                  <li
+                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                    id="listbox-option-0"
+                    role="option"
+                    phx-click="set_public"
+                  >
+                    <div class="flex flex-col cursor-pointer">
+                      <div class="flex justify-between">
+                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                        <p class="font-normal">Public</p>
+
+                        <span :if={@request.visibility == :public}>
+                          <svg
+                            class="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                      <p class="mt-2">
+                        Allow all users to upload data. Visible in searches.
+                      </p>
+                    </div>
+                  </li>
+
+                  <li
+                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                    id="listbox-option-0"
+                    role="option"
+                    phx-click="set_private"
+                  >
+                    <div class="flex flex-col cursor-pointer">
+                      <div class="flex justify-between">
+                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                        <p class="font-normal">Private</p>
+
+                        <span :if={@request.visibility == :private}>
+                          <svg
+                            class="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                      <p class="mt-2">
+                        Allow only invited users to upload data.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <.link patch={~p"/dashboard/requests/#{@request.id}/invite"}>
+                  <button class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                    Send Invite
+                  </button>
+                </.link>
+              </div>
+              <button class="ml-4 flex-shrink-0 rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                Copy Link
+              </button>
+            </form>
           </div>
         </div>
       </div>
@@ -577,241 +784,6 @@ defmodule IngestWeb.RequestShowLive do
                 </button>
               </.link>
             </div>
-          </div>
-        </div>
-
-        <div class="mx-auto max-w-lg">
-          <div class=" pt-4">
-            <div class="text-center">
-              <svg
-                class="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 48 48"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-              <h2 class="mt-2 text-base font-semibold leading-6 text-gray-900">
-                Share Data Request
-              </h2>
-              <p class="mt-1 text-sm text-gray-500">
-                As the owner of this request, you can send direct invitations to upload data.
-              </p>
-            </div>
-            <ul role="list" class="divide-y divide-gray-100">
-              <%= for member <- @members do %>
-                <li class="flex items-center justify-between gap-x-6 py-5">
-                  <div class="flex min-w-0 gap-x-4">
-                    <div class="min-w-0 flex-auto">
-                      <p class="text-sm font-semibold leading-6 text-gray-900">
-                        <%= member.email %>
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                      Active
-                    </span>
-
-                    <span
-                      data-confirm="Are you sure?"
-                      phx-click="remove_member"
-                      phx-value-email={member.email}
-                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
-                    >
-                      Remove
-                    </span>
-                  </div>
-                </li>
-              <% end %>
-            </ul>
-            <form action="#" class="mt-12 flex text-center">
-              <label id="listbox-label" class="sr-only">Change visibility </label>
-              <div class="relative pl-12">
-                <div class="inline-flex divide-x divide-white-700 rounded-md shadow-sm">
-                  <div class={
-                    if @request.visibility == :public do
-                      "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
-                    else
-                      "inline-flex items-center gap-x-1.5 rounded-l-md bg-indigo-600 px-3 py-2 text-white shadow-sm"
-                    end
-                  }>
-                    <svg
-                      class="-ml-0.5 h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                    <p :if={@request.visibility == :public} class="text-sm font-semibold">Public</p>
-                    <p :if={@request.visibility == :internal} class="text-sm font-semibold">
-                      Internal Only
-                    </p>
-                    <p :if={@request.visibility == :private} class="text-sm font-semibold">Private</p>
-                  </div>
-                  <button
-                    phx-click={
-                      JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
-                    }
-                    type="button"
-                    class={
-                      if @request.visibility == :public do
-                        "inline-flex items-center rounded-l-none rounded-r-md bg-green-600 p-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-gray-50"
-                      else
-                        "inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
-                      end
-                    }
-                    aria-haspopup="listbox"
-                    aria-expanded="true"
-                    aria-labelledby="listbox-label"
-                  >
-                    <span class="sr-only">Change published status</span>
-                    <svg
-                      class="h-5 w-5 text-white"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <ul
-                  phx-click-away={
-                    JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
-                  }
-                  id="visibility_dropdown"
-                  class=" hidden absolute left-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                  tabindex="-1"
-                  role="listbox"
-                  aria-labelledby="listbox-label"
-                  aria-activedescendant="listbox-option-0"
-                >
-                  <li
-                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
-                    id="listbox-option-0"
-                    role="option"
-                    phx-click="set_public"
-                  >
-                    <div class="flex flex-col cursor-pointer">
-                      <div class="flex justify-between">
-                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                        <p class="font-normal">Public</p>
-
-                        <span :if={@request.visibility == :public}>
-                          <svg
-                            class="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                              clip-rule="evenodd"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                      <p class="mt-2">
-                        Allow all users with approved email domains to upload data. Visible in searches.
-                      </p>
-                    </div>
-                  </li>
-                  <li
-                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
-                    id="listbox-option-0"
-                    role="option"
-                    phx-click="set_internal"
-                  >
-                    <div class="flex flex-col cursor-pointer">
-                      <div class="flex justify-between">
-                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                        <p class="font-normal">Internal Only</p>
-
-                        <span :if={@request.visibility == :internal}>
-                          <svg
-                            class="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                              clip-rule="evenodd"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                      <p class="mt-2">
-                        Allow all users with approved email domains to upload data. Not in searches.
-                      </p>
-                    </div>
-                  </li>
-                  <li
-                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
-                    id="listbox-option-0"
-                    role="option"
-                    phx-click="set_private"
-                  >
-                    <div class="flex flex-col cursor-pointer">
-                      <div class="flex justify-between">
-                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                        <p class="font-normal">Private</p>
-
-                        <span :if={@request.visibility == :private}>
-                          <svg
-                            class="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                              clip-rule="evenodd"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                      <p class="mt-2">
-                        Allow only invited users to upload data.
-                      </p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <.link patch={~p"/dashboard/requests/#{@request.id}/invite"}>
-                  <button class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                    Send Invite
-                  </button>
-                </.link>
-              </div>
-              <button
-                type="submit"
-                class="ml-4 flex-shrink-0 rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Copy Link
-              </button>
-            </form>
           </div>
         </div>
       </div>
