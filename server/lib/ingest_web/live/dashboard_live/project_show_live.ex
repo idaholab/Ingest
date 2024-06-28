@@ -56,7 +56,6 @@ defmodule IngestWeb.ProjectShowLive do
             <:action :let={{_id, template}}>
               <.link
                 data-confirm={check_use(@project, "Template")}
-                phx-click="remove_template"
                 phx-value-id={template.id}
                 class="text-red-600 hover:text-red-900"
                 phx-click={

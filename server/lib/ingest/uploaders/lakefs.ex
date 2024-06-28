@@ -5,7 +5,6 @@ defmodule Ingest.Uploaders.Lakefs do
   """
   alias Ingest.Accounts.User
   alias Ingest.Requests.Request
-  alias Ingest.Destinations.S3Config
   alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.Destination
 
@@ -133,7 +132,7 @@ defmodule Ingest.Uploaders.Lakefs do
 
       branch_name
     else
-      {:error, err} -> nil
+      {:error, _err} -> nil
     end
   end
 end

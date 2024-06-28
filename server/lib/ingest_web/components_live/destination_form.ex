@@ -2,7 +2,6 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   @moduledoc """
   Destination Form is the form for creating/editing Destinations
   """
-  alias Ingest.Destinations.Destination
   use IngestWeb, :live_component
 
   @impl true
@@ -649,7 +648,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
   defp collect_classifications(form) do
     elems =
-      :maps.filter(fn k, v -> v == "true" end, %{
+      :maps.filter(fn _k, v -> v == "true" end, %{
         ouo: form["ouo"],
         pii: form["pii"],
         ucni: form["ucni"],

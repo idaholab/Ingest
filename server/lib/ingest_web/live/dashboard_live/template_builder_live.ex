@@ -377,7 +377,7 @@ defmodule IngestWeb.TemplateBuilderLive do
     end
   end
 
-  defp save_field(socket, field_params \\ %{}) do
+  defp save_field(socket, field_params) do
     fields =
       Enum.map(socket.assigns.fields, fn f ->
         field = Map.from_struct(f)

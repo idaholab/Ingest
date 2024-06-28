@@ -32,7 +32,7 @@ alias Ingest.Uploads
     roles: :manager
   })
 
-{:ok, third_user} =
+{:ok, _third_user} =
   Accounts.register_user(%{
     email: "member@member.com",
     password: "xxxxxxxxxxxx",
@@ -47,11 +47,11 @@ alias Ingest.Uploads
     inserted_by: user.id
   })
 
-{:ok, project_member} = Projects.add_user_to_project(project, second_user)
-{:ok, invite} = Projects.invite(project, second_user)
+{:ok, _project_member} = Projects.add_user_to_project(project, second_user)
+{:ok, _invite} = Projects.invite(project, second_user)
 
 # build a second project owned by the second_user so we can see how invites look
-{:ok, project2} =
+{:ok, _project2} =
   Projects.create_project(%{
     name: "Emerald",
     description: "Standard project",
@@ -116,7 +116,7 @@ alias Ingest.Uploads
     ]
   })
 
-{:ok, template_2} =
+{:ok, _template_2} =
   Requests.create_template(%{
     name: "Test Template 2",
     inserted_by: user.id,
@@ -174,7 +174,7 @@ alias Ingest.Uploads
     ]
   })
 
-{:ok, destination} =
+{:ok, _destination} =
   Destinations.create_destination_for_user(user, %{
     name: "Azure Storage Emulation",
     type: :azure,
@@ -221,7 +221,7 @@ alias Ingest.Uploads
     user
   )
 
-{:ok, upload} =
+{:ok, _upload} =
   Uploads.create_upload(
     %{
       filename: "data.parquet",
@@ -231,7 +231,7 @@ alias Ingest.Uploads
     user
   )
 
-{:ok, notification} =
+{:ok, _notification} =
   Accounts.create_notifications(
     %{
       body: "Upload Requires Metadata",

@@ -145,33 +145,32 @@ defmodule Ingest.Destinations do
   def get_destination!(id) do
     destination = Repo.get!(Destination, id)
 
-    destination_without_sensitive_data =
-      case destination.type do
-        :s3 ->
-          %{
-            destination
-            | s3_config: %{destination.s3_config | access_key_id: nil, secret_access_key: nil}
-          }
-
-        :azure ->
-          %{
-            destination
-            | azure_config: %{destination.azure_config | account_name: nil, account_key: nil}
-          }
-
-        :lakefs ->
-          %{
-            destination
-            | lakefs_config: %{
-                destination.lakefs_config
-                | access_key_id: nil,
-                  secret_access_key: nil
-              }
-          }
-
-        _ ->
+    case destination.type do
+      :s3 ->
+        %{
           destination
-      end
+          | s3_config: %{destination.s3_config | access_key_id: nil, secret_access_key: nil}
+        }
+
+      :azure ->
+        %{
+          destination
+          | azure_config: %{destination.azure_config | account_name: nil, account_key: nil}
+        }
+
+      :lakefs ->
+        %{
+          destination
+          | lakefs_config: %{
+              destination.lakefs_config
+              | access_key_id: nil,
+                secret_access_key: nil
+            }
+        }
+
+      _ ->
+        destination
+    end
   end
 
   @doc """
