@@ -33,6 +33,7 @@ defmodule Ingest.MixProject do
   defp deps do
     [
       {:argon2_elixir, "~> 4.0"},
+      {:bandit, "~> 1.5"},
       {:phoenix, "~> 1.7.7"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.10"},

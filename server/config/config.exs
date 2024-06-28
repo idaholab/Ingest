@@ -20,6 +20,7 @@ config :ingest, :generators,
 
 # Configures the endpoint
 config :ingest, IngestWeb.Endpoint,
+  adapter: Bandit.PhoenixAdapter,
   url: [host: "localhost"],
   render_errors: [
     formats: [html: IngestWeb.ErrorHTML, json: IngestWeb.ErrorJSON],
