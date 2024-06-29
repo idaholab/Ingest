@@ -169,9 +169,10 @@ defmodule IngestWeb.UploadShowLive do
 
   defp handle_progress(:files, entry, socket) do
     if entry.done? do
-      consume_uploaded_entry(socket, entry, fn %{} = meta ->
-        {:ok, meta}
-      end)
+      meta =
+        consume_uploaded_entry(socket, entry, fn %{} = meta ->
+          {:ok, meta}
+        end)
 
       {:ok, upload} =
         Uploads.create_upload(

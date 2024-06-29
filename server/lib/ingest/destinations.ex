@@ -173,6 +173,10 @@ defmodule Ingest.Destinations do
     end
   end
 
+  def get_destination(id) do
+    Repo.get(Destination, id)
+  end
+
   @doc """
   Creates a destination.
 
