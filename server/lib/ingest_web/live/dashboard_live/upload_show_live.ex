@@ -1,4 +1,6 @@
 defmodule IngestWeb.UploadShowLive do
+  require Logger
+  alias Ingest.Uploads.Upload
   alias Ingest.Requests
   alias Ingest.Uploads
   use IngestWeb, :live_view
@@ -169,6 +171,9 @@ defmodule IngestWeb.UploadShowLive do
 
   defp handle_progress(:files, entry, socket) do
     if entry.done? do
+      # meta should have the information for the destination and the location of the file
+      # in the destination. We need to extract the information from the meta and then
+      # pass it back into the db to record where in the destination this file is
       meta =
         consume_uploaded_entry(socket, entry, fn %{} = meta ->
           {:ok, meta}
@@ -184,6 +189,17 @@ defmodule IngestWeb.UploadShowLive do
           socket.assigns.request,
           socket.assigns.current_user
         )
+
+      # record the path the file ended up in each of the destinations
+      {statuses, _paths} =
+        Enum.map(meta.destinations, fn {destination, path} ->
+          Uploads.create_upload_destination_path(%{path: path}, upload, destination)
+        end)
+        |> Enum.unzip()
+
+      if Enum.member?(statuses, :error) do
+        Logger.error("failed to create upload destination paths")
+      end
 
       {:noreply,
        socket

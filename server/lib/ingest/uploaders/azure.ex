@@ -53,7 +53,8 @@ defmodule Ingest.Uploaders.Azure do
     end
   end
 
-  def commit(%Destinations.Destination{} = _destination, _filename, state) do
-    AzureStorage.Blob.put_block_list(state.parts, state.blob, state.config)
+  def commit(%Destinations.Destination{} = destination, _filename, state) do
+    {:ok, location} = AzureStorage.Blob.put_block_list(state.parts, state.blob, state.config)
+    {:ok, {destination, location}}
   end
 end

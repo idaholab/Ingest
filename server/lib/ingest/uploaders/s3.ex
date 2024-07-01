@@ -42,12 +42,12 @@ defmodule Ingest.Uploaders.S3 do
     end
   end
 
-  def commit(%Destination{} = _destination, _filename, state) do
+  def commit(%Destination{} = destination, _filename, state) do
     result = ExAws.S3.Upload.complete(state.parts, state.op, state.config)
 
     case result do
       {:ok, %{body: %{location: location}}} ->
-        {:ok, location}
+        {:ok, {destination, location}}
 
       _ ->
         {:error, result}

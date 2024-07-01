@@ -70,7 +70,7 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
         if Enum.member?(statuses, :error) do
           {:error, destinations}
         else
-          {:ok, %{filename: state.filename}}
+          {:ok, %{filename: state.filename, destinations: destinations}}
         end
 
       :cancel ->

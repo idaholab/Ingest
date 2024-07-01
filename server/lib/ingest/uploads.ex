@@ -4,6 +4,8 @@ defmodule Ingest.Uploads do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Uploads.UploadDestinationPath
+  alias Ingest.Destinations.Destination
   alias Ingest.Requests.Template
   alias Ingest.Uploads.Metadata
   alias Ingest.Requests.Request
@@ -100,6 +102,22 @@ defmodule Ingest.Uploads do
     |> Upload.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:user, user)
     |> Ecto.Changeset.put_assoc(:request, request)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Creates a new UploadDestinationPath - needed to help us understand where an upload
+  lives on a given destination.
+  """
+  def create_upload_destination_path(
+        attrs \\ %{},
+        %Upload{} = upload,
+        %Destination{} = destination
+      ) do
+    %UploadDestinationPath{}
+    |> UploadDestinationPath.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:destination, destination)
+    |> Ecto.Changeset.put_assoc(:upload, upload)
     |> Repo.insert()
   end
 
