@@ -18,6 +18,17 @@ defmodule Ingest.Uploaders.Azure do
       ssl: Map.get(d_config, :ssl, true)
     }
 
+    # first we check if the object by filename and path exist in the container already
+    # if it does, then we need to change the name and appened a - COPY (date) to the end of it
+    filename =
+      if AzureStorage.Container.new(d_config.container)
+         |> AzureStorage.Blob.new("#{d_config.path}/#{filename}")
+         |> AzureStorage.Blob.exists?(config) do
+        "#{filename} - COPY #{DateTime.now!("UTC") |> DateTime.to_naive()}"
+      else
+        filename
+      end
+
     blob =
       AzureStorage.Container.new(d_config.container)
       |> AzureStorage.Blob.new("#{d_config.path}/#{filename}")
@@ -54,7 +65,7 @@ defmodule Ingest.Uploaders.Azure do
   end
 
   def commit(%Destinations.Destination{} = destination, _filename, state) do
-    {:ok, location} = AzureStorage.Blob.put_block_list(state.parts, state.blob, state.config)
-    {:ok, {destination, location}}
+    {:ok, _location} = AzureStorage.Blob.put_block_list(state.parts, state.blob, state.config)
+    {:ok, {destination, state.blob.name}}
   end
 end

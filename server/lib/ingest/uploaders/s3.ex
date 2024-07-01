@@ -7,6 +7,18 @@ defmodule Ingest.Uploaders.S3 do
   alias Ingest.Destinations.Destination
 
   def init(%Destination{} = destination, filename, state) do
+    # first we check if the object by filename and path exist in the bucket already
+    # if it does, then we need to change the name and appened a - COPY (date) to the end of it
+    filename =
+      with s3_op <- ExAws.S3.head_object(destination.s3_config.bucket, filename),
+           s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
+           {:ok, %{body: body}} <- ExAws.request(s3_op, s3_config) do
+        "#{filename} - COPY #{DateTime.now!("UTC") |> DateTime.to_naive()}"
+      else
+        # assumption is that the error is a 404 not found, so we can keep the filename
+        _ -> filename
+      end
+
     with s3_op <- ExAws.S3.initiate_multipart_upload(destination.s3_config.bucket, filename),
          s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
          {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
@@ -46,8 +58,8 @@ defmodule Ingest.Uploaders.S3 do
     result = ExAws.S3.Upload.complete(state.parts, state.op, state.config)
 
     case result do
-      {:ok, %{body: %{location: location}}} ->
-        {:ok, {destination, location}}
+      {:ok, %{body: %{key: key}}} ->
+        {:ok, {destination, key}}
 
       _ ->
         {:error, result}

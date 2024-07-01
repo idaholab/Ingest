@@ -39,3 +39,5 @@ npm-debug.log
 
 .elixir-tools
 .elixir_ls
+
+/__blob_storage__/

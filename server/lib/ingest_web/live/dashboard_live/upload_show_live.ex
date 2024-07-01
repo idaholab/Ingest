@@ -1,6 +1,5 @@
 defmodule IngestWeb.UploadShowLive do
   require Logger
-  alias Ingest.Uploads.Upload
   alias Ingest.Requests
   alias Ingest.Uploads
   use IngestWeb, :live_view
