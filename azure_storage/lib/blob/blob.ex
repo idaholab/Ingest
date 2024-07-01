@@ -52,6 +52,44 @@ defmodule AzureStorage.Blob do
   end
 
   @doc """
+  Gets a set of Blob properties. This will fail with 404 if the blob does not exist, in that case we will
+  return nil. In all other cases wew ill return the full error.
+
+  {:ok, %{optional(binary()) => [binary()]} on success
+  nil on 404
+  {:error, %Req.Response{}} on error
+  """
+  def get_blob_properties(%Blob{} = blob, %Config{} = config, opts \\ []) do
+    {_request, response} =
+      Req.Request.new(
+        method: :head,
+        headers: [
+          {"x-ms-blob-type", Keyword.get(opts, :blob_type, "BlockBlob")}
+        ],
+        url:
+          "#{build_base_url(config)}/#{URI.encode(blob.container.name)}/#{URI.encode(blob.name)}"
+      )
+      |> sign(config)
+      |> Req.Request.run_request()
+
+    case response.status do
+      200 -> {:ok, response.headers}
+      404 -> nil
+      _ -> {:error, response}
+    end
+  end
+
+  @doc """
+  Returns whether or not a blob exists. Errors are returned as falsey
+  """
+  def exists?(%Blob{} = blob, %Config{} = config, opts \\ []) do
+    case get_blob_properties(blob, config, opts) do
+      {:ok, _props} -> true
+      _ -> false
+    end
+  end
+
+  @doc """
   put_block uploads a Block in an uncommitted state. Note, 4mb or less in size for each block.
   https://learn.microsoft.com/en-us/rest/api/storageservices/put-block
 

@@ -31,6 +31,22 @@ defmodule AzureStorageTest do
         |> Blob.put_blob(azurite_config(), "testing data")
     end
 
+    test "can check blob properties" do
+      {:ok, blob} =
+        Container.new("test")
+        |> Blob.new("test")
+        |> Blob.put_blob(azurite_config(), "testing data")
+
+      {:ok, _properties} = blob |> Blob.get_blob_properties(azurite_config())
+    end
+
+    test "can check that blob does not exist" do
+      false =
+        Container.new("test")
+        |> Blob.new("non-existent")
+        |> Blob.exists?(azurite_config())
+    end
+
     test "can upload a multiple blocks to a single blob" do
       {:ok, _block_id} =
         Container.new("test")
