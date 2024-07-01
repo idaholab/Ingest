@@ -12,7 +12,7 @@ defmodule Ingest.Uploaders.S3 do
     filename =
       with s3_op <- ExAws.S3.head_object(destination.s3_config.bucket, filename),
            s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
-           {:ok, %{body: body}} <- ExAws.request(s3_op, s3_config) do
+           {:ok, %{body: _body}} <- ExAws.request(s3_op, s3_config) do
         "#{filename} - COPY #{DateTime.now!("UTC") |> DateTime.to_naive()}"
       else
         # assumption is that the error is a 404 not found, so we can keep the filename
