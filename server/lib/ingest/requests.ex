@@ -140,7 +140,7 @@ defmodule Ingest.Requests do
       from(r in Request,
         join: m in RequestMembers,
         on: r.id == m.request_id,
-        where: ^user.email == m.email
+        where: ^user.email == m.email and r.status == :published
       )
     )
     |> Repo.preload(:project)
@@ -312,7 +312,7 @@ defmodule Ingest.Requests do
       from(r in Request,
         join: u in Upload,
         on: u.request_id == r.id,
-        where: r.inserted_by == ^user.id,
+        where: r.inserted_by == ^user.id and r.status == :published,
         group_by: r.id,
         limit: 50,
         select: r
