@@ -4,6 +4,7 @@ defmodule IngestWeb.RequestShowLive do
   alias Ingest.Requests
   alias Ingest.Repo
   alias Ingest.Projects
+  alias Ingest.Uploads
   use IngestWeb, :live_view
 
   @impl true
@@ -833,6 +834,214 @@ defmodule IngestWeb.RequestShowLive do
           request={@request}
         />
       </.modal>
+
+      <div class="mx-auto max-w-4xl">
+        <div class="mt-10">
+          <div>
+            <div class="relative">
+              <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="w-full border-t border-gray-300"></div>
+              </div>
+              <div class="relative flex justify-center">
+                <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+                  Uploads
+                </span>
+              </div>
+            </div>
+
+            <div
+              class="mt-8 flow-root"
+              phx-click-away={
+                JS.hide(
+                  to: "#filter_sort",
+                  transition: {"ease-in duration-75", "opacity-100 scale-100", "opacity-0 scale-95"}
+                )
+              }
+            >
+              <div class="mx-auto ">
+                <button
+                  phx-click={
+                    JS.toggle(
+                      to: "#filter_sort",
+                      in: {"ease-out duration-100", "opacity-0 scale-95", "opacity-100 scale-100"},
+                      out: {"ease-in duration-75", "opacity-100 scale-100", "opacity-0 scale-95"}
+                    )
+                  }
+                  class="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block cursor-pointer"
+                >
+                  Filter & Sort Results<.icon name="hero-adjustments-horizontal" />
+                </button>
+
+                <div class="relative flex-none ">
+                  <div
+                    id="filter_sort"
+                    class="absolute hidden  z-10 mt-2 w-72 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
+                    role="menu"
+                    aria-orientation="vertical"
+                    aria-labelledby="options-menu-0-button"
+                    tabindex="-1"
+                  >
+                    <.form for={@filter_form} id="filter_form" phx-change="reload">
+                      <div class="sm:col-span-4">
+                        <label for="sort-select" class="mx-2 text-sm">
+                          Sort by:
+                        </label>
+                        <select
+                          id="sort_select"
+                          name="sort_select"
+                          class="mt-2 block mx-2 w-64 rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm"
+                        >
+                          <%= Phoenix.HTML.Form.options_for_select(
+                            [{"Date", :date}, {"Name", :name}, {"Status", :status}],
+                            @filter_form[:sort].value
+                          ) %>
+                        </select>
+
+                        <div class="mx-3 my-2">
+                          <.input
+                            type="checkbox"
+                            field={@filter_form[:filter_completed]}
+                            label="Show only incompleted uploads"
+                          />
+                        </div>
+                      </div>
+                    </.form>
+                  </div>
+                </div>
+              </div>
+              <ul
+                class="mt-8 flow-root"
+                id="uploads-table"
+                phx-update="stream"
+                phx-viewport-top={@page > 1 && "prev-page"}
+                phx-viewport-bottom={!@end_of_timeline? && "next-page"}
+                phx-page-loading
+                class={[
+                  if(@end_of_timeline?, do: "pb-10", else: "pb-[calc(200vh)]"),
+                  if(@page == 1, do: "pt-10", else: "pt-[calc(200vh)]")
+                ]}
+                class="w-[40rem] mt-11 sm:w-full"
+                role="list"
+                class="divide-y divide-gray-100"
+              >
+                <li
+                  :for={{id, upload} <- @streams.uploads}
+                  id={id}
+                  class="flex items-center justify-between gap-x-6 py-5"
+                >
+                  <div class="min-w-0">
+                    <div class="flex items-start gap-x-3">
+                      <p class="text-sm font-semibold leading-6 text-gray-900">
+                        <%= upload.filename %>
+                      </p>
+                      <p
+                        :if={
+                          upload.metadatas != [] &&
+                            Enum.filter(upload.metadatas, fn m -> !m.submitted end) == []
+                        }
+                        class="mt-0.5 whitespace-nowrap rounded-md bg-green-50 px-1.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20"
+                      >
+                        Complete
+                      </p>
+                      <p
+                        :if={
+                          upload.metadatas == [] ||
+                            Enum.filter(upload.metadatas, fn m -> !m.submitted end) != []
+                        }
+                        class="mt-0.5 whitespace-nowrap rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+                      >
+                        Needs Supporting Data
+                      </p>
+                    </div>
+                    <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
+                      <p class="whitespace-nowrap">
+                        Uploaded on
+                        <time datetime={upload.inserted_at}>
+                          <%= NaiveDateTime.to_date(upload.inserted_at) %>
+                        </time>
+                      </p>
+                      <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 fill-current">
+                        <circle cx="1" cy="1" r="1" />
+                      </svg>
+                      <p class="truncate">Uploaded by <%= upload.user.name %></p>
+                    </div>
+                  </div>
+                  <div class="flex flex-none items-center gap-x-4">
+                    <a
+                      phx-click-away={
+                        JS.hide(
+                          to: "#upload-menu-#{upload.id}",
+                          transition:
+                            {"ease-in duration-75", "opacity-100 scale-100", "opacity-0 scale-95"}
+                        )
+                      }
+                      phx-click={
+                        JS.toggle(
+                          to: "#upload-menu-#{upload.id}",
+                          in:
+                            {"ease-out duration-100", "opacity-0 scale-95", "opacity-100 scale-100"},
+                          out: {"ease-in duration-75", "opacity-100 scale-100", "opacity-0 scale-95"}
+                        )
+                      }
+                      class="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block cursor-pointer"
+                    >
+                      <.icon name="hero-pencil-square" />
+                    </a>
+                    <div class="relative flex-none ">
+                      <div
+                        id={"upload-menu-#{upload.id}"}
+                        class="hidden absolute right-0 z-10 mt-2 w-64 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
+                        role="menu"
+                        aria-orientation="vertical"
+                        aria-labelledby="options-menu-0-button"
+                        tabindex="-1"
+                      >
+                        <!-- Active: "bg-gray-50", Not Active: "" -->
+                        <a
+                          href="#"
+                          class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
+                          role="menuitem"
+                          tabindex="-1"
+                          id="options-menu-0-item-0"
+                        >
+                          Enter Supporting Data
+                        </a>
+                        <a
+                          href="#"
+                          class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
+                          role="menuitem"
+                          tabindex="-1"
+                          id="options-menu-0-item-0"
+                        >
+                          Request Supporting Data
+                        </a>
+                        <a
+                          class="disabled block px-3 py-1 text-sm leading-6 text-gray-900 bg-gray-50"
+                          role="menuitem"
+                          tabindex="-1"
+                          id="options-menu-0-item-2"
+                        >
+                          Edit in Destination -
+                          <p class="text-xs italic">coming soon</p>
+                        </a>
+                        <a
+                          href="#"
+                          class="block px-3 py-1 text-sm leading-6 text-red-600 hover:bg-gray-50"
+                          role="menuitem"
+                          tabindex="-1"
+                          id="options-menu-0-item-1"
+                        >
+                          Delete
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     """
   end
@@ -861,6 +1070,7 @@ defmodule IngestWeb.RequestShowLive do
 
     {:noreply,
      socket
+     |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
      |> assign(:request_templates, request.templates)
      |> assign(:request_destinations, request.destinations)
      |> assign(:project_templates, project.templates)
@@ -869,6 +1079,9 @@ defmodule IngestWeb.RequestShowLive do
      |> assign(:request, request)
      |> assign(:request_form, to_form(changeset))
      |> stream(:templates, request.templates)
+     |> assign(page: 1, per_page: 10)
+     |> assign(filter_completed: false, sort: "date")
+     |> paginate_uploads(1)
      |> stream(:destinations, request.destinations)}
   end
 
@@ -950,5 +1163,64 @@ defmodule IngestWeb.RequestShowLive do
      |> assign(:request, Requests.get_request!(socket.assigns.request.id))
      |> put_flash(:info, "Member has been removed from this data request!")
      |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  @impl true
+  def handle_event("next-page", _, socket) do
+    {:noreply, paginate_uploads(socket, socket.assigns.page + 1)}
+  end
+
+  @impl true
+  def handle_event("prev-page", %{"_overran" => true}, socket) do
+    {:noreply, paginate_uploads(socket, 1)}
+  end
+
+  @impl true
+  def handle_event("prev-page", _, socket) do
+    if socket.assigns.page > 1 do
+      {:noreply, paginate_uploads(socket, socket.assigns.page - 1)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "reload",
+        %{"filter_completed" => filter_completed, "sort_select" => sort_select},
+        socket
+      ) do
+    {:noreply,
+     socket
+     |> assign(filter_completed: filter_completed == "true", sort: sort_select)
+     |> paginate_uploads(1, true)}
+  end
+
+  defp paginate_uploads(socket, new_page, hard_reset \\ false) when new_page >= 1 do
+    %{per_page: per_page, page: cur_page} = socket.assigns
+
+    uploads =
+      Uploads.uploads_for_request(socket.assigns.request, (new_page - 1) * per_page, per_page,
+        filter_completed: socket.assigns.filter_completed,
+        sort: socket.assigns.sort
+      )
+
+    {uploads, at, limit} =
+      if new_page >= cur_page do
+        {uploads, -1, per_page * 3 * -1}
+      else
+        {Enum.reverse(uploads), 0, per_page * 3}
+      end
+
+    case uploads do
+      [] ->
+        assign(socket, end_of_timeline?: at == -1)
+
+      [_ | _] = uploads ->
+        socket
+        |> assign(end_of_timeline?: false)
+        |> assign(:page, new_page)
+        |> stream(:uploads, uploads, at: at, limit: limit, reset: hard_reset)
+    end
   end
 end

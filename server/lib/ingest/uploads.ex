@@ -279,4 +279,70 @@ defmodule Ingest.Uploads do
   def uploads_for_request_count(%Request{} = request) do
     Repo.one!(from u in Upload, where: u.request_id == ^request.id, select: count())
   end
+
+  def uploads_for_request(%Request{} = request, offset, limit, opts \\ []) do
+    sort = Keyword.get(opts, :sort, nil)
+    filter_completed = Keyword.get(opts, :filter_completed, false)
+
+    query =
+      if filter_completed do
+        from u in Upload,
+          left_join: m in Metadata,
+          on: u.id == m.upload_id,
+          where: u.request_id == ^request.id and (m.submitted == false or is_nil(m.submitted)),
+          limit: ^limit,
+          offset: ^offset,
+          group_by: u.id,
+          select: u
+      else
+        case sort do
+          "name" ->
+            from u in Upload,
+              left_join: m in Metadata,
+              on: u.id == m.upload_id,
+              where: u.request_id == ^request.id,
+              order_by: u.filename,
+              limit: ^limit,
+              offset: ^offset,
+              group_by: u.id,
+              select: u
+
+          "date" ->
+            from u in Upload,
+              left_join: m in Metadata,
+              on: u.id == m.upload_id,
+              where: u.request_id == ^request.id,
+              order_by: u.inserted_at,
+              limit: ^limit,
+              offset: ^offset,
+              group_by: u.id,
+              select: u
+
+          "status" ->
+            from u in Upload,
+              left_join: m in Metadata,
+              on: u.id == m.upload_id,
+              where: u.request_id == ^request.id,
+              order_by: count(m),
+              limit: ^limit,
+              offset: ^offset,
+              group_by: u.id,
+              select: u
+
+          _ ->
+            from u in Upload,
+              left_join: m in Metadata,
+              on: u.id == m.upload_id,
+              where: u.request_id == ^request.id,
+              limit: ^limit,
+              offset: ^offset,
+              group_by: u.id,
+              select: u
+        end
+      end
+
+    Repo.all(query)
+    |> Repo.preload(:user)
+    |> Repo.preload(:metadatas)
+  end
 end

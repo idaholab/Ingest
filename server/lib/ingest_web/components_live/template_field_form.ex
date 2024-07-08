@@ -102,8 +102,6 @@ defmodule IngestWeb.LiveComponents.TemplateFieldForm do
   end
 
   def handle_event("save", %{"template_field" => field_params}, socket) do
-    dbg([field_params | socket.assigns.fields])
-
     case Ingest.Requests.update_template(socket.assigns.template, %{
            fields: [
              field_params

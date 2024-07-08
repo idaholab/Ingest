@@ -7,6 +7,7 @@ defmodule Ingest.Requests.Request do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Ingest.Uploads.Upload
   alias Ingest.Destinations.Destination
   alias Ingest.Accounts.User
   alias Ingest.Projects.Project
@@ -21,15 +22,16 @@ defmodule Ingest.Requests.Request do
     field :description, :string
     field :allowed_email_domains, {:array, :string}
 
-    belongs_to(:user, User, type: :binary_id, foreign_key: :inserted_by)
-    belongs_to(:project, Project, type: :binary_id, foreign_key: :project_id)
+    belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
+    belongs_to :project, Project, type: :binary_id, foreign_key: :project_id
 
-    many_to_many(:templates, Template, join_through: "request_templates")
+    has_many :uploads, Upload, foreign_key: :request_id
 
-    many_to_many(:destinations, Destination,
+    many_to_many :templates, Template, join_through: "request_templates"
+
+    many_to_many :destinations, Destination,
       join_through: "request_destinations",
       join_keys: [request_id: :id, destination_id: :id]
-    )
 
     timestamps()
   end

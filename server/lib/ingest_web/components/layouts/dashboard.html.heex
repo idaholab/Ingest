@@ -19,6 +19,12 @@
                 out: {"ease-linear 300", "opacity-100", "opacity-0"}
               )
             }
+            phx-click-away={
+              JS.hide(
+                to: ".mobile-sidebar",
+                transition: {"ease-linear 300", "opacity-100", "opacity-0"}
+              )
+            }
           >
             <span class="sr-only">Close sidebar</span>
             <svg
@@ -110,6 +116,13 @@
                   to: "#usermenu",
                   in: {"ease-out duration-100", "opacity-0 scale-95", "opacity-100 scale-100"},
                   out: {"ease-in duration-75", "opacity-100 scale-100", "opacity-0 scale-95"}
+                )
+              }
+              phx-click-away={
+                JS.hide(
+                  to: "#usermenu",
+                  transition:
+                    {"ease-in duration-75", "opacity-100 scale-100", "opacity-0 scale-95"}
                 )
               }
             >
