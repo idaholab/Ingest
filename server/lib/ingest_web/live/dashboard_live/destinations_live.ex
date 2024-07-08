@@ -67,6 +67,15 @@ defmodule IngestWeb.DestinationsLive do
                     Edit
                   </.link>
                 </:action>
+                <:action :let={{_id, destination}}>
+                  <.link
+                    :if={destination.type == :lakefs || destination.type == :s3}
+                    patch={~p"/dashboard/destinations/#{destination}/explore"}
+                    class="text-indigo-600 hover:text-indigo-900"
+                  >
+                    Explore
+                  </.link>
+                </:action>
                 <:action :let={{id, destination}}>
                   <.link
                     class="text-red-600 hover:text-red-900"

@@ -1,5 +1,6 @@
 defmodule IngestWeb.RequestShowLive do
   import Ecto.Query
+  alias Ingest.Uploads.UploadNotifier
   alias Ingest.Requests.RequestMembers
   alias Ingest.Requests
   alias Ingest.Repo
@@ -998,7 +999,7 @@ defmodule IngestWeb.RequestShowLive do
                       >
                         <!-- Active: "bg-gray-50", Not Active: "" -->
                         <a
-                          href="#"
+                          href={~p"/dashboard/uploads/#{@request.id}/#{upload.id}"}
                           class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
                           role="menuitem"
                           tabindex="-1"
@@ -1007,8 +1008,9 @@ defmodule IngestWeb.RequestShowLive do
                           Enter Supporting Data
                         </a>
                         <a
-                          href="#"
-                          class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
+                          phx-click="notify_upload_owner"
+                          phx-value-upload={upload.id}
+                          class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50 cursor-pointer"
                           role="menuitem"
                           tabindex="-1"
                           id="options-menu-0-item-0"
@@ -1025,8 +1027,9 @@ defmodule IngestWeb.RequestShowLive do
                           <p class="text-xs italic">coming soon</p>
                         </a>
                         <a
-                          href="#"
-                          class="block px-3 py-1 text-sm leading-6 text-red-600 hover:bg-gray-50"
+                          phx-click="delete_upload"
+                          phx-value-upload={upload.id}
+                          class="block px-3 py-1 text-sm leading-6 text-red-600 hover:bg-gray-50 cursor-pointer"
                           role="menuitem"
                           tabindex="-1"
                           id="options-menu-0-item-1"
@@ -1163,6 +1166,45 @@ defmodule IngestWeb.RequestShowLive do
      |> assign(:request, Requests.get_request!(socket.assigns.request.id))
      |> put_flash(:info, "Member has been removed from this data request!")
      |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+  end
+
+  @impl true
+  def handle_event("notify_upload_owner", %{"upload" => upload_id}, socket) do
+    upload = Uploads.get_upload!(upload_id)
+
+    with {:ok, _notification} <-
+           UploadNotifier.notify_upload_metadata(
+             :notification,
+             upload.user,
+             upload,
+             upload.request
+           ),
+         {:ok, _notification} <-
+           UploadNotifier.notify_upload_metadata(
+             :email,
+             upload.user.email,
+             upload,
+             upload.request
+           ) do
+      {:noreply, socket |> put_flash(:info, "Successfully notified the upload's owner.")}
+    else
+      {:error, message} ->
+        {:noreply, socket |> put_flash(:error, "Unable to notify upload owner #{message}")}
+    end
+  end
+
+  @impl true
+  def handle_event("delete_upload", %{"upload" => upload_id}, socket) do
+    case Uploads.delete_upload(Uploads.get_upload!(upload_id)) do
+      {:ok, upload} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Successfully deleted upload")
+         |> stream_delete(:uploads, upload)}
+
+      {:error, _changeset} ->
+        {:noreply, socket |> put_flash(:error, "Unable to delete upload.")}
+    end
   end
 
   @impl true

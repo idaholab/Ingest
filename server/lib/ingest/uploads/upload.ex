@@ -18,7 +18,7 @@ defmodule Ingest.Uploads.Upload do
     field :filename, :string
     field :ext, :string
 
-    has_many :metadatas, Metadata, foreign_key: :upload_id
+    has_many :metadatas, Metadata, foreign_key: :upload_id, on_delete: :delete_all
     belongs_to :request, Request, type: :binary_id
     belongs_to :user, User, type: :binary_id, foreign_key: :uploaded_by
 
