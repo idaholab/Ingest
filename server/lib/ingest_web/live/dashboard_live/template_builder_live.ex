@@ -77,6 +77,9 @@ defmodule IngestWeb.TemplateBuilderLive do
                 </span>
               </div>
             </div>
+            <button phx-click="delete_field" phx-value-field={field.id}>
+              <.icon name="hero-trash" />
+            </button>
           </li>
         </ul>
       </div>
@@ -301,6 +304,19 @@ defmodule IngestWeb.TemplateBuilderLive do
     Requests.update_template(socket.assigns.template, %{fields: list})
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("delete_field", %{"field" => id}, socket) do
+    Requests.update_template(socket.assigns.template, %{
+      fields:
+        Enum.filter(socket.assigns.fields, fn f -> f.id != id end)
+        |> Enum.map(fn f -> Map.from_struct(f) end)
+    })
+
+    {:noreply,
+     socket
+     |> push_navigate(to: ~p"/dashboard/templates/#{socket.assigns.template.id}")}
   end
 
   @impl true

@@ -16,7 +16,7 @@ defmodule Ingest.Requests.Template do
     field :description, :string
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
-    embeds_many :fields, TemplateField
+    embeds_many :fields, TemplateField, on_replace: :delete
 
     timestamps()
   end
@@ -45,7 +45,7 @@ defmodule Ingest.Requests.TemplateField do
     field :label, :string
     field :help_text, :string
     field :type, Ecto.Enum, values: [:select, :text, :number, :textarea, :checkbox, :date]
-    field :select_options, {:array, :string}
+    field :select_options, {:array, :string}, default: []
     field :required, :boolean
     field :file_extensions, {:array, :string}
   end
