@@ -22,7 +22,7 @@ defmodule AzureStorage.MixProject do
   defp deps do
     [
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:req, "~> 0.4.0"},
+      {:req, "~> 0.5.0"},
       {:elixir_uuid, "~> 1.2"},
       {:sweet_xml, "~> 0.7.4"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false}
