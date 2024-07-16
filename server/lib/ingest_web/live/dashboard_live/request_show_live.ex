@@ -1051,7 +1051,8 @@ defmodule IngestWeb.RequestShowLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:section, "requests"), layout: {IngestWeb.Layouts, :dashboard}}
+    {:ok, socket |> assign(:section, "requests") |> stream(:uploads, []),
+     layout: {IngestWeb.Layouts, :dashboard}}
   end
 
   @impl true
