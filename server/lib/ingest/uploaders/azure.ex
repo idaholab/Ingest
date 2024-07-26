@@ -7,7 +7,8 @@ defmodule Ingest.Uploaders.Azure do
   alias Ingest.Destinations.AzureConfig
   alias Ingest.Destinations
 
-  def init(%Destinations.Destination{} = destination, filename, state) do
+  def init(%Destinations.Destination{} = destination, filename, state, opts \\ []) do
+    original_filename = Keyword.get(opts, :original_filename, nil)
     %AzureConfig{} = d_config = destination.azure_config
 
     config = %AzureStorage.Config{
@@ -29,6 +30,13 @@ defmodule Ingest.Uploaders.Azure do
         filename
       end
 
+    filename =
+      if original_filename do
+        "#{original_filename} Supporting Data/ #{filename}"
+      else
+        filename
+      end
+
     blob =
       AzureStorage.Container.new(d_config.container)
       |> AzureStorage.Blob.new("#{d_config.path}/#{filename}")
@@ -38,7 +46,7 @@ defmodule Ingest.Uploaders.Azure do
       state |> Map.put(:blob, blob) |> Map.put(:config, config) |> Map.put(:parts, [])}}
   end
 
-  def upload_full_object(%Destinations.Destination{} = destination, filename, data) do
+  def upload_full_object(%Destinations.Destination{} = destination, filename, data, opts \\ []) do
     %AzureConfig{} = d_config = destination.azure_config
 
     config = %AzureStorage.Config{
@@ -54,7 +62,7 @@ defmodule Ingest.Uploaders.Azure do
     |> AzureStorage.Blob.put_blob(config, data)
   end
 
-  def upload_chunk(%Destinations.Destination{} = destination, _filename, state, data) do
+  def upload_chunk(%Destinations.Destination{} = destination, _filename, state, data, opts \\ []) do
     case AzureStorage.Blob.put_block(state.blob, state.config, data) do
       {:ok, block_id} ->
         {:ok, {destination, %{state | parts: [block_id | state.parts]}}}

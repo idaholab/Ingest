@@ -8,7 +8,8 @@ defmodule Ingest.Uploaders.Lakefs do
   alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.Destination
 
-  def init(%Destination{} = destination, filename, state) do
+  def init(%Destination{} = destination, filename, state, opts \\ []) do
+    original_filename = Keyword.get(opts, :original_filename, nil)
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination.lakefs_config, state.request, state.user)
 
@@ -26,6 +27,13 @@ defmodule Ingest.Uploaders.Lakefs do
       else
         # assumption is that the error is a 404 not found, so we can keep the filename
         _ -> filename
+      end
+
+    filename =
+      if original_filename do
+        "#{original_filename} Supporting Data/ #{filename}"
+      else
+        filename
       end
 
     with s3_op <-
@@ -72,7 +80,7 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
-  def upload_chunk(%Destination{} = destination, _filename, state, data) do
+  def upload_chunk(%Destination{} = destination, _filename, state, data, opts \\ []) do
     part = ExAws.S3.Upload.upload_chunk({data, state.chunk}, state.op, state.config)
 
     case part do
@@ -81,7 +89,7 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
-  def commit(%Destination{} = destination, _filename, state) do
+  def commit(%Destination{} = destination, _filename, state, opts \\ []) do
     result = ExAws.S3.Upload.complete(state.parts, state.op, state.config)
 
     case result do
