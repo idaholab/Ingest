@@ -72,10 +72,8 @@ pub async fn boot_webserver(semaphore: Arc<Mutex<Connected>>) -> Result<(), Clie
         .with_state(state);
 
     // 8097 because hopefully nothing else is running on that port TODO: make port dynamic
-    axum::Server::bind(&"0.0.0.0:8097".parse().unwrap())
-        .serve(app.into_make_service())
-        .await?;
-
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8097").await?;
+    axum::serve(listener, app).await?;
     Ok(())
 }
 
