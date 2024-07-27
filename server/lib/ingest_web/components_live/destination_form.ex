@@ -155,6 +155,14 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     Root Path
                   </.label>
                   <.input type="text" field={config[:path]} />
+
+                  <.label for="status-select">
+                    Integrated Metadata
+                  </.label>
+                  <.input type="checkbox" field={config[:integrated_metadata]} />
+                  <p class="text-xs">
+                    Whether or not to use this destination's type native method for storing metadata.
+                  </p>
                 </.inputs_for>
               </div>
             </div>
@@ -208,6 +216,14 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.input type="checkbox" field={config[:ssl]} />
                   <p class="text-xs">
                     When in doubt, enable this setting.
+                  </p>
+
+                  <.label for="status-select">
+                    Integrated Metadata
+                  </.label>
+                  <.input type="checkbox" field={config[:integrated_metadata]} />
+                  <p class="text-xs">
+                    Whether or not to use this destination's type native method for storing metadata.
                   </p>
 
                   <.button
@@ -291,6 +307,14 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.input type="checkbox" field={config[:ssl]} />
                   <p class="text-xs">
                     When in doubt, enable this setting.
+                  </p>
+
+                  <.label for="status-select">
+                    Integrated Metadata
+                  </.label>
+                  <.input type="checkbox" field={config[:integrated_metadata]} />
+                  <p class="text-xs">
+                    Whether or not to use this destination's type native method for storing metadata.
                   </p>
 
                   <.label for="status-select">

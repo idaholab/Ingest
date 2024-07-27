@@ -119,6 +119,35 @@ defmodule AzureStorage.Blob do
     end
   end
 
+  @doc """
+  update metadata updates the blobs metadata in storage, but has to do so by copying the blob onto itself.
+
+  {:ok, blob_url}
+  {:error, %Req.Response{}}
+  """
+  def update_blob_metadata(%Blob{} = blob, %Config{} = config, metadata) do
+    {_request, response} =
+      Req.Request.new(
+        method: :put,
+        url:
+          "#{build_base_url(config)}/#{URI.encode(blob.container.name)}/#{URI.encode(blob.name)}",
+        headers: [
+          {"x-ms-copy-source",
+           "#{build_base_url(config)}/#{URI.encode(blob.container.name)}/#{URI.encode(blob.name)}"}
+          | Enum.into(metadata, [], fn {k, v} ->
+              {"x-ms-meta-#{k}", v}
+            end)
+        ]
+      )
+      |> sign(config)
+      |> Req.Request.run_request()
+
+    case response.status do
+      202 -> {:ok, blob}
+      _ -> {:error, response}
+    end
+  end
+
   defp blob_url(%Blob{} = blob, %Config{} = config) do
     "#{build_base_url(config)}/#{URI.encode(blob.container.name)}/#{URI.encode(blob.name)}"
   end

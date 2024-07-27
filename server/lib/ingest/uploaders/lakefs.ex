@@ -80,7 +80,7 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
-  def upload_chunk(%Destination{} = destination, _filename, state, data, opts \\ []) do
+  def upload_chunk(%Destination{} = destination, _filename, state, data, _opts \\ []) do
     part = ExAws.S3.Upload.upload_chunk({data, state.chunk}, state.op, state.config)
 
     case part do
@@ -89,7 +89,7 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
-  def commit(%Destination{} = destination, _filename, state, opts \\ []) do
+  def commit(%Destination{} = destination, _filename, state, _opts \\ []) do
     result = ExAws.S3.Upload.complete(state.parts, state.op, state.config)
 
     case result do

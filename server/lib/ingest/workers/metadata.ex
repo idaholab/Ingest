@@ -4,66 +4,99 @@ defmodule Ingest.Workers.Metadata do
   in the request. This gets triggered each time someone submits a section - this is so that we
   can always ensure we're writing at least some metadata to the destination.
   """
+  alias Ingest.Destinations.Destination
   alias Ingest.Uploads
+  alias Ingest.Uploads.Upload
   alias Ingest.Uploaders.Azure
   alias Ingest.Uploaders.S3
   alias Ingest.Uploaders.Lakefs
 
   use Oban.Worker, queue: :metadata
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"upload_id" => upload_id} = _args}) do
+  def perform(%Oban.Job{args: %{"upload_id" => upload_id, "force" => forced} = _args}) do
     # take the upload and load the upload, its request, the requests destinations and the metadata
     upload = Uploads.get_upload!(upload_id)
-    # build the metadata entry json object
 
-    metadata =
-      Jason.encode!(%{
-        "id" => upload.id,
-        "fileName" => upload.filename,
-        "fileType" => upload.ext,
-        "lastModified" => upload.updated_at,
-        "created" => upload.inserted_at,
-        "owner" => %{
-          "ingest_id" => upload.user.id,
-          "display_name" => upload.user.name,
-          "email" => upload.user.email
-        },
-        "project" => %{
-          "ingest_id" => upload.request.project.id,
-          "name" => upload.request.project.name,
+    # only write the metadata if we have all of it or it's forced
+    if Enum.count(upload.metadatas) == Enum.count(upload.request.templates) || forced == "true" do
+      # build the metadata entry json object
+      metadata =
+        Jason.encode!(%{
+          "id" => upload.id,
+          "fileName" => upload.filename,
+          "fileType" => upload.ext,
+          "lastModified" => upload.updated_at,
+          "created" => upload.inserted_at,
           "owner" => %{
-            "ingest_id" => upload.request.project.user.id,
-            "display_name" => upload.request.project.user.name,
-            "email" => upload.request.project.user.email
-          }
-        },
-        "user_provided_metadata" => Enum.map(upload.metadatas, fn m -> m.data end)
-      })
+            "ingest_id" => upload.user.id,
+            "display_name" => upload.user.name,
+            "email" => upload.user.email
+          },
+          "project" => %{
+            "ingest_id" => upload.request.project.id,
+            "name" => upload.request.project.name,
+            "owner" => %{
+              "ingest_id" => upload.request.project.user.id,
+              "display_name" => upload.request.project.user.name,
+              "email" => upload.request.project.user.email
+            }
+          },
+          "user_provided_metadata" => Enum.map(upload.metadatas, fn m -> m.data end)
+        })
 
-    filename = "#{upload.filename}.m.json"
+      filename = "#{upload.filename}.m.json"
 
-    for destination <- upload.request.destinations do
-      case destination.type do
-        :azure ->
-          Azure.upload_full_object(destination, filename, metadata)
+      # for each destination check to see if we need to use the integrated metadata method - if we do
+      # then we only want to write the metadata if all the entries have been submitted as to avoid long jobs
+      # and large transfer fees
+      statuses =
+        Enum.map(
+          upload.request.destinations,
+          &destination_metadata_upload(&1, upload, filename, metadata)
+        )
 
-        :s3 ->
-          S3.upload_full_object(destination, filename, metadata)
-
-        :lakefs ->
-          Lakefs.upload_full_object(
-            destination,
-            upload.request,
-            upload.user,
-            filename,
-            metadata
-          )
-
-        _ ->
-          {:error, :unknown_destination_type}
+      if Enum.member?(statuses, :error) do
+        :error
+      else
+        :ok
       end
+    else
+      :ok
     end
+  end
 
-    :ok
+  defp destination_metadata_upload(
+         %Destination{} = destination,
+         %Upload{} = upload,
+         filename,
+         metadata
+       ) do
+    path = Uploads.get_upload_path(upload)
+
+    case destination.type do
+      :azure ->
+        if destination.azure_config.integrated_metadata do
+          Azure.update_metadata(destination, path.path, %{
+            ingest_metadata: Jason.encode!(metadata)
+          })
+        else
+          Azure.upload_full_object(destination, filename, metadata)
+        end
+
+      :s3 ->
+        S3.upload_full_object(destination, filename, metadata)
+
+      :lakefs ->
+        Lakefs.upload_full_object(
+          destination,
+          upload.request,
+          upload.user,
+          filename,
+          metadata
+        )
+
+      _ ->
+        {:error, :unknown_destination_type}
+    end
   end
 end

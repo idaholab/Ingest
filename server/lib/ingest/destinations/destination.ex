@@ -82,6 +82,7 @@ defmodule Ingest.Destinations.S3Config do
     field :path, Ingest.Encrypted.Binary
     field :final_path, Ingest.Encrypted.Binary
     field :ssl, :boolean, default: true
+    field :integrated_metadata, :boolean, default: true
   end
 
   @doc false
@@ -95,7 +96,8 @@ defmodule Ingest.Destinations.S3Config do
       :base_url,
       :path,
       :final_path,
-      :ssl
+      :ssl,
+      :integrated_metadata
     ])
     |> validate_required([:bucket, :path])
   end
@@ -116,12 +118,22 @@ defmodule Ingest.Destinations.AzureConfig do
     field :container, Ingest.Encrypted.Binary
     field :path, Ingest.Encrypted.Binary
     field :final_path, Ingest.Encrypted.Binary
+    field :integrated_metadata, :boolean, default: true
   end
 
   @doc false
   def changeset(config, attrs) do
     config
-    |> cast(attrs, [:account_name, :account_key, :base_url, :container, :path, :ssl, :final_path])
+    |> cast(attrs, [
+      :account_name,
+      :account_key,
+      :base_url,
+      :container,
+      :path,
+      :ssl,
+      :final_path,
+      :integrated_metadata
+    ])
     |> validate_required([:container])
   end
 end
@@ -141,6 +153,7 @@ defmodule Ingest.Destinations.LakeFSConfig do
     field :repository, Ingest.Encrypted.Binary
     field :port, :integer, default: nil
     field :ssl, :boolean, default: true
+    field :integrated_metadata, :boolean, default: true
   end
 
   @doc false
@@ -153,7 +166,8 @@ defmodule Ingest.Destinations.LakeFSConfig do
       :base_url,
       :port,
       :ssl,
-      :region
+      :region,
+      :integrated_metadata
     ])
     |> validate_required([:base_url, :repository])
   end
