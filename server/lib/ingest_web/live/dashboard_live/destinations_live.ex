@@ -105,6 +105,22 @@ defmodule IngestWeb.DestinationsLive do
           patch={~p"/dashboard/destinations"}
         />
       </.modal>
+
+      <.modal
+        :if={@live_action in [:register_client]}
+        id="client_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/destinations")}
+      >
+        <.live_component
+          live_action={@live_action}
+          client={@client}
+          module={IngestWeb.LiveComponents.RegisterClientForm}
+          id="client-modal-component"
+          current_user={@current_user}
+          patch={~p"/dashboard/destinations"}
+        />
+      </.modal>
     </div>
     """
   end

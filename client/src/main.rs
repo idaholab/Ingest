@@ -34,7 +34,7 @@ async fn main() -> Result<(), ClientError> {
 
     // First let's pull in the current configuration - this will automatically create a hardware_id
     // if one does not exist for this client
-    let client_config = config::get_configuration()?;
+    let _client_config = config::get_configuration()?;
     let icon = load_icon(Path::new("icon.png"));
 
     // we have to use a standard mutex so we can do a blocking read in the event loop - it's a pain in the ass
@@ -48,7 +48,7 @@ async fn main() -> Result<(), ClientError> {
     tokio::spawn(async move { boot_webserver(webserver_semaphore).await });
     tokio::spawn(async move { make_connection_thread(connected_semaphore).await });
 
-    // now let's setup the system tray and get the event loop running
+    // now let's set up the system tray and get the event loop running
     #[cfg(target_os = "linux")]
     // on linux we have to start up gtk and the system try in a separate thread
     std::thread::spawn(|| {
@@ -97,7 +97,6 @@ async fn main() -> Result<(), ClientError> {
         }
 
         if let Ok(event) = tray_channel.try_recv() {
-            println!("{event:?}");
         }
 
         if let Ok(event) = menu_channel.try_recv() {
@@ -108,7 +107,6 @@ async fn main() -> Result<(), ClientError> {
                 }
             }
 
-            println!("{event:?}");
         }
     });
 

@@ -35,7 +35,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
     ))
     .await?;
 
-    // indicate status, has to be in own scope so we drop the write lock immediately
+    // indicate status, has to be in own scope, so we drop the write lock immediately
     {
         let mut connected = semaphore.lock().unwrap();
         *connected = Connected(true);
