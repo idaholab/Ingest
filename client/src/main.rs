@@ -97,7 +97,6 @@ async fn main() -> Result<(), ClientError> {
         }
 
         if let Ok(event) = tray_channel.try_recv() {
-            println!("{event:?}");
         }
 
         if let Ok(event) = menu_channel.try_recv() {
@@ -108,7 +107,6 @@ async fn main() -> Result<(), ClientError> {
                 }
             }
 
-            println!("{event:?}");
         }
     });
 
