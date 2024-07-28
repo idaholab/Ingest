@@ -342,7 +342,7 @@ defmodule IngestWeb.ProjectShowLive do
 
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
-    project = Projects.get_project!(id)
+    project = Projects.get_owned_project!(socket.assigns.current_user, id)
 
     {:noreply,
      socket
@@ -358,7 +358,8 @@ defmodule IngestWeb.ProjectShowLive do
       Projects.get_member_project(member, project)
       |> Projects.remove_project_member()
 
-    {:noreply, socket |> assign(:project, Projects.get_project!(project))}
+    {:noreply,
+     socket |> assign(:project, Projects.get_owned_project!(socket.assigns.current_user, project))}
   end
 
   @impl true

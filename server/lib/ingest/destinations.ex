@@ -177,6 +177,38 @@ defmodule Ingest.Destinations do
     Repo.get(Destination, id)
   end
 
+  # like get_destination but validates that it belongs to a user
+  def get_own_destination!(%User{} = user, id) do
+    destination = Repo.one!(from d in Destination, where: d.id == ^id and d.inserted_by == ^user.id)
+
+    case destination.type do
+      :s3 ->
+        %{
+          destination
+          | s3_config: %{destination.s3_config | access_key_id: nil, secret_access_key: nil}
+        }
+
+      :azure ->
+        %{
+          destination
+          | azure_config: %{destination.azure_config | account_name: nil, account_key: nil}
+        }
+
+      :lakefs ->
+        %{
+          destination
+          | lakefs_config: %{
+              destination.lakefs_config
+              | access_key_id: nil,
+                secret_access_key: nil
+            }
+        }
+
+      _ ->
+        destination
+    end
+  end
+
   @doc """
   Creates a destination.
 

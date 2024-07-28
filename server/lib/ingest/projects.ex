@@ -64,15 +64,34 @@ defmodule Ingest.Projects do
       ** (Ecto.NoResultsError)
 
   """
-  def get_project!(id),
-    do:
-      Repo.get!(Project, id)
-      |> Repo.preload(:user)
-      |> Repo.preload(project_members: :project_roles)
-      |> Repo.preload(invites: :invited_user)
-      |> Repo.preload(:requests)
-      |> Repo.preload(:templates)
-      |> Repo.preload(:destinations)
+  def get_project!(id) do
+    Repo.get!(Project, id)
+    |> Repo.preload(:user)
+    |> Repo.preload(project_members: :project_roles)
+    |> Repo.preload(invites: :invited_user)
+    |> Repo.preload(:requests)
+    |> Repo.preload(:templates)
+    |> Repo.preload(:destinations)
+  end
+
+  def get_owned_project!(%User{} = user, id) do
+    Repo.one!(
+      from p in Project,
+        left_join: pm in assoc(p, :project_members),
+        left_join: r in assoc(p, :requests),
+        where: (pm.id == ^user.id or p.inserted_by == ^user.id) and p.id == ^id,
+        group_by: p.id,
+        preload: [
+          :user,
+          :requests,
+          :templates,
+          :destinations,
+          invites: :invited_user,
+          project_members: :project_roles
+        ],
+        select: p
+    )
+  end
 
   @doc """
   Creates a project.

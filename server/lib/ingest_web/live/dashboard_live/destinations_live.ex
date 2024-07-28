@@ -148,7 +148,7 @@ defmodule IngestWeb.DestinationsLive do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Destination")
-    |> assign(:destination, Ingest.Destinations.get_destination!(id))
+    |> assign(:destination, Ingest.Destinations.get_own_destination!(socket.assigns.current_user, id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -178,7 +178,7 @@ defmodule IngestWeb.DestinationsLive do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    destination = Ingest.Destinations.get_destination!(id)
+    destination = Ingest.Destinations.get_own_destination!(socket.assigns.current_user, id)
     {:ok, _} = Ingest.Destinations.delete_destination(destination)
 
     {:noreply, stream_delete(socket, :destinations, destination)}

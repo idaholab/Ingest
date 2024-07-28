@@ -5,3 +5,4 @@ server/__azurite_db_blob__.json
 server/__azurite_db_blob_extent__.json
 server/__blobstorage__
 server/.DS_Store
+__azurite_db_table__.json
