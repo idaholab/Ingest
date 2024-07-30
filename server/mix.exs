@@ -66,7 +66,6 @@ defmodule Ingest.MixProject do
       {:ex_aws_s3, "~> 2.5"},
       {:sweet_xml, "~> 0.7.4"},
       {:oban, "~> 2.17"},
-      {:rustler, "~> 0.34.0", runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]
