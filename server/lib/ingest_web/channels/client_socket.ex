@@ -13,7 +13,7 @@ defmodule IngestWeb.ClientSocket do
   # channel "room:*", IngestWeb.RoomChannel
   #
 
-  channel "client:lobby", IngestWeb.ClientChannel
+  channel "client:*", IngestWeb.ClientChannel
   # To create a channel file, use the mix task:
   #
   #     mix phx.gen.channel Room
@@ -57,5 +57,7 @@ defmodule IngestWeb.ClientSocket do
   #
   # Returning `nil` makes this socket anonymous.
   @impl true
-  def id(_socket), do: nil
+  def id(socket) do
+    "client_socket:#{socket.assigns.current_user}"
+  end
 end

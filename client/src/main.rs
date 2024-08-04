@@ -2,6 +2,7 @@ mod config;
 mod connection;
 mod errors;
 mod webserver;
+mod uploader;
 
 use tray_icon::{
     menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
@@ -46,6 +47,7 @@ async fn main() -> Result<(), ClientError> {
     // note that the connection thread _might_ die here if the token isn't available or is invalid
     // that's ok - the webserver thread can spin this up or the user can spin this up via the menu
     tokio::spawn(async move { boot_webserver(webserver_semaphore).await });
+    // TODO: Add reconnection and exponential backoff to the make connection task eventually so we can have fault tolerance and no manual user interaction
     tokio::spawn(async move { make_connection_thread(connected_semaphore).await });
 
     // now let's set up the system tray and get the event loop running

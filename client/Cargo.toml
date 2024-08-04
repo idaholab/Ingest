@@ -10,7 +10,7 @@ axum = { version = "0.7.5", features = ["ws"] }
 config = { version = "0.14.0", features = ["yaml"] }
 thiserror = "1.0.50"
 tokio = { version = "1.34.0", features = ["full"] }
-sqlx = { version = "0.7", features = [ "runtime-tokio", "tls-native-tls" , "sqlite", "macros", "chrono"] }
+sqlx = { version = "0.8.0", features = [ "runtime-tokio", "tls-native-tls" , "sqlite", "macros", "chrono"] }
 serde = { version = "1.0.192", features = ["derive"] }
 serde_yaml = "0.9.27"
 tray-icon = "0.14.3"
@@ -18,7 +18,7 @@ image = { version = "0.25.1", features = [] }
 winit = "0.30.3"
 chrono = { version = "0.4.31", features = ["serde"] }
 rust-embed = "8.0.0"
-handlebars = { version = "5.1.2", features = ["rust-embed"] }
+handlebars = { version = "6.0.0", features = ["rust-embed"] }
 hyper = "1.4.1"
 serde_json = "1.0.108"
 tokio-tungstenite = "0.23.1"
@@ -26,6 +26,8 @@ futures = "0.3.29"
 futures-util = "0.3.29"
 tracing = "0.1"
 tracing-subscriber = "0.3.0"
+object_store = { version = "0.10.2" , features = ["aws", "azure", "gcp"]}
+rocksdb = { version = "0.22.0", features = ["serde"] }
 
 [dependencies.uuid]
 version = "1.10.0"
