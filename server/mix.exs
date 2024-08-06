@@ -54,7 +54,7 @@ defmodule Ingest.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:oidcc, git: "https://github.com/erlef/oidcc.git", tag: "v3.1.1"},
       {:jose, "~> 1.11"},
-      {:ecto_psql_extras, "~> 0.6"},
+      {:ecto_psql_extras, "~> 0.8"},
       {:cachex, "~> 3.6.0"},
       {:cloak_ecto, "~> 1.2.0"},
       {:req, "~> 0.5.0"},
