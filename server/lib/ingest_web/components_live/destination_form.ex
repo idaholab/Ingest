@@ -384,7 +384,12 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
             "http://#{destination_params["lakefs_config"]["base_url"]}"
           end
 
-        destination = Destinations.get_destination(socket.assigns.destination_id)
+        destination =
+          if socket.assigns.destination_id do
+            Destinations.get_destination(socket.assigns.destination_id)
+          else
+            nil
+          end
 
         client =
           if destination && destination.type == :lakefs do
