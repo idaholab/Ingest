@@ -16,6 +16,9 @@ config :swoosh, local: false
 # Do not print debug messages in production
 config :logger, level: :info
 
+# We can do dev routes in prod because we secure behind admin
+config :ingest, dev_routes: true
+
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
 # config :ingest, :openid_connect_oneid,

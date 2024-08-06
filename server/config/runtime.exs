@@ -128,5 +128,6 @@ if config_env() == :prod do
 
   config :ingest, Ingest.Mailer,
     adapter: Swoosh.Adapters.SMTP,
-    relay: System.get_env("SMTP_RELAY")
+    relay: System.get_env("SMTP_RELAY"),
+    tls: System.get_env("SMTP_TLS", false)
 end

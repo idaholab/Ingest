@@ -47,6 +47,7 @@ defmodule Ingest.MixProject do
       {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.16.9"},
       {:finch, "~> 0.13"},
+      {:error_tracker, "~> 0.1"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
