@@ -378,7 +378,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
       # currently this only applies to the LakeFS destination, and will populate the repositories and remove the disabled tag
       "test_connection" ->
         base_url =
-          if destination_params["lakefs_config"]["ssl"] == true do
+          if destination_params["lakefs_config"]["ssl"] == "true" do
             "https://#{destination_params["lakefs_config"]["base_url"]}"
           else
             "http://#{destination_params["lakefs_config"]["base_url"]}"
