@@ -14,7 +14,7 @@ defmodule Ingest.Uploads.UploadNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"DeepLynx Ingest Metadata Request", "alexandria@inl.gov"})
+      |> from({"Alexandria Ingest Metadata Request", "Alexandria@inl.gov"})
       |> subject(subject)
       |> text_body(body)
 

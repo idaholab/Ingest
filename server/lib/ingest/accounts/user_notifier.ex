@@ -8,7 +8,7 @@ defmodule Ingest.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"Ingest", "contact@example.com"})
+      |> from({"Alexandria Ingest", "Alexandria@inl.gov"})
       |> subject(subject)
       |> text_body(body)
 

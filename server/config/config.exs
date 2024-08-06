@@ -82,6 +82,10 @@ config :ingest, Oban,
   queues: [default: 10, metadata: 10],
   repo: Ingest.Repo
 
+config :error_tracker,
+  repo: Ingest.Repo,
+  otp_app: :ingest
+
 # classification acronyms - NOTE: if you change these, ensure that you're not removing any \
 # which are currently in use, or the system will break
 config :ingest, :data_classifications, [:ouo, :pii, :ec, :ucni, :cui, :uur]

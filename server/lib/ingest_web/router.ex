@@ -1,5 +1,6 @@
 defmodule IngestWeb.Router do
   use IngestWeb, :router
+  use ErrorTracker.Web, :router
 
   import IngestWeb.UserAuth
 
@@ -41,10 +42,11 @@ defmodule IngestWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through :browser
+      pipe_through [:browser, :require_authenticated_user, :require_admin]
 
       live_dashboard "/dashboard", metrics: IngestWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
+      error_tracker_dashboard("/errors")
     end
   end
 

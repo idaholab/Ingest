@@ -12,7 +12,7 @@ defmodule Ingest.Projects.ProjectNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"DeepLynx Ingest Project Management", "contact@example.com"})
+      |> from({"Alexandria Ingest Project Management", "Alexandria@inl.gov"})
       |> subject(subject)
       |> text_body(body)
 

@@ -12,7 +12,7 @@ defmodule Ingest.Requests.RequestNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"DeepLynx Ingest Request Management", "contact@example.com"})
+      |> from({"Alexandria Ingest Request Management", "Alexandria@inl.gov"})
       |> subject(subject)
       |> text_body(body)
 
