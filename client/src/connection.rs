@@ -2,21 +2,65 @@ use crate::config::get_configuration;
 use crate::errors::ClientError;
 use crate::Connected;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
+use serde::{Deserialize, Serialize};
+use serde_json::{Error, Value};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::RwLock;
 use tokio::time::sleep;
-use tokio_tungstenite::tungstenite::{Error, Message};
+use tokio_tungstenite::tungstenite::Message;
 use tracing::{error, info};
 
 #[derive(Clone)]
 enum StackMessage {
-    String(String),
+    Msg(String),
     Ping,
     Pong,
     Close,
 }
+
+#[derive(Clone, Serialize, Deserialize)]
+enum DestinationType {
+    #[serde(rename = "azure")]
+    Azure,
+    #[serde(rename = "s3")]
+    S3,
+    #[serde(rename = "lakefs")]
+    LakeFS,
+}
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
+enum MessageType {
+    #[serde(rename = "part_request")]
+    PartRequest,
+    #[serde(rename = "status")]
+    Status,
+    #[serde(rename = "complete_upload")]
+    Complete,
+    #[serde(rename = "initiate_upload")]
+    InitiateUpload,
+    #[serde(rename = "phx_reply")]
+    Reply,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+pub struct InitiateUploadPayload {
+    id: String,
+    destination_type: DestinationType,
+    file_path: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+struct JoinReference(Option<usize>);
+#[derive(Deserialize, Serialize, Debug)]
+struct MsgReference(usize);
+#[derive(Deserialize, Serialize, Debug)]
+struct Topic(String);
+// we cast the payload as a value from serde_json so we can deserialize into a struct based on the
+// inbound message type - there has to be an easier way to do this?
+#[derive(Deserialize, Serialize, Debug)]
+struct ChannelMessage(JoinReference, MsgReference, Topic, MessageType, Value);
 
 pub async fn make_connection_thread(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientError> {
     let thread_semaphore = semaphore.clone();
@@ -64,9 +108,9 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
     let blank = "{}";
     let client_id = config.hardware_id.unwrap().to_string(); // we want to immediately fail if we don't have one
     write
-        .send(Message::Text(
-            format!(r###"[0, 0, "client:{client_id}", "phx_join", {blank}]"###),
-        ))
+        .send(Message::Text(format!(
+            r###"[0, 0, "client:{client_id}", "phx_join", {blank}]"###
+        )))
         .await?;
 
     tokio::spawn(async move {
@@ -91,7 +135,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
             // now we run through the message stack, sending them in order
             while let Some(message) = inner_message_stack.write().await.pop_front() {
                 let result = match message.clone() {
-                    StackMessage::String(msg) => write.send(Message::Text(msg)).await,
+                    StackMessage::Msg(msg) => write.send(Message::Text(msg)).await,
                     StackMessage::Ping => write.send(Message::Ping(Vec::new())).await,
                     StackMessage::Pong => write.send(Message::Pong(Vec::new())).await,
                     StackMessage::Close => write.close().await,
@@ -102,7 +146,10 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
                     // log the error and break the loop, so we don't keep sending messages, oh and append the message
                     Err(e) => {
                         inner_message_stack.write().await.push_front(message);
-                        error!("error while attempting to send websocket message from stack {:?}", e);
+                        error!(
+                            "error while attempting to send websocket message from stack {:?}",
+                            e
+                        );
                         break;
                     }
                 }
@@ -120,7 +167,18 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
 
                 match msg {
                     Message::Text(m) => {
-                        info!(m)
+                        let msg: Result<ChannelMessage, serde_json::Error> =
+                            serde_json::from_str(m.as_str());
+
+                        match msg {
+                            Ok(m) => {
+                                info!("{:?}", m)
+                            }
+                            Err(e) => {
+                                error!("unable to deserialize message into type {:?}", e);
+                                continue;
+                            }
+                        }
                     }
                     Message::Ping(_) => message_stack.write().await.push_back(StackMessage::Ping),
                     Message::Pong(_) => message_stack.write().await.push_back(StackMessage::Pong),
