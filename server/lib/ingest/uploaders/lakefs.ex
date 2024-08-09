@@ -46,6 +46,7 @@ defmodule Ingest.Uploaders.Lakefs do
       {:ok,
        {destination,
         state
+        |> Map.put(:filename, filename)
         |> Map.put(:chunk, 1)
         |> Map.put(:config, s3_config)
         |> Map.put(:op, s3_op |> Map.put(:upload_id, upload_id) |> Map.put(:opts, []))
@@ -80,6 +81,32 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
+  def update_metadata(
+        %Destination{} = destination,
+        %Request{} = request,
+        %User{} = user,
+        filename,
+        data
+      ) do
+    # we need validate/create if not exists a branch for the request & user email
+    branch_name = upsert_branch(destination.lakefs_config, request, user)
+
+    with s3_op <-
+           ExAws.S3.put_object_copy(
+             "#{destination.lakefs_config.repository}/#{branch_name}",
+             filename,
+             "#{destination.lakefs_config.repository}/#{branch_name}",
+             filename,
+             [{:metadata_directive, "REPLACE"}, {:meta, data}]
+           ),
+         s3_config <- ExAws.Config.new(:s3, build_config(destination.lakefs_config)),
+         {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
+      {:ok, upload_id}
+    else
+      err -> {:error, err}
+    end
+  end
+
   def upload_chunk(%Destination{} = destination, _filename, state, data, _opts \\ []) do
     part = ExAws.S3.Upload.upload_chunk({data, state.chunk}, state.op, state.config)
 
@@ -94,7 +121,7 @@ defmodule Ingest.Uploaders.Lakefs do
 
     case result do
       {:ok, %{body: %{key: key}}} ->
-        {:ok, {destination, key}}
+        {:ok, {destination, state.filename}}
 
       _ ->
         {:error, result}

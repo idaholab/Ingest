@@ -84,16 +84,34 @@ defmodule Ingest.Workers.Metadata do
         end
 
       :s3 ->
-        S3.upload_full_object(destination, filename, metadata)
+        if destination.s3_config.integrated_metadata do
+          S3.upload_full_object(destination, path.path, [
+            {:ingest_metadata, Jason.encode!(metadata)}
+          ])
+        else
+          S3.upload_full_object(destination, filename, metadata)
+        end
 
       :lakefs ->
-        Lakefs.upload_full_object(
-          destination,
-          upload.request,
-          upload.user,
-          filename,
-          metadata
-        )
+        if destination.lakefs_config.integrated_metadata do
+          Lakefs.update_metadata(
+            destination,
+            upload.request,
+            upload.user,
+            path.path,
+            [
+              {:ingest_metadata, Jason.encode!(metadata)}
+            ]
+          )
+        else
+          Lakefs.upload_full_object(
+            destination,
+            upload.request,
+            upload.user,
+            filename,
+            metadata
+          )
+        end
 
       _ ->
         {:error, :unknown_destination_type}
