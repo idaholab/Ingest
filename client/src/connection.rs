@@ -3,22 +3,12 @@ use crate::errors::ClientError;
 use crate::Connected;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use serde::{Deserialize, Serialize};
-use serde_json::{Error, Value};
-use std::collections::VecDeque;
+use serde_json::{json, Value};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tokio::sync::RwLock;
 use tokio::time::sleep;
-use tokio_tungstenite::tungstenite::Message;
+use tokio_tungstenite::tungstenite::{Error, Message};
 use tracing::{error, info};
-
-#[derive(Clone)]
-enum StackMessage {
-    Msg(String),
-    Ping,
-    Pong,
-    Close,
-}
 
 #[derive(Clone, Serialize, Deserialize)]
 enum DestinationType {
@@ -42,6 +32,10 @@ enum MessageType {
     InitiateUpload,
     #[serde(rename = "phx_reply")]
     Reply,
+    #[serde(rename = "heartbeat")]
+    Heartbeat,
+    #[serde(rename = "phx_join")]
+    Join,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -60,7 +54,7 @@ struct Topic(String);
 // we cast the payload as a value from serde_json so we can deserialize into a struct based on the
 // inbound message type - there has to be an easier way to do this?
 #[derive(Deserialize, Serialize, Debug)]
-struct ChannelMessage(JoinReference, MsgReference, Topic, MessageType, Value);
+pub struct ChannelMessage(JoinReference, MsgReference, Topic, MessageType, Value);
 
 pub async fn make_connection_thread(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientError> {
     let thread_semaphore = semaphore.clone();
@@ -98,62 +92,69 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
     }
 
     let (mut write, mut read) = ws.split();
+    let (mut tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<ChannelMessage>();
 
-    let message_stack: VecDeque<StackMessage> = VecDeque::new();
-    let message_stack = Arc::new(RwLock::new(message_stack));
-    let inner_message_stack = message_stack.clone();
+    // message passing thread - basically allows us to fan out the writers and then bring them back
+    // and send out on the same websocket writer
+    tokio::spawn(async move {
+        while let Some(msg) = rx.recv().await {
+            // convert to json and send
+            let msg = match serde_json::to_string(&msg) {
+                Ok(m) => m,
+                Err(e) => {
+                    error!("error in serializing message for channel {:?}", e);
+                    continue;
+                }
+            };
+
+            match write.send(Message::Text(msg)).await {
+                Ok(_) => {}
+                Err(e) => {
+                    error!("error in sending message to channel {:?}", e);
+                }
+            }
+        }
+    });
 
     // we have to join the channel in order to begin sending/receiving, and we want to do it before
     // we start receiving any messages on the channel
-    let blank = "{}";
     let client_id = config.hardware_id.unwrap().to_string(); // we want to immediately fail if we don't have one
-    write
-        .send(Message::Text(format!(
-            r###"[0, 0, "client:{client_id}", "phx_join", {blank}]"###
-        )))
-        .await?;
 
+    tx.send(ChannelMessage(
+        JoinReference(Some(0)),
+        MsgReference(0),
+        Topic(format!("client:{client_id}")),
+        MessageType::Join,
+        json!("{}"),
+    ))?;
+
+    // this is the heartbeat loop. it has its own internal index so we don't have to keep track of
+    // and manage a global counter/reference maker
+    let heartbeat_tx = tx.clone();
     tokio::spawn(async move {
+        let mut index = 1;
+
         loop {
             sleep(Duration::from_millis(500)).await;
 
             // heartbeat is a special phoenix message that insures our connection against phoenix
             // automatically dropping it when its timeout is reached - configured in your endpoint.ex file
-            match write
-                .send(Message::Text(
-                    r###"[0, 1, "phoenix", "heartbeat", {}]"###.into(),
-                ))
-                .await
-            {
+            let heartbeat = ChannelMessage(
+                JoinReference(None),
+                MsgReference(index),
+                Topic("phoenix".into()),
+                MessageType::Heartbeat,
+                json!("{}"),
+            );
+
+            match heartbeat_tx.send(heartbeat) {
                 Ok(_) => {}
                 Err(e) => {
-                    error!("unexpected error in writing to websocket {:?}", e);
-                    continue;
+                    error!("error sending heartbeat {:?}", e);
                 }
             }
 
-            // now we run through the message stack, sending them in order
-            while let Some(message) = inner_message_stack.write().await.pop_front() {
-                let result = match message.clone() {
-                    StackMessage::Msg(msg) => write.send(Message::Text(msg)).await,
-                    StackMessage::Ping => write.send(Message::Ping(Vec::new())).await,
-                    StackMessage::Pong => write.send(Message::Pong(Vec::new())).await,
-                    StackMessage::Close => write.close().await,
-                };
-
-                match result {
-                    Ok(_) => {}
-                    // log the error and break the loop, so we don't keep sending messages, oh and append the message
-                    Err(e) => {
-                        inner_message_stack.write().await.push_front(message);
-                        error!(
-                            "error while attempting to send websocket message from stack {:?}",
-                            e
-                        );
-                        break;
-                    }
-                }
-            }
+            index = index + 1;
         }
     });
 
@@ -180,12 +181,12 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
                             }
                         }
                     }
-                    Message::Ping(_) => message_stack.write().await.push_back(StackMessage::Ping),
-                    Message::Pong(_) => message_stack.write().await.push_back(StackMessage::Pong),
                     Message::Close(_) => {
-                        message_stack.write().await.push_back(StackMessage::Pong);
                         break;
                     }
+                    // you'll notice that Ping/Pong aren't considered supported - that's because
+                    // Phoenix doesn't have the Ping/Pong protocol implemented - instead they follow
+                    // the heartbeat method handled above
                     _ => error!("unsupported websocket message type"),
                 }
             }

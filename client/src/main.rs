@@ -1,8 +1,9 @@
 mod config;
 mod connection;
 mod errors;
-mod webserver;
+mod tests;
 mod uploader;
+mod webserver;
 
 use tray_icon::{
     menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
@@ -98,8 +99,7 @@ async fn main() -> Result<(), ClientError> {
             }
         }
 
-        if let Ok(event) = tray_channel.try_recv() {
-        }
+        if let Ok(event) = tray_channel.try_recv() {}
 
         if let Ok(event) = menu_channel.try_recv() {
             {
@@ -108,7 +108,6 @@ async fn main() -> Result<(), ClientError> {
                     tokio::spawn(async move { make_connection_thread(new_semaphore).await });
                 }
             }
-
         }
     });
 

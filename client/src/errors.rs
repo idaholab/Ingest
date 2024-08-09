@@ -1,3 +1,4 @@
+use crate::connection;
 use std::io;
 use thiserror::Error;
 
@@ -19,4 +20,6 @@ pub enum ClientError {
     Token,
     #[error("websocket error {0}")]
     Websocket(#[from] tokio_tungstenite::tungstenite::Error),
+    #[error("mpsc channel send error {0}")]
+    Mpsc(#[from] tokio::sync::mpsc::error::SendError<connection::ChannelMessage>),
 }
