@@ -1,4 +1,5 @@
 use crate::connection;
+use crate::uploader::UploaderError;
 use std::io;
 use thiserror::Error;
 
@@ -12,8 +13,6 @@ pub enum ClientError {
     Yaml(#[from] serde_yaml::Error),
     #[error("webserver error: {0}")]
     Webserver(#[from] hyper::Error),
-    #[error("unknown client error")]
-    Unknown,
     #[error("tokio thread error: {0}")]
     TokioThread(#[from] tokio::task::JoinError),
     #[error("auth token not present")]
@@ -22,4 +21,6 @@ pub enum ClientError {
     Websocket(#[from] tokio_tungstenite::tungstenite::Error),
     #[error("mpsc channel send error {0}")]
     Mpsc(#[from] tokio::sync::mpsc::error::SendError<connection::ChannelMessage>),
+    #[error("uploader error: {0}")]
+    Uploader(#[from] UploaderError),
 }

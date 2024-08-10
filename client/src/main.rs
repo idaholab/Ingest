@@ -75,7 +75,7 @@ async fn main() -> Result<(), ClientError> {
         .expect("unable to register menu item");
 
     #[cfg(not(target_os = "linux"))]
-    let mut tray_icon = Some(
+    let tray_icon = Some(
         TrayIconBuilder::new()
             .with_menu(Box::new(menu))
             .with_tooltip("winit - awesome windowing lib")

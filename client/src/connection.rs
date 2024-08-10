@@ -7,7 +7,7 @@ use serde_json::{json, Value};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::time::sleep;
-use tokio_tungstenite::tungstenite::{Error, Message};
+use tokio_tungstenite::tungstenite::Message;
 use tracing::{error, info};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -20,8 +20,8 @@ enum DestinationType {
     LakeFS,
 }
 
-#[derive(Clone, Deserialize, Serialize, Debug)]
-enum MessageType {
+#[derive(Clone, Deserialize, Serialize, Debug, PartialEq)]
+pub enum MessageType {
     #[serde(rename = "part_request")]
     PartRequest,
     #[serde(rename = "status")]
@@ -46,16 +46,24 @@ pub struct InitiateUploadPayload {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-struct JoinReference(Option<usize>);
+pub struct JoinReference(pub Option<usize>);
 #[derive(Deserialize, Serialize, Debug)]
-struct MsgReference(usize);
+pub struct MsgReference(pub String);
 #[derive(Deserialize, Serialize, Debug)]
-struct Topic(String);
+pub struct Topic(pub String);
 // we cast the payload as a value from serde_json so we can deserialize into a struct based on the
 // inbound message type - there has to be an easier way to do this?
 #[derive(Deserialize, Serialize, Debug)]
-pub struct ChannelMessage(JoinReference, MsgReference, Topic, MessageType, Value);
+pub struct ChannelMessage(
+    pub JoinReference,
+    pub MsgReference,
+    pub Topic,
+    pub MessageType,
+    pub Value,
+);
 
+// the benefit of making the connection thread a single, async function is that it won't exit unless
+// it dies completely - meaning it's all isolated pretty well from the rest of the program.
 pub async fn make_connection_thread(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientError> {
     let thread_semaphore = semaphore.clone();
     let handle = tokio::spawn(async move { make_connection(thread_semaphore).await });
@@ -92,7 +100,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
     }
 
     let (mut write, mut read) = ws.split();
-    let (mut tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<ChannelMessage>();
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<ChannelMessage>();
 
     // message passing thread - basically allows us to fan out the writers and then bring them back
     // and send out on the same websocket writer
@@ -122,7 +130,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
 
     tx.send(ChannelMessage(
         JoinReference(Some(0)),
-        MsgReference(0),
+        MsgReference(0.to_string()),
         Topic(format!("client:{client_id}")),
         MessageType::Join,
         json!("{}"),
@@ -141,7 +149,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
             // automatically dropping it when its timeout is reached - configured in your endpoint.ex file
             let heartbeat = ChannelMessage(
                 JoinReference(None),
-                MsgReference(index),
+                MsgReference(index.to_string()),
                 Topic("phoenix".into()),
                 MessageType::Heartbeat,
                 json!("{}"),
