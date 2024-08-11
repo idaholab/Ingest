@@ -2,7 +2,7 @@
 mod uploader_tests {
     use crate::connection::{ChannelMessage, MessageType};
     use crate::uploader::UploaderError::{Internal, NotImplemented};
-    use crate::uploader::{LakeFsUploader, Uploader, UploaderError};
+    use crate::uploader::{Uploader, UploaderError};
     use serde_json::Value::Null;
     use std::path::PathBuf;
     use std::str::FromStr;
@@ -13,10 +13,10 @@ mod uploader_tests {
     #[tokio::test]
     async fn test_init_uploader() -> Result<(), UploaderError> {
         let id = Uuid::new_v4();
-        let file_path = PathBuf::from_str("../test_files/test.csv").unwrap();
+        let file_path = PathBuf::from_str("./test_files/test.csv").unwrap();
         let (tx, _rx) = tokio::sync::mpsc::unbounded_channel::<ChannelMessage>();
 
-        LakeFsUploader::new(id, file_path, tx).await?;
+        Uploader::new(id, file_path, tx).await?;
         Ok(())
     }
 
@@ -26,10 +26,10 @@ mod uploader_tests {
     // server is ready
     async fn test_join_message() -> Result<(), UploaderError> {
         let id = Uuid::new_v4();
-        let file_path = PathBuf::from_str("../test_files/test.csv").unwrap();
+        let file_path = PathBuf::from_str("./test_files/test.csv").unwrap();
         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<ChannelMessage>();
 
-        let uploader = LakeFsUploader::new(id, file_path, tx).await?;
+        let uploader = Uploader::new(id, file_path, tx).await?;
         // now we join the phoenix channel necessary
         uploader.request_join_channel().await?;
 
@@ -44,15 +44,14 @@ mod uploader_tests {
     }
 
     #[tokio::test]
-    // we're testing that the uploader successfully asks to join the topic for its upload id - once
-    // we join, we expect a message that will kick off the upload. We don't want to start until the
-    // server is ready
+    // testing that once we're a part of a channel we can request status and have that passed into
+    // the websocket receiving channel
     async fn test_status_message() -> Result<(), UploaderError> {
         let id = Uuid::new_v4();
-        let file_path = PathBuf::from_str("../test_files/test.csv").unwrap();
+        let file_path = PathBuf::from_str("./test_files/test.csv").unwrap();
         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<ChannelMessage>();
 
-        let uploader = LakeFsUploader::new(id, file_path, tx).await?;
+        let uploader = Uploader::new(id, file_path, tx).await?;
         // now we join the phoenix channel necessary
         uploader.request_join_channel().await?;
 
@@ -63,7 +62,7 @@ mod uploader_tests {
         };
 
         // we pretend we got the reply back and are in the channel, so we trigger confirmation on the
-        // uploader - this is what actually starts the upload thread
+        // uploader
         uploader
             .handle_msg(ChannelMessage(
                 join_msg.0,
@@ -73,16 +72,19 @@ mod uploader_tests {
                 Null,
             ))
             .await?;
+        uploader.request_status().await?;
         // sleep for just a second so we don't race on the status message being sent from the thread
-        sleep(Duration::from_secs(1)).await;
+        sleep(Duration::from_secs(2)).await;
 
         let mut seen_status = false;
         let mut msgs = Vec::new();
-        rx.recv_many(&mut msgs, 2).await;
+        rx.recv_many(&mut msgs, 1).await;
 
         for msg in msgs {
             let result = match msg.3 {
                 MessageType::Status => {
+                    // we're not checking the uploader functionality here, just the fact it'll send
+                    // the status
                     seen_status = true;
                     Ok(())
                 }
