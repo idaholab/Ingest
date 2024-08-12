@@ -18,6 +18,7 @@ pub struct Uploader {
     pub id: Uuid,
     pub file_path: PathBuf,
     pub num_parts: usize,
+    pub chunk_size: usize,
     db: rocksdb::DB,
     tx: UnboundedSender<ChannelMessage>,
 }
@@ -52,6 +53,7 @@ impl Uploader {
             id,
             file_path,
             num_parts,
+            chunk_size,
             db,
             tx,
         })
@@ -60,7 +62,8 @@ impl Uploader {
     pub async fn request_join_channel(&self) -> Result<(), UploaderError> {
         let channel_message = ChannelMessage(
             JoinReference(Some(0)),
-            MsgReference(0.to_string()),
+            // we can reuse 0 as a part id because the combo of join and msg reference keep it unique
+            MsgReference(0),
             Topic(format!("uploader:{}", self.id)),
             MessageType::Join,
             Value::Null,
@@ -82,8 +85,10 @@ impl Uploader {
         let parts_uploaded = snapshot.iterator(IteratorMode::Start).count();
 
         let channel_message = ChannelMessage(
-            JoinReference(Some(0)),
-            MsgReference(0.to_string()),
+            JoinReference(None),
+            // positive message references are reserved for replies to the pre-signed part request
+            // especially given we don't care about this status reply, it's only for the server
+            MsgReference(-1),
             Topic(format!("uploader:{}", self.id)),
             MessageType::Status,
             serde_json::value::to_value(StatusMessagePayload {
@@ -116,5 +121,5 @@ pub enum UploaderError {
     #[error("not implemented")]
     NotImplemented,
     #[error("json error {0}")]
-    JSON(#[from] serde_json::Error),
+    Json(#[from] serde_json::Error),
 }

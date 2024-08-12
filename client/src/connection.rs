@@ -48,7 +48,7 @@ pub struct InitiateUploadPayload {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct JoinReference(pub Option<usize>);
 #[derive(Deserialize, Serialize, Debug)]
-pub struct MsgReference(pub String);
+pub struct MsgReference(pub i64);
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Topic(pub String);
 // we cast the payload as a value from serde_json so we can deserialize into a struct based on the
@@ -130,7 +130,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
 
     tx.send(ChannelMessage(
         JoinReference(Some(0)),
-        MsgReference(0.to_string()),
+        MsgReference(0),
         Topic(format!("client:{client_id}")),
         MessageType::Join,
         json!("{}"),
@@ -149,7 +149,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
             // automatically dropping it when its timeout is reached - configured in your endpoint.ex file
             let heartbeat = ChannelMessage(
                 JoinReference(None),
-                MsgReference(index.to_string()),
+                MsgReference(index),
                 Topic("phoenix".into()),
                 MessageType::Heartbeat,
                 json!("{}"),
@@ -162,7 +162,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
                 }
             }
 
-            index = index + 1;
+            index += 1;
         }
     });
 

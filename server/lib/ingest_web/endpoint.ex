@@ -13,11 +13,6 @@ defmodule IngestWeb.Endpoint do
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
-  # ClientSocket handles communication with the connected high speed transfer clients
-  socket "/client", IngestWeb.ClientSocket,
-    websocket: true,
-    longpoll: false
-
   # UserSocket handles notifications
   socket "/socket", IngestWeb.UserSocket,
     websocket: true,
