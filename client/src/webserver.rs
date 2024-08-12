@@ -21,7 +21,7 @@ struct Templates;
 
 #[derive(Serialize, Deserialize)]
 // we're going to keep all the variables for the three pages in the same struct because it doesn't
-// make sense to build a different struct for each page when it's at most one or two things and we
+// make sense to build a different struct for each page when it's at most one or two things, and we
 // don't plan on using this UI for anything more than registration and possible status
 struct PageVariables {
     register_url: String,
@@ -147,7 +147,7 @@ async fn callback<'a>(
             match result {
                 Ok((mut ws, _)) => {
                     // don't need to keep this open
-                    ws.close(None).await;
+                    ws.close(None).await.unwrap();
 
                     let mut config = state.config.clone();
                     config.token = Some(token.clone());

@@ -79,12 +79,6 @@ config :phoenix, :plug_init_mode, :runtime
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
 
-config :esbuild,
-  cacerts_path: "/etc/ssl/certs/CAINLROOT.cer"
-
-config :tailwind,
-  cacerts_path: "/etc/ssl/certs/CAINLROOT.cer"
-
 config :ingest, :openid_connect_oneid,
   issuer: "https://identity-preview.inl.gov",
   client_id: "",

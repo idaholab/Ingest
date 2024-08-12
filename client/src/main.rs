@@ -1,6 +1,8 @@
 mod config;
 mod connection;
 mod errors;
+mod tests;
+mod uploader;
 mod webserver;
 
 use tray_icon::{
@@ -46,6 +48,7 @@ async fn main() -> Result<(), ClientError> {
     // note that the connection thread _might_ die here if the token isn't available or is invalid
     // that's ok - the webserver thread can spin this up or the user can spin this up via the menu
     tokio::spawn(async move { boot_webserver(webserver_semaphore).await });
+    // TODO: Add reconnection and exponential backoff to the make connection task eventually so we can have fault tolerance and no manual user interaction
     tokio::spawn(async move { make_connection_thread(connected_semaphore).await });
 
     // now let's set up the system tray and get the event loop running
@@ -72,7 +75,7 @@ async fn main() -> Result<(), ClientError> {
         .expect("unable to register menu item");
 
     #[cfg(not(target_os = "linux"))]
-    let mut tray_icon = Some(
+    let tray_icon = Some(
         TrayIconBuilder::new()
             .with_menu(Box::new(menu))
             .with_tooltip("winit - awesome windowing lib")
@@ -96,8 +99,7 @@ async fn main() -> Result<(), ClientError> {
             }
         }
 
-        if let Ok(event) = tray_channel.try_recv() {
-        }
+        if let Ok(event) = tray_channel.try_recv() {}
 
         if let Ok(event) = menu_channel.try_recv() {
             {
@@ -106,7 +108,6 @@ async fn main() -> Result<(), ClientError> {
                     tokio::spawn(async move { make_connection_thread(new_semaphore).await });
                 }
             }
-
         }
     });
 
