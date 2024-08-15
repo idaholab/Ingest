@@ -26,6 +26,10 @@ defmodule Ingest.Accounts do
     Repo.get_by(User, email: email)
   end
 
+  def delete_user!(%User{} = user) do
+    Repo.delete!(user)
+  end
+
   @doc """
   Gets a user by email and password.
 
@@ -114,6 +118,10 @@ defmodule Ingest.Accounts do
     User.email_changeset(user, attrs, validate_email: false)
   end
 
+  def user_edit_change(%User{} = user, attrs \\ %{}) do
+    User.edit_changeset(user, attrs)
+  end
+
   @doc """
   Emulates that the email will change without actually changing
   it in the database.
@@ -191,6 +199,12 @@ defmodule Ingest.Accounts do
   """
   def change_user_password(user, attrs \\ %{}) do
     User.password_changeset(user, attrs, hash_password: false)
+  end
+
+  def update_user(%User{} = user, attrs \\ %{}) do
+    user
+    |> User.edit_changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """
@@ -355,6 +369,10 @@ defmodule Ingest.Accounts do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
+  end
+
+  def list_users do
+    Repo.all(User)
   end
 
   alias Ingest.Accounts.Notifications

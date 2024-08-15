@@ -47,6 +47,12 @@ defmodule IngestWeb.Router do
       live_dashboard "/dashboard", metrics: IngestWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
       error_tracker_dashboard("/errors")
+
+      live_session :require_admin,
+        on_mount: [{IngestWeb.UserAuth, :ensure_admin}] do
+        live "/users", IngestWeb.UserManagementLive, :index
+        live "/users/:id", IngestWeb.UserManagementLive, :edit
+      end
     end
   end
 

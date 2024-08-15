@@ -41,3 +41,5 @@ npm-debug.log
 .elixir_ls
 
 /__blob_storage__/
+.lexical/
+.zed/
