@@ -30,10 +30,7 @@ defmodule IngestWeb.LiveComponents.RegisterClientForm do
                 <.label for="device-id">
                   Device ID
                 </.label>
-                <.input
-                  type="text"
-                  field={@client_form[:id]}
-                />
+                <.input type="text" field={@client_form[:id]} />
                 <p class="text-sm">
                   Please verify this is the same ID as show in your client. Check that by either checking the dropdown in the system tray or by navigating
                   <a href="http://localhost:8097">here.</a>
@@ -89,11 +86,15 @@ defmodule IngestWeb.LiveComponents.RegisterClientForm do
 
   defp save_client(socket, client_params) do
     token =
-      Phoenix.Token.sign(socket, "client_auth", %{
-        _id: socket.assigns.current_user.id,
-        client_id: socket.assigns.client_form.id
-      })
-
+      Phoenix.Token.sign(
+        socket,
+        "client_auth",
+        %{
+          _id: socket.assigns.current_user.id,
+          client_id: socket.assigns.client_form.id
+        },
+        max_age: 86_400 * 10
+      )
 
     case Map.put(client_params, "owner_id", socket.assigns.current_user.id)
          |> Map.put(

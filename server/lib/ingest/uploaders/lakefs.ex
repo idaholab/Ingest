@@ -120,7 +120,7 @@ defmodule Ingest.Uploaders.Lakefs do
     result = ExAws.S3.Upload.complete(state.parts, state.op, state.config)
 
     case result do
-      {:ok, %{body: %{key: key}}} ->
+      {:ok, %{body: %{key: _key}}} ->
         {:ok, {destination, state.filename}}
 
       _ ->
