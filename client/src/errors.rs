@@ -16,7 +16,7 @@ pub enum ClientError {
     #[error("tokio thread error: {0}")]
     TokioThread(#[from] tokio::task::JoinError),
     #[error("auth token not present")]
-    Token,
+    TokenNotPresent,
     #[error("websocket error {0}")]
     Websocket(#[from] tokio_tungstenite::tungstenite::Error),
     #[error("mpsc channel send error {0}")]

@@ -45,7 +45,7 @@ impl Uploader {
 
         // we can do a max of 10,000 parts - so if we're above that, we need to up chunk size
         while num_parts > max_parts {
-            chunk_size += 1 * 1024 * 1024; // increase chunk size by 1 MB
+            chunk_size += 1024 * 1024; // increase chunk size by 1 MB
             num_parts = (stats.len() as f64 / chunk_size as f64).ceil() as usize;
         }
 
@@ -73,7 +73,7 @@ impl Uploader {
         Ok(())
     }
 
-    pub async fn handle_msg(&self, channel_message: ChannelMessage) -> Result<(), UploaderError> {
+    pub async fn handle_msg(&self, _channel_message: ChannelMessage) -> Result<(), UploaderError> {
         Ok(())
     }
 
@@ -114,12 +114,8 @@ pub enum UploaderError {
     RocksDB(#[from] rocksdb::Error),
     #[error("io error: {0}")]
     IO(#[from] std::io::Error),
-    #[error("internal error: {0}")]
-    Internal(String),
     #[error("websocket channel send error: {0}")]
     Websocket(#[from] tokio::sync::mpsc::error::SendError<ChannelMessage>),
-    #[error("not implemented")]
-    NotImplemented,
     #[error("json error {0}")]
     Json(#[from] serde_json::Error),
 }

@@ -96,6 +96,11 @@ defmodule IngestWeb.LiveComponents.RegisterClientForm do
         max_age: 86_400 * 10
       )
 
+    expires_at =
+      Timex.now()
+      |> Timex.add(Timex.Duration.from_days(10))
+      |> Timex.format!("%Y%m%d", :strftime)
+
     case Map.put(client_params, "owner_id", socket.assigns.current_user.id)
          |> Map.put(
            "token",
@@ -107,7 +112,9 @@ defmodule IngestWeb.LiveComponents.RegisterClientForm do
          socket
          |> put_flash(:info, "Client registered successfully")
          # redirect out to the client again with the newly minted and saved token for registration
-         |> redirect(external: "http://localhost:8097/callback?token=#{token}")}
+         |> redirect(
+           external: "http://localhost:8097/callback?token=#{token}&expires_at=#{expires_at}"
+         )}
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
