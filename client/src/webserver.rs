@@ -158,7 +158,7 @@ async fn callback<'a>(
                     config.token_expires_at = match params.get("expires_at") {
                         None => Some(Utc::now().date_naive().add(Days::new(10))),
                         Some(expires) => Some(
-                            chrono::NaiveDate::parse_from_str(expires, "%Y%m%d").unwrap(), //.unwrap_or(Utc::now().naive_utc().add(Days::new(10))),
+                            chrono::NaiveDate::parse_from_str(expires, "%Y%m%d").unwrap_or(Utc::now().date_naive().add(Days::new(10)))
                         ),
                     };
 
