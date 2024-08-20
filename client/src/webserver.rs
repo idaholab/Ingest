@@ -6,11 +6,13 @@ use axum::extract::{Query, State};
 use axum::response::Html;
 use axum::routing::get;
 use axum::Router;
+use chrono::{Days, Utc};
 use handlebars::Handlebars;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
+use std::ops::Add;
 use std::sync::{Arc, Mutex};
 use tracing::info;
 use uuid::Uuid;
@@ -151,6 +153,15 @@ async fn callback<'a>(
 
                     let mut config = state.config.clone();
                     config.token = Some(token.clone());
+
+                    // Ingest should default to 10 days expiry, so if we don't have it set that
+                    config.token_expires_at = match params.get("expires_at") {
+                        None => Some(Utc::now().date_naive().add(Days::new(10))),
+                        Some(expires) => Some(
+                            chrono::NaiveDate::parse_from_str(expires, "%Y%m%d").unwrap_or(Utc::now().date_naive().add(Days::new(10)))
+                        ),
+                    };
+
                     config
                         .write_to_host()
                         .expect("unable to write the token to the host configuration file");

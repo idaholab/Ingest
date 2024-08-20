@@ -6,7 +6,7 @@ mod uploader;
 mod webserver;
 
 use tray_icon::{
-    menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
+    menu::{Menu, MenuEvent, MenuItem},
     TrayIconBuilder, TrayIconEvent,
 };
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
@@ -14,11 +14,14 @@ use winit::event_loop::{ControlFlow, EventLoopBuilder};
 use crate::connection::make_connection_thread;
 use crate::errors::ClientError;
 use crate::webserver::boot_webserver;
-use chrono::Local;
+use chrono::{Local, Utc};
+use notify_rust::{Notification, Timeout};
 use std::path::Path;
+use std::process;
 use std::sync::{Arc, Mutex};
-use tracing::Level;
+use tracing::{error, Level};
 use tracing_subscriber::FmtSubscriber;
+use uuid::Uuid;
 
 pub struct Connected(bool);
 
@@ -36,8 +39,15 @@ async fn main() -> Result<(), ClientError> {
 
     // First let's pull in the current configuration - this will automatically create a hardware_id
     // if one does not exist for this client
-    let _client_config = config::get_configuration()?;
-    let icon = load_icon(Path::new("icon.png"));
+    let client_config = config::get_configuration()?;
+
+    let register_url = format!(
+        "http://{}/dashboard/destinations/client/register_client?client_id={}", // eventually we should add dynamic port and callbacks
+        client_config.ingest_server.unwrap_or_default(),
+        client_config.hardware_id.unwrap_or(Uuid::new_v4())
+    );
+
+    let icon = load_icon(Path::new("./assets/icon.png"));
 
     // we have to use a standard mutex so we can do a blocking read in the event loop - it's a pain in the ass
     let semaphore = Arc::new(Mutex::new(Connected(false)));
@@ -67,11 +77,37 @@ async fn main() -> Result<(), ClientError> {
         gtk::main();
     });
 
+    let not_authenticated = match client_config.token_expires_at {
+        None => true,
+        Some(e) => Utc::now().date_naive() > e && client_config.token.is_some(),
+    };
+
+    if not_authenticated {
+        let _ = Notification::new()
+            .summary("Ingest")
+            .body("You must authenticate with Ingest website before you can use the Ingest application.")
+            .timeout(Timeout::Milliseconds(6000)) //milliseconds
+            .show();
+    }
+
     let event_loop = EventLoopBuilder::new().build().unwrap();
     let menu = Menu::new();
+    let menu_authenticate = MenuItem::new("Authenticate with Ingest", true, None);
     let menu_status = MenuItem::new("Disconnected", false, None);
     let menu_reconnect = MenuItem::new("Reconnect", true, None);
-    menu.append_items(&[&menu_status, &menu_reconnect])
+    let menu_exit = MenuItem::new("Exit", true, None);
+
+    if not_authenticated {
+        match menu.insert(&menu_authenticate, 0) {
+            Ok(_) => {}
+            Err(_) => {
+                error!("unable to append the authentication menu item");
+                process::exit(1);
+            }
+        }
+    }
+
+    menu.append_items(&[&menu_status, &menu_reconnect, &menu_exit])
         .expect("unable to register menu item");
 
     #[cfg(not(target_os = "linux"))]
@@ -99,13 +135,24 @@ async fn main() -> Result<(), ClientError> {
             }
         }
 
-        if let Ok(event) = tray_channel.try_recv() {}
+        if let Ok(_event) = tray_channel.try_recv() {}
 
         if let Ok(event) = menu_channel.try_recv() {
             {
                 if event.id == menu_reconnect.id() && !semaphore.lock().unwrap().0 {
                     let new_semaphore = semaphore.clone();
                     tokio::spawn(async move { make_connection_thread(new_semaphore).await });
+                }
+
+                if event.id == menu_exit.id() {
+                    process::exit(0);
+                }
+
+                if event.id == menu_authenticate.id() {
+                    match open::that(register_url.as_str()) {
+                        Ok(_) => {}
+                        Err(e) => error!("unable to open register URL on user's system {:?}", e),
+                    }
                 }
             }
         }

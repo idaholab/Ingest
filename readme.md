@@ -20,14 +20,12 @@ Users are able to upload files directly using the web interface on the central s
 The central server is written in Elixir and uses the Phoenix web framework.
 
 
-## [Ingest Client](/client/readme.md) *abandoned**
+## [Ingest Client](/client/readme.md) *alpha preview*
 
 
 
 The DeepLynx Ingest client is a cross-platform application designed to enable high-speed UDP file transfer from the computer it's installed on to either the central server or other DeepLynx Ingest clients. It integrates directly with the central server, with the central server acting as the UI for the application vs. building a native UI for each platform.
 
-The client is written in Rust and is currently abandoned. Due to the directions the main server and platform have taken, the Rust client didn't make any real sense to pursue at this time. The code is there for anyone who wants to play around with it - but the elixir portion has been written out. 
-
-
+The client is written in Rust and is currently in alpha preview. D
 
 ![inl_logo](server/priv/static/images/inllogo.png)

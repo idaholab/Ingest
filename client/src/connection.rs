@@ -85,7 +85,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
 
     // make the socket connection
     let url = config.ingest_server.unwrap_or("localhost:4000".to_string());
-    let token = config.token.ok_or(ClientError::Token)?;
+    let token = config.token.ok_or(ClientError::TokenNotPresent)?;
 
     let (ws, _) = tokio_tungstenite::connect_async(format!(
         "ws://{}/client/websocket?vsn=2.0.0&token={}",
@@ -119,6 +119,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
                 Ok(_) => {}
                 Err(e) => {
                     error!("error in sending message to channel {:?}", e);
+                    break;
                 }
             }
         }
@@ -141,6 +142,7 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
     let heartbeat_tx = tx.clone();
     tokio::spawn(async move {
         let mut index = 1;
+        let mut error_count = 0;
 
         loop {
             sleep(Duration::from_millis(500)).await;
@@ -159,6 +161,11 @@ async fn make_connection(semaphore: Arc<Mutex<Connected>>) -> Result<(), ClientE
                 Ok(_) => {}
                 Err(e) => {
                     error!("error sending heartbeat {:?}", e);
+                    error_count += 1;
+
+                    if error_count > 10 {
+                        break;
+                    }
                 }
             }
 

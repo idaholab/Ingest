@@ -9,6 +9,7 @@ pub struct ClientConfiguration {
     pub hardware_id: Option<Uuid>,
     pub ingest_server: Option<String>,
     pub token: Option<String>,
+    pub token_expires_at: Option<chrono::NaiveDate>,
 }
 
 pub fn get_configuration() -> Result<ClientConfiguration, ClientError> {

@@ -105,6 +105,22 @@ defmodule IngestWeb.DestinationsLive do
           patch={~p"/dashboard/destinations"}
         />
       </.modal>
+
+      <.modal
+        :if={@live_action in [:register_client]}
+        id="client_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/destinations")}
+      >
+        <.live_component
+          live_action={@live_action}
+          client={@client}
+          module={IngestWeb.LiveComponents.RegisterClientForm}
+          id="client-modal-component"
+          current_user={@current_user}
+          patch={~p"/dashboard/destinations"}
+        />
+      </.modal>
     </div>
     """
   end
@@ -149,6 +165,13 @@ defmodule IngestWeb.DestinationsLive do
     socket
     |> assign(:page_title, "Listing Destinations")
     |> assign(:destination, nil)
+  end
+
+  defp apply_action(socket, :register_client, %{"client_id" => client_id}) do
+    socket
+    |> assign(:page_title, "Register")
+    |> assign(:client_form, %Client{} |> Ecto.Changeset.change() |> to_form())
+    |> assign(:client, %Client{owner_id: socket.assigns.current_user.id, id: client_id})
   end
 
   @impl true
