@@ -182,7 +182,7 @@ defmodule Ingest.Requests do
     do:
       Repo.get!(Request, id)
       |> Repo.preload(:templates)
-      |> Repo.preload(:project)
+      |> Repo.preload(project: [:templates, :destinations])
       |> Repo.preload(:destinations)
 
   @doc """
@@ -329,13 +329,35 @@ defmodule Ingest.Requests do
       from t in Template,
         where:
           fragment(
-            "searchable @@ websearch_to_tsquery(?)",
+            "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
             ^search_term
           ) and t.id not in ^Enum.map(exclude, fn d -> d.id end),
         order_by: {
           :desc,
           fragment(
-            "ts_rank_cd(searchable, websearch_to_tsquery(?), 4)",
+            "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
+            ^search_term
+          )
+        }
+
+    Repo.all(query)
+  end
+
+  @defaults %{exclude: []}
+  def search_own_templates(search_term, %User{} = user, opts \\ []) do
+    %{exclude: exclude} = Enum.into(opts, @defaults)
+
+    query =
+      from t in Template,
+        where:
+          fragment(
+            "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
+            ^search_term
+          ) and t.id not in ^Enum.map(exclude, fn d -> d.id end) and t.inserted_by == ^user.id,
+        order_by: {
+          :desc,
+          fragment(
+            "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
             ^search_term
           )
         }
@@ -350,13 +372,13 @@ defmodule Ingest.Requests do
         on: p.id == r.project_id,
         where:
           fragment(
-            "p1.searchable @@ websearch_to_tsquery(?)",
+            "p1.searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
             ^search_term
-          ),
+          ) and r.status == :published,
         order_by: {
           :desc,
           fragment(
-            "ts_rank_cd(p1.searchable, websearch_to_tsquery(?), 4)",
+            "ts_rank_cd(p1.searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
             ^search_term
           )
         }

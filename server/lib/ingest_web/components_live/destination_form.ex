@@ -298,7 +298,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   </.label>
                   <.input type="text" field={config[:base_url]} />
                   <p class="text-xs">
-                    Leave blank to use the service's default option.
+                    Leave blank to use the service's default option. Do not include trailing slashes or "https://".
                   </p>
 
                   <.label for="status-select">

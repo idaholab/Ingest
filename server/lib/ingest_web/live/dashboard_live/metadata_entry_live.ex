@@ -250,7 +250,7 @@ defmodule IngestWeb.MetadataEntryLive do
     upload = Uploads.get_upload!(upload_id)
 
     classifications_allowed =
-      request.destinations
+      (request.destinations ++ request.project.destinations)
       |> Enum.map(fn d -> d.classifications_allowed end)
       |> List.flatten()
       |> Enum.uniq()
@@ -258,7 +258,7 @@ defmodule IngestWeb.MetadataEntryLive do
     {:noreply,
      socket
      |> assign(:classifications_allowed, classifications_allowed)
-     |> assign(:templates, request.templates)
+     |> assign(:templates, request.templates ++ request.project.templates)
      |> assign(:upload, upload)
      |> allow_upload(:files,
        auto_upload: true,
@@ -273,7 +273,7 @@ defmodule IngestWeb.MetadataEntryLive do
           original_filename: upload.filename,
           filename: "#{entry.client_name}",
           user: socket.assigns.current_user,
-          destinations: request.destinations,
+          destinations: request.destinations ++ request.project.destinations,
           request: request}
        end
      )

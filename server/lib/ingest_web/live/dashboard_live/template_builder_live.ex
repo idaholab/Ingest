@@ -206,6 +206,9 @@ defmodule IngestWeb.TemplateBuilderLive do
                   <.input type="text" field={@field_form[:file_extensions]} />
                 </div>
                 <p class="mt-3 text-sm leading-6 text-gray-400">
+                  Show this field only for the provided file extensions.
+                </p>
+                <p class="mt-3 text-sm leading-6 text-gray-400">
                   Comma-seperated values. Example: .csv,.pdf,.html - Leave blank for all file types
                 </p>
               </div>
@@ -409,7 +412,7 @@ defmodule IngestWeb.TemplateBuilderLive do
     case Ingest.Requests.update_template(socket.assigns.template, %{fields: fields}) do
       {:ok, _template} ->
         socket
-        |> push_patch(
+        |> push_navigate(
           to:
             ~p"/dashboard/templates/#{socket.assigns.template.id}/fields/#{socket.assigns.field.id}"
         )

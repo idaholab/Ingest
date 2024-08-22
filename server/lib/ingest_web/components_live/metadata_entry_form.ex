@@ -60,6 +60,7 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
               <.input
                 label={field.label}
                 name={field.label}
+                required={field.required}
                 field={@metadata_form[field.label]}
                 type={Atom.to_string(field.type)}
                 options={

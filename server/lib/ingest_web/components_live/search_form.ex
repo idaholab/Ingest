@@ -115,7 +115,9 @@ defmodule IngestWeb.LiveComponents.SearchForm do
      socket
      |> assign(
        :results,
-       Ingest.Requests.search_templates(value, exclude: Enum.flat_map(excludes, fn d -> d end))
+       Ingest.Requests.search_own_templates(value, socket.assigns.current_user,
+         exclude: Enum.flat_map(excludes, fn d -> d end)
+       )
      )}
   end
 
@@ -126,7 +128,9 @@ defmodule IngestWeb.LiveComponents.SearchForm do
      socket
      |> assign(
        :results,
-       Ingest.Destinations.search(value, exclude: Enum.flat_map(excludes, fn d -> d end))
+       Ingest.Destinations.search_own(value, socket.assigns.current_user,
+         exclude: Enum.flat_map(excludes, fn d -> d end)
+       )
      )}
   end
 end
