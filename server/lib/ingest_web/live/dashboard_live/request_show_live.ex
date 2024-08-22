@@ -14,7 +14,8 @@ defmodule IngestWeb.RequestShowLive do
     <div>
       <div
         :if={
-          @request.destinations == [] || @request.templates == [] ||
+          (@request.destinations == [] && @project_destinations == []) ||
+            (@request.templates == [] && @project_templates == []) ||
             @request.status != :published
         }
         class="lg:border-b lg:border-t lg:border-gray-200 mb-10 "
@@ -36,14 +37,14 @@ defmodule IngestWeb.RequestShowLive do
                   <span class="flex items-start px-6 py-5 text-sm font-medium lg:pl-9">
                     <span class="flex-shrink-0">
                       <span
-                        :if={@request.templates == []}
+                        :if={@request.templates == [] && @project_templates == []}
                         class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-300"
                       >
                         <span class="text-gray-500">X</span>
                       </span>
 
                       <span
-                        :if={@request.templates != []}
+                        :if={@request.templates != [] || @project_templates != []}
                         class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600"
                       >
                         <svg
@@ -86,14 +87,14 @@ defmodule IngestWeb.RequestShowLive do
                   <span class="flex items-start px-6 py-5 text-sm font-medium lg:pl-9">
                     <span class="flex-shrink-0">
                       <span
-                        :if={@request.destinations == []}
+                        :if={@request.destinations == [] && @project_destinations == []}
                         class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-300"
                       >
                         <span class="text-gray-500">X</span>
                       </span>
 
                       <span
-                        :if={@request.destinations != []}
+                        :if={@request.destinations != [] || @project_destinations != []}
                         class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600"
                       >
                         <svg
@@ -238,7 +239,7 @@ defmodule IngestWeb.RequestShowLive do
                   <p :if={@request.status == :published} class="text-sm font-semibold">Published</p>
                 </div>
                 <button
-                  :if={@request.templates != []}
+                  :if={@request.templates != [] || @project_templates != []}
                   phx-click={JS.toggle(to: "#publish_dropdown", in: "opacity-100", out: "opacity-0")}
                   type="button"
                   class={
@@ -268,7 +269,10 @@ defmodule IngestWeb.RequestShowLive do
                 </button>
 
                 <button
-                  :if={@request.destinations == [] || @request.templates == []}
+                  :if={
+                    (@request.destinations == [] && @project_destinations == []) ||
+                      (@request.templates == [] && @project_templates == [])
+                  }
                   disable
                   type="button"
                   class="inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 cursor-not-allowed p-2 hover:bg-indigo-700 "
@@ -1063,7 +1067,8 @@ defmodule IngestWeb.RequestShowLive do
     project = Projects.get_project!(request.project_id)
 
     # set back to draft if there are not enough parts - not a catch all, but works most of the time if they remove something
-    if request.templates == [] || request.destinations == [] do
+    if (request.templates == [] && project.templates == []) ||
+         (request.destinations == [] && project.destinations == []) do
       Requests.update_request(request, %{status: :draft})
     end
 

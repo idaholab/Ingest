@@ -132,7 +132,7 @@ defmodule IngestWeb.UploadShowLive do
     request = Requests.get_request!(id)
 
     classifications_allowed =
-      request.destinations
+      (request.destinations ++ request.project.destinations)
       |> Enum.map(fn d -> d.classifications_allowed end)
       |> List.flatten()
       |> Enum.uniq()
@@ -159,7 +159,7 @@ defmodule IngestWeb.UploadShowLive do
            {Ingest.Uploaders.MultiDestinationWriter,
             filename: "#{entry.client_name}",
             user: socket.assigns.current_user,
-            destinations: request.destinations,
+            destinations: request.destinations ++ request.project.destinations,
             request: request}
          end
        )

@@ -82,7 +82,7 @@ defmodule Ingest.Destinations.S3Config do
     field :path, Ingest.Encrypted.Binary
     field :final_path, Ingest.Encrypted.Binary
     field :ssl, :boolean, default: true
-    field :integrated_metadata, :boolean, default: true
+    field :integrated_metadata, :boolean, default: false
   end
 
   @doc false
@@ -118,7 +118,7 @@ defmodule Ingest.Destinations.AzureConfig do
     field :container, Ingest.Encrypted.Binary
     field :path, Ingest.Encrypted.Binary
     field :final_path, Ingest.Encrypted.Binary
-    field :integrated_metadata, :boolean, default: true
+    field :integrated_metadata, :boolean, default: false
   end
 
   @doc false
@@ -153,7 +153,7 @@ defmodule Ingest.Destinations.LakeFSConfig do
     field :repository, Ingest.Encrypted.Binary
     field :port, :integer, default: nil
     field :ssl, :boolean, default: true
-    field :integrated_metadata, :boolean, default: true
+    field :integrated_metadata, :boolean, default: false
   end
 
   @doc false

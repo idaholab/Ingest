@@ -302,13 +302,36 @@ defmodule Ingest.Destinations do
       from(d in Destination,
         where:
           fragment(
-            "searchable @@ websearch_to_tsquery(?)",
+            "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
             ^search_term
           ) and d.id not in ^Enum.map(exclude, fn d -> d.id end),
         order_by: {
           :desc,
           fragment(
-            "ts_rank_cd(searchable, websearch_to_tsquery(?), 4)",
+            "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
+            ^search_term
+          )
+        }
+      )
+
+    Repo.all(query)
+  end
+
+  @defaults %{exclude: []}
+  def search_own(search_term, %User{} = user, opts \\ []) do
+    %{exclude: exclude} = Enum.into(opts, @defaults)
+
+    query =
+      from(d in Destination,
+        where:
+          fragment(
+            "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
+            ^search_term
+          ) and d.id not in ^Enum.map(exclude, fn d -> d.id end) and d.inserted_by == ^user.id,
+        order_by: {
+          :desc,
+          fragment(
+            "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
             ^search_term
           )
         }
