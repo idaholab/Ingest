@@ -29,7 +29,7 @@ defmodule Ingest.Workers.Metadata do
           "created" => upload.inserted_at,
           "owner" => %{
             "ingest_id" => upload.user.id,
-            "display_name" => upload.user.name,
+            "display_name" => Map.get(upload.request.project.user, :name),
             "email" => upload.user.email
           },
           "project" => %{
@@ -37,7 +37,7 @@ defmodule Ingest.Workers.Metadata do
             "name" => upload.request.project.name,
             "owner" => %{
               "ingest_id" => upload.request.project.user.id,
-              "display_name" => upload.request.project.user.name,
+              "display_name" => Map.get(upload.request.project.user, :name),
               "email" => upload.request.project.user.email
             }
           },
