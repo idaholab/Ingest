@@ -323,68 +323,84 @@ defmodule Ingest.Requests do
 
   @defaults %{exclude: []}
   def search_templates(search_term, opts \\ []) do
-    %{exclude: exclude} = Enum.into(opts, @defaults)
+    if search_term == "" do
+      []
+    else
+      search_term = String.replace(search_term, " ", "")
+      %{exclude: exclude} = Enum.into(opts, @defaults)
 
-    query =
-      from t in Template,
-        where:
-          fragment(
-            "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
-            ^search_term
-          ) and t.id not in ^Enum.map(exclude, fn d -> d.id end),
-        order_by: {
-          :desc,
-          fragment(
-            "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
-            ^search_term
-          )
-        }
+      query =
+        from t in Template,
+          where:
+            fragment(
+              "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
+              ^search_term
+            ) and t.id not in ^Enum.map(exclude, fn d -> d.id end),
+          order_by: {
+            :desc,
+            fragment(
+              "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
+              ^search_term
+            )
+          }
 
-    Repo.all(query)
+      Repo.all(query)
+    end
   end
 
   @defaults %{exclude: []}
   def search_own_templates(search_term, %User{} = user, opts \\ []) do
-    %{exclude: exclude} = Enum.into(opts, @defaults)
+    if search_term == "" do
+      []
+    else
+      search_term = String.replace(search_term, " ", "")
+      %{exclude: exclude} = Enum.into(opts, @defaults)
 
-    query =
-      from t in Template,
-        where:
-          fragment(
-            "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
-            ^search_term
-          ) and t.id not in ^Enum.map(exclude, fn d -> d.id end) and t.inserted_by == ^user.id,
-        order_by: {
-          :desc,
-          fragment(
-            "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
-            ^search_term
-          )
-        }
+      query =
+        from t in Template,
+          where:
+            fragment(
+              "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
+              ^search_term
+            ) and t.id not in ^Enum.map(exclude, fn d -> d.id end) and t.inserted_by == ^user.id,
+          order_by: {
+            :desc,
+            fragment(
+              "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
+              ^search_term
+            )
+          }
 
-    Repo.all(query)
+      Repo.all(query)
+    end
   end
 
   def search_requests_by_project(search_term) do
-    Repo.all(
-      from(r in Request,
-        join: p in Project,
-        on: p.id == r.project_id,
-        where:
-          fragment(
-            "p1.searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
-            ^search_term
-          ) and r.status == :published,
-        order_by: {
-          :desc,
-          fragment(
-            "ts_rank_cd(p1.searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
-            ^search_term
-          )
-        }
+    if search_term == "" do
+      []
+    else
+      search_term = String.replace(search_term, " ", "")
+
+      Repo.all(
+        from(r in Request,
+          join: p in Project,
+          on: p.id == r.project_id,
+          where:
+            fragment(
+              "p1.searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
+              ^search_term
+            ) and r.status == :published,
+          order_by: {
+            :desc,
+            fragment(
+              "ts_rank_cd(p1.searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
+              ^search_term
+            )
+          }
+        )
       )
-    )
-    |> Repo.preload(:project)
+      |> Repo.preload(:project)
+    end
   end
 
   def invite_user_by_email(%Request{} = request, email) do
