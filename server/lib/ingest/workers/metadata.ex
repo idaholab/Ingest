@@ -51,7 +51,7 @@ defmodule Ingest.Workers.Metadata do
       # and large transfer fees
       statuses =
         Enum.map(
-          upload.request.destinations,
+          upload.request.destinations ++ upload.request.project.destinations,
           &destination_metadata_upload(&1, upload, filename, metadata)
         )
 

@@ -75,7 +75,7 @@ defmodule Ingest.Uploads do
       Repo.get!(Upload, id)
       |> Repo.preload(:user)
       |> Repo.preload(metadatas: from(m in Metadata, where: m.submitted == true))
-      |> Repo.preload(request: [:destinations, :templates, project: :user])
+      |> Repo.preload(request: [:destinations, :templates, project: [:user, :destinations]])
 
   def get_upload(id),
     do:
