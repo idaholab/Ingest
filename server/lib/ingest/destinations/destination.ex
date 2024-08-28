@@ -111,8 +111,8 @@ defmodule Ingest.Destinations.AzureConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :account_name, Ingest.Encrypted.Binary, redact: true
-    field :account_key, Ingest.Encrypted.Binary, redact: true
+    field :account_name, Ingest.Encrypted.Binary
+    field :account_key, Ingest.Encrypted.Binary
     field :base_url, Ingest.Encrypted.Binary
     field :ssl, :boolean, default: true
     field :container, Ingest.Encrypted.Binary
