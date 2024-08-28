@@ -239,7 +239,10 @@ defmodule IngestWeb.RequestShowLive do
                   <p :if={@request.status == :published} class="text-sm font-semibold">Published</p>
                 </div>
                 <button
-                  :if={@request.templates != [] || @project_templates != []}
+                  :if={
+                    (@request.templates != [] || @project_templates != []) &&
+                      (@request.destinations != [] || @project_destinations != [])
+                  }
                   phx-click={JS.toggle(to: "#publish_dropdown", in: "opacity-100", out: "opacity-0")}
                   type="button"
                   class={

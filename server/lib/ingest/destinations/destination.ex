@@ -116,8 +116,6 @@ defmodule Ingest.Destinations.AzureConfig do
     field :base_url, Ingest.Encrypted.Binary
     field :ssl, :boolean, default: true
     field :container, Ingest.Encrypted.Binary
-    field :path, Ingest.Encrypted.Binary
-    field :final_path, Ingest.Encrypted.Binary
     field :integrated_metadata, :boolean, default: false
   end
 
@@ -129,9 +127,7 @@ defmodule Ingest.Destinations.AzureConfig do
       :account_key,
       :base_url,
       :container,
-      :path,
       :ssl,
-      :final_path,
       :integrated_metadata
     ])
     |> validate_required([:container])

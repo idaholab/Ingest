@@ -23,7 +23,7 @@ defmodule Ingest.Uploaders.Azure do
     # if it does, then we need to change the name and appened a - COPY (date) to the end of it
     filename =
       if AzureStorage.Container.new(d_config.container)
-         |> AzureStorage.Blob.new("#{d_config.path}/#{filename}")
+         |> AzureStorage.Blob.new("#{filename}")
          |> AzureStorage.Blob.exists?(config) do
         "#{filename} - COPY #{DateTime.now!("UTC") |> DateTime.to_naive()}"
       else
@@ -39,7 +39,7 @@ defmodule Ingest.Uploaders.Azure do
 
     blob =
       AzureStorage.Container.new(d_config.container)
-      |> AzureStorage.Blob.new("#{d_config.path}/#{filename}")
+      |> AzureStorage.Blob.new("#{filename}")
 
     {:ok,
      {destination,
@@ -58,7 +58,7 @@ defmodule Ingest.Uploaders.Azure do
     }
 
     AzureStorage.Container.new(d_config.container)
-    |> AzureStorage.Blob.new("#{d_config.path}/#{filename}")
+    |> AzureStorage.Blob.new("#{filename}")
     |> AzureStorage.Blob.put_blob(config, data)
   end
 
