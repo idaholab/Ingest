@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "@mux/upchunk": "^3.3.2"
+    "@mux/upchunk": "^3.3.2",
+    "alpinejs": "^3.14.1"
+  },
+  "devDependencies": {
+    "daisyui": "^4.12.10"
   }
 }

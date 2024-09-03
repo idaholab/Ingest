@@ -3,6 +3,7 @@ defmodule IngestWeb.Router do
   use ErrorTracker.Web, :router
 
   import IngestWeb.UserAuth
+  import Backpex.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -48,10 +49,13 @@ defmodule IngestWeb.Router do
       forward "/mailbox", Plug.Swoosh.MailboxPreview
       error_tracker_dashboard("/errors")
 
+      backpex_routes()
+
       live_session :require_admin,
-        on_mount: [{IngestWeb.UserAuth, :ensure_admin}] do
+        on_mount: [{IngestWeb.UserAuth, :ensure_admin}, Backpex.InitAssigns] do
         live "/users", IngestWeb.UserManagementLive, :index
         live "/users/:id", IngestWeb.UserManagementLive, :edit
+        live_resources("/projects", IngestWeb.ProjectsResourceLive)
       end
     end
   end
