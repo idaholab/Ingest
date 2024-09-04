@@ -5,17 +5,10 @@ module.exports = {
     themes: [
       {
         light: {
-          ...require("daisyui/src/theming/themes").light,
           primary: "#1d4ed8",
           "primary-content": "white",
           secondary: "#f39325",
           "secondary-content": "white",
-        },
-        dark: {
-          ...require("daisyui/src/theming/themes").dark,
-        },
-        cyberpunk: {
-          ...require("daisyui/src/theming/themes").cyberpunk,
         },
       },
     ],
