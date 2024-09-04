@@ -59,6 +59,9 @@ COPY ./server/lib lib
 
 COPY ./server/assets assets
 
+COPY ./server/assets/package*.json assets/
+RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
+
 # compile assets
 RUN mix assets.deploy
 
