@@ -50,31 +50,45 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
               <div :if={Application.get_env(:ingest, :show_classifications)} class="sm:col-span-6">
                 <.label for="project-type">Data Classifications Allowed</.label>
-                <.input
-                  type="checkbox"
-                  field={@destination_form[:ouo]}
-                  label="OUO - Official Use Only"
-                />
+                <div class="pb-1">
+                  <.input
+                    type="checkbox"
+                    field={@destination_form[:ouo]}
+                    label="OUO - Official Use Only"
+                  />
+                </div>
 
-                <.input
-                  type="checkbox"
-                  field={@destination_form[:pii]}
-                  label="PII - Personally Identifiable Information"
-                />
+                <div class="pb-1">
+                  <.input
+                    type="checkbox"
+                    field={@destination_form[:pii]}
+                    label="PII - Personally Identifiable Information"
+                  />
+                </div>
 
-                <.input type="checkbox" field={@destination_form[:ec]} label="EC - Export Controlled" />
+                <div class="pb-1">
+                  <.input
+                    type="checkbox"
+                    field={@destination_form[:ec]}
+                    label="EC - Export Controlled"
+                  />
+                </div>
 
-                <.input
-                  type="checkbox"
-                  field={@destination_form[:ucni]}
-                  label="UCNI - Unclassified Controlled Nuclear Information"
-                />
+                <div class="pb-1">
+                  <.input
+                    type="checkbox"
+                    field={@destination_form[:ucni]}
+                    label="UCNI - Unclassified Controlled Nuclear Information"
+                  />
+                </div>
 
-                <.input
-                  type="checkbox"
-                  field={@destination_form[:cui]}
-                  label="CUI - Controlled Unclassifed Information"
-                />
+                <div class="pb-1">
+                  <.input
+                    type="checkbox"
+                    field={@destination_form[:cui]}
+                    label="CUI - Controlled Unclassifed Information"
+                  />
+                </div>
 
                 <.input
                   type="checkbox"
