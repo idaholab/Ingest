@@ -105,14 +105,15 @@ defmodule IngestWeb.UploadShowLive do
                 <:col :let={{_id, upload}} label="Extension"><%= upload.ext %></:col>
 
                 <:action :let={{_id, upload}}>
-                  <.link
-                    :if={upload.metadatas == []}
-                    navigate={~p"/dashboard/uploads/#{@request}/#{upload}"}
-                    class="text-indigo-600 hover:text-indigo-900"
-                  >
-                    Input Supporting Data
-                  </.link>
-                  <div :if={upload.metadatas != []}>
+                  <div :if={!Ecto.assoc_loaded?(upload.metadatas) || upload.metadatas == []}>
+                    <.link
+                      navigate={~p"/dashboard/uploads/#{@request}/#{upload}"}
+                      class="text-indigo-600 hover:text-indigo-900"
+                    >
+                      Input Supporting Data
+                    </.link>
+                  </div>
+                  <div :if={upload.metadatas != [] && Ecto.assoc_loaded?(upload.metadatas)}>
                     <p class="text-green-900">
                       <.icon name="hero-check-circle" class="bg-green-900" /> Supporting Data Entered
                     </p>
@@ -188,6 +189,8 @@ defmodule IngestWeb.UploadShowLive do
           socket.assigns.request,
           socket.assigns.current_user
         )
+
+      dbg(upload)
 
       # record the path the file ended up in each of the destinations
       {statuses, _paths} =

@@ -70,7 +70,7 @@ defmodule IngestWeb.RequestsLive do
                   <.link
                     class="text-red-600 hover:text-red-900"
                     phx-click={JS.push("delete", value: %{id: request.id}) |> hide("##{id}")}
-                    data-confirm="Are you sure?"
+                    data-confirm="Are you sure? Note: Deleting the request does not delete data that's already been uploaded."
                   >
                     Delete
                   </.link>

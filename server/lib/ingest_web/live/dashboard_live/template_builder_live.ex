@@ -34,14 +34,15 @@ defmodule IngestWeb.TemplateBuilderLive do
             id={field.id}
             phx-click={JS.patch(~p"/dashboard/templates/#{@template.id}/fields/#{field.id}")}
             class={active(field.id, @field)}
+            data-tip="hello"
             data-id={field.id}
           >
             <div>
-              <div class="min-w-0 px-2 flex flex-row drag-ghost:opacity-0">
+              <div class="min-w-0 px-2 flex flex-row drag-ghost:opacity-0 ">
                 <div class="items-start gap-x-3 basis-2/3 pr-10 ">
                   <p class="text-sm font-semibold leading-6 text-gray-900"><%= field.label %></p>
                   <p class="whitespace-nowrap text-sm col-span-2">
-                    <%= field.type %>
+                    <%= friendly_field(field.type) %>
                   </p>
                 </div>
                 <div>
@@ -76,10 +77,15 @@ defmodule IngestWeb.TemplateBuilderLive do
                   <%= type %>
                 </span>
               </div>
+              <div class="items-center tooltip tooltip-bottom" data-tip="Drag to Order">
+                <.icon name="hero-arrows-up-down" />
+              </div>
             </div>
-            <button phx-click="delete_field" phx-value-field={field.id}>
-              <.icon name="hero-trash" />
-            </button>
+            <div>
+              <button phx-click="delete_field" phx-value-field={field.id}>
+                <.icon name="hero-trash" />
+              </button>
+            </div>
           </li>
         </ul>
       </div>
@@ -125,8 +131,8 @@ defmodule IngestWeb.TemplateBuilderLive do
                       field={@field_form[:type]}
                       id="label"
                       options={[
-                        Options: :select,
                         Text: :text,
+                        Dropdown: :select,
                         Number: :number,
                         "Large Text Area": :textarea,
                         Checkbox: :checkbox,
@@ -390,7 +396,7 @@ defmodule IngestWeb.TemplateBuilderLive do
 
   defp active(current, field) do
     if field && current == field.id do
-      "flex items-center justify-between gap-x-6 py-5 active active:bg-green-100 bg-green-100 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0"
+      "flex items-center justify-between gap-x-6 py-5 active active:bg-green-100 bg-green-100 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0 "
     else
       "flex items-center justify-between gap-x-6 py-5 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0"
     end
@@ -420,6 +426,17 @@ defmodule IngestWeb.TemplateBuilderLive do
 
       {:error, %Ecto.Changeset{} = _changeset} ->
         socket |> assign(:field_form, to_form(socket.assigns.field))
+    end
+  end
+
+  defp friendly_field(field) do
+    case field do
+      :select -> "Dropdown"
+      :text -> "Text"
+      :number -> "Number"
+      :textarea -> "Large Text Area"
+      :checkbox -> "Checkbox"
+      :date -> "Date Picker"
     end
   end
 end

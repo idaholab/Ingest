@@ -49,6 +49,24 @@ Hooks.UploadBox = {
   },
 };
 
+Hooks.ClipboardCopy = {
+  mounted() {
+    this.el.addEventListener("click", (e) => {
+      let input = this.el.dataset.body;
+
+      const storage = document.createElement("textarea");
+      storage.value = input;
+      this.el.appendChild(storage);
+
+      // Copy the text in the fake `textarea` and remove the `textarea`
+      storage.select();
+      storage.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      this.el.removeChild(storage);
+    });
+  },
+};
+
 Hooks.Notifications = Notifications;
 
 let csrfToken = document

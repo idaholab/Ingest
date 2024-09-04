@@ -411,7 +411,7 @@ defmodule IngestWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="form-control w-full max-w-xs">
+    <label for={@for} class="form-control w-full max-w-xs pb-1">
       <%= render_slot(@inner_block) %>
     </label>
     """

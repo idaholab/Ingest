@@ -103,10 +103,8 @@ defmodule IngestWeb.LiveComponents.TemplateFieldForm do
 
   def handle_event("save", %{"template_field" => field_params}, socket) do
     case Ingest.Requests.update_template(socket.assigns.template, %{
-           fields: [
-             field_params
-             | Enum.map(socket.assigns.fields, fn f -> Map.from_struct(f) end)
-           ]
+           fields:
+             Enum.map(socket.assigns.fields, fn f -> Map.from_struct(f) end) ++ [field_params]
          }) do
       {:ok, _} ->
         {:noreply,

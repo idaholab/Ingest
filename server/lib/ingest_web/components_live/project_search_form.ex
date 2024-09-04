@@ -107,7 +107,7 @@ defmodule IngestWeb.LiveComponents.ProjectSearchForm do
      socket
      |> assign(
        :results,
-       Ingest.Requests.search_own_templates(value, socket.current_user,
+       Ingest.Requests.search_own_templates(value, socket.assigns.current_user,
          exclude: socket.assigns.project.templates
        )
      )}
@@ -118,7 +118,7 @@ defmodule IngestWeb.LiveComponents.ProjectSearchForm do
      socket
      |> assign(
        :results,
-       Ingest.Destinations.search_own(value, socket.current_user,
+       Ingest.Destinations.search_own(value, socket.assigns.current_user,
          exclude: socket.assigns.project.destinations
        )
      )}
