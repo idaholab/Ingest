@@ -25,6 +25,12 @@ defmodule IngestWeb.ProjectsResourceLive do
       description: %{
         module: Backpex.Fields.Text,
         label: "Description"
+      },
+      requests: %{
+        module: Backpex.Fields.HasMany,
+        label: "Requests",
+        display_field: :name,
+        live_resource: IngestWeb.RequestResourceLive
       }
     ]
   end

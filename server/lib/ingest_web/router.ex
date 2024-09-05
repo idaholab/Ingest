@@ -53,9 +53,11 @@ defmodule IngestWeb.Router do
 
       live_session :require_admin,
         on_mount: [{IngestWeb.UserAuth, :ensure_admin}, Backpex.InitAssigns] do
-        live "/users", IngestWeb.UserManagementLive, :index
-        live "/users/:id", IngestWeb.UserManagementLive, :edit
+        live_resources("/users", IngestWeb.UsersResourceLive)
         live_resources("/projects", IngestWeb.ProjectsResourceLive)
+        live_resources("/requests", IngestWeb.RequestResourceLive)
+        live_resources("/uploads", IngestWeb.UploadsResourceLive)
+        live_resources("/templates", IngestWeb.TemplatesResourceLive)
       end
     end
   end

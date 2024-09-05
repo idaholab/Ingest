@@ -26,7 +26,7 @@ defmodule Ingest.Uploads.Upload do
   end
 
   @doc false
-  def changeset(upload, attrs) do
+  def changeset(upload, attrs, meta \\ %{}) do
     upload
     |> cast(attrs, [:filename, :ext, :size])
     |> validate_required([:filename])

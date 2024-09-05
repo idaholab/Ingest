@@ -17,8 +17,24 @@
     </Backpex.HTML.Layout.topbar_dropdown>
   </:topbar>
   <:sidebar>
+    <Backpex.HTML.Layout.sidebar_item current_url={@current_url} navigate={~p"/dev/users"}>
+      <.icon name="hero-book-open" class="h-5 w-5" /> Users
+    </Backpex.HTML.Layout.sidebar_item>
+
     <Backpex.HTML.Layout.sidebar_item current_url={@current_url} navigate={~p"/dev/projects"}>
       <.icon name="hero-book-open" class="h-5 w-5" /> Projects
+    </Backpex.HTML.Layout.sidebar_item>
+
+    <Backpex.HTML.Layout.sidebar_item current_url={@current_url} navigate={~p"/dev/requests"}>
+      <.icon name="hero-book-open" class="h-5 w-5" /> Requests
+    </Backpex.HTML.Layout.sidebar_item>
+
+    <Backpex.HTML.Layout.sidebar_item current_url={@current_url} navigate={~p"/dev/uploads"}>
+      <.icon name="hero-book-open" class="h-5 w-5" /> Uploads
+    </Backpex.HTML.Layout.sidebar_item>
+
+    <Backpex.HTML.Layout.sidebar_item current_url={@current_url} navigate={~p"/dev/templates"}>
+      <.icon name="hero-book-open" class="h-5 w-5" /> Templates
     </Backpex.HTML.Layout.sidebar_item>
   </:sidebar>
   <Backpex.HTML.Layout.flash_messages flash={@flash} />
