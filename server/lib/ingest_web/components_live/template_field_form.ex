@@ -36,7 +36,7 @@ defmodule IngestWeb.LiveComponents.TemplateFieldForm do
                   field={@field_form[:type]}
                   id="label"
                   options={[
-                    Options: :select,
+                    Dropdown: :select,
                     Text: :text,
                     Number: :number,
                     "Large Text Area": :textarea,
