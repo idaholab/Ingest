@@ -27,8 +27,13 @@ defmodule Ingest.Uploads do
     Repo.all(Upload)
   end
 
-  def recent_uploads_for_user(%User{} = user) do
-    Repo.all(from u in Upload, where: u.uploaded_by == ^user.id, limit: 10, preload: :metadatas)
+  def recent_uploads_for_user(%User{} = user, %Request{} = request) do
+    Repo.all(
+      from u in Upload,
+        where: u.uploaded_by == ^user.id and u.request_id == ^request.id,
+        limit: 10,
+        preload: :metadatas
+    )
   end
 
   def uploads_missing_metadata(%User{} = user) do

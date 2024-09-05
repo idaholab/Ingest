@@ -164,7 +164,7 @@ defmodule IngestWeb.UploadShowLive do
             request: request}
          end
        )
-       |> stream(:uploads, Uploads.recent_uploads_for_user(socket.assigns.current_user))
+       |> stream(:uploads, Uploads.recent_uploads_for_user(socket.assigns.current_user, request))
        |> assign(:section, "uploads"), layout: {IngestWeb.Layouts, :dashboard}}
     end
   end
