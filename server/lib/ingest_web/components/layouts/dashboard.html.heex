@@ -160,6 +160,7 @@
             >
               <!-- Active: "bg-gray-50", Not Active: "" -->
               <a
+                :if={!Application.get_env(:ingest, :hide_public_login)}
                 href={~p"/users/settings"}
                 class="block px-3 py-1 text-sm leading-6 text-gray-900"
                 role="menuitem"

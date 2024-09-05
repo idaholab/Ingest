@@ -147,7 +147,9 @@ defmodule Sidebar do
               </ul>
             </li>
             <li class="mt-auto">
-              <a href={~p"/users/settings"} class={active("settings", @section)}>
+              <a 
+              :if={!Application.get_env(:ingest, :hide_public_login)}
+              href={~p"/users/settings"} class={active("settings", @section)}>
                 <svg
                   class="h-6 w-6 shrink-0"
                   fill="none"
@@ -289,7 +291,11 @@ defmodule Sidebar do
             </ul>
           </li>
           <li class="mt-auto">
-            <a href={~p"/users/settings"} class={active("settings", @section)}>
+            <a
+              :if={!Application.get_env(:ingest, :hide_public_login)}
+              href={~p"/users/settings"}
+              class={active("settings", @section)}
+            >
               <svg
                 class="h-6 w-6 shrink-0"
                 fill="none"
