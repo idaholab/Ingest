@@ -45,7 +45,7 @@ defmodule Ingest.MixProject do
       {:phoenix_live_dashboard, "~> 0.8.0"},
       {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
-      {:swoosh, "~> 1.16.9"},
+      {:swoosh, "~> 1.17.0"},
       {:finch, "~> 0.13"},
       {:error_tracker, "~> 0.1"},
       {:telemetry_metrics, "~> 1.0.0"},
