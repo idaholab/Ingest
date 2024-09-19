@@ -190,8 +190,6 @@ defmodule IngestWeb.UploadShowLive do
           socket.assigns.current_user
         )
 
-      dbg(upload)
-
       # record the path the file ended up in each of the destinations
       {statuses, _paths} =
         Enum.map(meta.destinations, fn {destination, path} ->

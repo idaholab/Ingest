@@ -203,7 +203,7 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
          }) do
       {:ok, metadata} ->
         # force update until we finish the feature
-        %{upload_id: socket.assigns.upload.id, force: true}
+        %{upload_id: socket.assigns.upload.id}
         |> Ingest.Workers.Metadata.new()
         |> Oban.insert()
 

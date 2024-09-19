@@ -13,13 +13,14 @@ defmodule Ingest.Workers.Metadata do
 
   use Oban.Worker, queue: :metadata
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"upload_id" => upload_id, "force" => forced} = _args}) do
+  def perform(%Oban.Job{args: %{"upload_id" => upload_id} = _args}) do
     # take the upload and load the upload, its request, the requests destinations and the metadata
     upload = Uploads.get_upload!(upload_id)
     upload_path = Uploads.get_upload_path!(upload_id)
 
     # only write the metadata if we have all of it or it's forced
-    if Enum.count(upload.metadatas) == Enum.count(upload.request.templates) || forced == "true" do
+    if Enum.count(upload.metadatas) ==
+         Enum.count(upload.request.templates) + Enum.count(upload.request.project.templates) do
       # build the metadata entry json object
       metadata =
         Jason.encode!(%{
