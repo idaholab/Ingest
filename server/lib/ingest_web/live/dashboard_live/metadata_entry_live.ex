@@ -258,7 +258,7 @@ defmodule IngestWeb.MetadataEntryLive do
     {:noreply,
      socket
      |> assign(:classifications_allowed, classifications_allowed)
-     |> assign(:templates, request.templates ++ request.project.templates)
+     |> assign(:templates, request.project.templates ++ request.templates)
      |> assign(:upload, upload)
      |> allow_upload(:files,
        auto_upload: true,

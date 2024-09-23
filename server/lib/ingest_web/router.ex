@@ -103,6 +103,10 @@ defmodule IngestWeb.Router do
       live "/dashboard/templates/:id/new", TemplateBuilderLive, :new
       live "/dashboard/templates/:id/fields/:field_id", TemplateBuilderLive, :field
 
+      live "/dashboard/templates/:id/fields/:field_id/search_templates",
+           TemplateBuilderLive,
+           :search_templates
+
       live "/dashboard/destinations", DestinationsLive, :index
       live "/dashboard/destinations/new", DestinationsLive, :new
       live "/dashboard/destinations/:id", DestinationsLive, :edit

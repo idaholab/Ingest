@@ -68,6 +68,7 @@ defmodule Ingest.MixProject do
       {:sweet_xml, "~> 0.7.4"},
       {:oban, "~> 2.17"},
       {:backpex, "~> 0.6.0"},
+      {:earmark, "~> 1.4"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]

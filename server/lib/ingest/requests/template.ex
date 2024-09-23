@@ -44,8 +44,12 @@ defmodule Ingest.Requests.TemplateField do
   embedded_schema do
     field :label, :string
     field :help_text, :string
-    field :type, Ecto.Enum, values: [:select, :text, :number, :textarea, :checkbox, :date]
+
+    field :type, Ecto.Enum,
+      values: [:select, :text, :number, :textarea, :checkbox, :date, :branch]
+
     field :select_options, {:array, :string}, default: []
+    field :branch_options, {:array, :map}, default: []
     field :required, :boolean
     field :file_extensions, {:array, :string}
   end
@@ -57,6 +61,7 @@ defmodule Ingest.Requests.TemplateField do
       :help_text,
       :type,
       :select_options,
+      :branch_options,
       :required,
       :file_extensions
     ])

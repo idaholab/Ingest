@@ -56,18 +56,23 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
             phx-target={@myself}
             phx-submit="save"
           >
-            <div :for={field <- @fields}>
+            <div :for={field <- @fields} class="py-2">
               <.input
                 label={field.label}
                 name={field.label}
                 required={field.required}
                 field={@metadata_form[field.label]}
+                prompt="Select one"
                 type={Atom.to_string(field.type)}
                 options={
                   if field.type == :select do
                     field.select_options
                   else
-                    nil
+                    if field.type == :branch do
+                      branch_options_display(field.branch_options)
+                    else
+                      nil
+                    end
                   end
                 }
               />
@@ -76,8 +81,46 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
                   <%= msg %>
                 </.error>
               </div>
-              <p class="text-xs"><%= field.help_text %></p>
+              <p :if={field.help_text} class="text-xs">
+                <%= raw(Earmark.as_html!(field.help_text)) %>
+              </p>
               <p :if={field.required} class="text-xs text-red-400">*Required</p>
+
+              <div :if={field.type == :branch} class="mt-2">
+                <div
+                  :for={branch_field <- get_branch_fields(field, @metadata_form[field.label].value)}
+                  class="py-2"
+                >
+                  <.input
+                    label={branch_field.label}
+                    name={branch_field.label}
+                    required={branch_field.required}
+                    field={@metadata_form[branch_field.label]}
+                    type={Atom.to_string(branch_field.type)}
+                    prompt="Select one"
+                    options={
+                      if branch_field.type == :select do
+                        branch_field.select_options
+                      else
+                        if branch_field.type == :branch do
+                          branch_options_display(field.branch_options)
+                        else
+                          nil
+                        end
+                      end
+                    }
+                  />
+                  <div :if={@errors != nil}>
+                    <.error :for={{key, msg} <- @errors} :if={key == branch_field.label}>
+                      <%= msg %>
+                    </.error>
+                  </div>
+                  <p :if={branch_field.help_text} class="text-xs">
+                    <%= raw(Earmark.as_html!(branch_field.help_text)) %>
+                  </p>
+                  <p :if={branch_field.required} class="text-xs text-red-400">*Required</p>
+                </div>
+              </div>
             </div>
 
             <div class="mt-6 flex items-center justify-end gap-x-6">
@@ -176,6 +219,7 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
        to_form(metadata.data)
      )
      |> assign(:errors, nil)
+     |> assign(:template, template)
      |> assign(:fields, template.fields)}
   end
 
@@ -191,7 +235,7 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
        |> assign(:metadata_form, to_form(params))
        |> assign(:errors, %{List.first(target) => "Field is Required"})}
     else
-      {:noreply, socket |> assign(:errors, nil)}
+      {:noreply, socket |> assign(:errors, nil) |> assign(:metadata_form, to_form(params))}
     end
   end
 
@@ -220,6 +264,27 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
     end
 
     {:noreply, socket}
+  end
+
+  defp get_branch_fields(field, branch) do
+    if !field do
+      []
+    else
+      option =
+        field.branch_options
+        |> Enum.find(fn option -> option["name"] == branch end)
+
+      if option do
+        Ingest.Requests.get_template!(option["template"]).fields
+      else
+        []
+      end
+    end
+  end
+
+  defp branch_options_display(options) do
+    options
+    |> Enum.map(fn %{"name" => name, "template" => _template} -> name end)
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})

@@ -142,7 +142,17 @@ defmodule IngestWeb.DestinationsLive do
 
   @impl true
   def handle_params(params, _uri, socket) do
-    {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+    {:noreply,
+     socket
+     |> assign(
+       :destinations,
+       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+     )
+     |> stream(
+       :destinations,
+       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+     )
+     |> apply_action(socket.assigns.live_action, params)}
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do

@@ -8,6 +8,14 @@ defmodule IngestWeb.UploadShowLive do
   def render(assigns) do
     ~H"""
     <div>
+      <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+          <h1 class="text-base font-semibold leading-6 text-gray-900"><%= @request.name %></h1>
+          <p class="mt-2 text-sm text-gray-700">
+            <%= @request.description %>
+          </p>
+        </div>
+      </div>
       <div :if={Application.get_env(:ingest, :show_classifications)} class="flex justify-center pb-5">
         <div>
           <p>
@@ -15,7 +23,7 @@ defmodule IngestWeb.UploadShowLive do
           </p>
           <div>
             <span
-              :if={@classifications_allowed == []}
+              :if={@classifications_allowed == [] || !@classifications_allowed}
               class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10"
             >
               UUR - Unclassified Unlimited Release
@@ -99,7 +107,7 @@ defmodule IngestWeb.UploadShowLive do
               >
                 <:col :let={{_id, upload}} label="File Name"><%= upload.filename %></:col>
                 <:col :let={{_id, upload}} label="Upload Date">
-                  <%= "#{upload.inserted_at.day}-#{upload.inserted_at.month}-#{upload.inserted_at.year}" %>
+                  <%= "#{upload.inserted_at.month}-#{upload.inserted_at.day}-#{upload.inserted_at.year}" %>
                 </:col>
                 <:col :let={{_id, upload}} label="Size"><%= mb(upload.size) %>mb</:col>
                 <:col :let={{_id, upload}} label="Extension"><%= upload.ext %></:col>
@@ -169,6 +177,11 @@ defmodule IngestWeb.UploadShowLive do
     end
   end
 
+  @impl true
+  def handle_params(%{"id" => id}, _uri, socket) do
+    {:noreply, socket}
+  end
+
   defp handle_progress(:files, entry, socket) do
     if entry.done? do
       # meta should have the information for the destination and the location of the file
@@ -203,6 +216,7 @@ defmodule IngestWeb.UploadShowLive do
 
       {:noreply,
        socket
+       |> push_navigate(to: ~p"/dashboard/uploads/#{socket.assigns.request}")
        |> stream_insert(:uploads, upload)
        |> put_flash(:info, "file  uploaded")}
     else

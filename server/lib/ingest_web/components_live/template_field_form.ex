@@ -41,7 +41,8 @@ defmodule IngestWeb.LiveComponents.TemplateFieldForm do
                     Number: :number,
                     "Large Text Area": :textarea,
                     Checkbox: :checkbox,
-                    Date: :date
+                    Date: :date,
+                    "Branch Choice Dropdown": :branch
                   ]}
                 />
 

@@ -7,7 +7,15 @@ defmodule IngestWeb.TemplateBuilderLive do
   def render(assigns) do
     ~H"""
     <div>
-      <div class="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
+      <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+          <h1 class="text-base font-semibold leading-6 text-gray-900"><%= @template.name %></h1>
+          <p class="mt-2 text-sm text-gray-700">
+            <%= @template.description %>
+          </p>
+        </div>
+      </div>
+      <div class="mt-5 border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
         <h3 class="text-base font-semibold leading-6 text-gray-900">Form Builder</h3>
       </div>
     </div>
@@ -136,14 +144,21 @@ defmodule IngestWeb.TemplateBuilderLive do
                         Number: :number,
                         "Large Text Area": :textarea,
                         Checkbox: :checkbox,
-                        Date: :date
+                        Date: :date,
+                        "Branching Dropdown": :branch
                       ]}
                     />
                   </div>
+                  <p :if={@field.type == :branch} class="text-gray-400 text-sm pt-2">
+                    A branching dropdown allows you to setup a dynamically appearing metadata template depending on user choice
+                  </p>
                 </div>
               </div>
-
-              <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+              <!-- SELECT/DROPDOWN OPTIONS -->
+              <div
+                :if={@field.type == :select}
+                class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6"
+              >
                 <ul
                   :if={@field.type == :select && @field.select_options}
                   role="list"
@@ -181,6 +196,53 @@ defmodule IngestWeb.TemplateBuilderLive do
                     Add Option
                   </button>
                 </div>
+              </div>
+              <!-- BRANCH OPTIONS -->
+              <div class="mt-5 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                <ul
+                  :if={@field.type == :branch && @field.branch_options != []}
+                  role="list"
+                  class="divide-y divide-white/5 sm:col-span-4"
+                >
+                  <li
+                    :for={%{"name" => name, "template" => template} <- @field.branch_options}
+                    id={template}
+                    class="relative flex items-center space-x-4 py-4"
+                  >
+                    <div class="min-w-0 flex-auto">
+                      <div class="flex items-center gap-x-3">
+                        <h2 class="min-w-0 text-sm font-semibold leading-6 text-white">
+                          <a href="#" class="flex gap-x-2">
+                            <span class="truncate"><%= name %> --></span>
+                            <span class="truncate">
+                              <%= Ingest.Requests.get_template!(template).name %>
+                            </span>
+                          </a>
+                        </h2>
+                      </div>
+                    </div>
+
+                    <.link
+                      phx-click="remove_branch_option"
+                      phx-value-name={name}
+                      phx-value-template={template}
+                    >
+                      <.icon name="hero-x-mark" class="h-5 w-5 flex-none text-gray-400" />
+                    </.link>
+                  </li>
+                </ul>
+                <div :if={@field.type == :branch} class="sm:col-span-4">
+                  <span
+                    phx-click={
+                      JS.patch(
+                        ~p"/dashboard/templates/#{@template.id}/fields/#{@field.id}/search_templates"
+                      )
+                    }
+                    class="cursor-pointer mt-3 rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                  >
+                    Add Branching Option
+                  </span>
+                </div>
                 <div class="sm:col-span-4">
                   <label for="username" class="block text-sm font-medium leading-6 text-white">
                     Label
@@ -200,6 +262,7 @@ defmodule IngestWeb.TemplateBuilderLive do
 
                   <p class="mt-3 text-sm leading-6 text-gray-400">
                     Optional: write a few setences to describe the information you're requesting.
+                    <b>Markdown is supported</b>
                   </p>
                 </div>
               </div>
@@ -251,10 +314,25 @@ defmodule IngestWeb.TemplateBuilderLive do
       </div>
 
       <.modal
+        :if={@live_action in [:search_templates]}
+        id="template-search_modal"
+        show
+        on_cancel={JS.patch(@on_cancel)}
+      >
+        <.live_component
+          live_action={@live_action}
+          module={IngestWeb.LiveComponents.BranchTemplateSearch}
+          id="template-search-modal-component"
+          current_user={@current_user}
+          patch={@on_cancel}
+        />
+      </.modal>
+
+      <.modal
         :if={@live_action in [:new]}
         id="template_field_modal"
         show
-        on_cancel={JS.patch(~p"/dashboard/templates/#{@template.id}")}
+        on_cancel={JS.patch(@on_cancel)}
       >
         <.live_component
           live_action={@live_action}
@@ -277,6 +355,7 @@ defmodule IngestWeb.TemplateBuilderLive do
      socket
      |> assign(:template, template)
      |> assign(:fields, template.fields)
+     |> assign(:on_cancel, ~p"/dashboard/templates/#{template.id}")
      |> assign(:section, "templates"), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
@@ -289,6 +368,7 @@ defmodule IngestWeb.TemplateBuilderLive do
      socket
      |> assign(:field, field)
      |> assign(:template, template)
+     |> assign(:on_cancel, ~p"/dashboard/templates/#{template.id}/fields/#{field.id}")
      |> assign(:select_form, to_form(%{option: nil}))
      |> assign(:field_form, to_form(Requests.change_template_field(field)))}
   end
@@ -358,7 +438,7 @@ defmodule IngestWeb.TemplateBuilderLive do
     field_params =
       field_params
       |> Map.replace("file_extensions", file_extensions |> String.split(","))
-      |> Map.put("select_options", [option | socket.assigns.field.select_options])
+      |> Map.put("select_options", socket.assigns.field.select_options ++ [option])
 
     {:noreply, socket |> save_field(field_params)}
   end
@@ -392,6 +472,33 @@ defmodule IngestWeb.TemplateBuilderLive do
       )
 
     {:noreply, socket |> save_field(field)}
+  end
+
+  @impl true
+  def handle_event("remove_branch_option", %{"name" => name, "template" => template}, socket) do
+    field =
+      %{"id" => socket.assigns.field.id}
+      |> Map.put(
+        "branch_options",
+        Enum.filter(socket.assigns.field.branch_options, fn o ->
+          o != %{"name" => name, "template" => template}
+        end)
+      )
+
+    {:noreply, socket |> save_field(field)}
+  end
+
+  @impl true
+  def handle_info({_child, {:branch_added, %{name: name, template: template}}}, socket) do
+    field =
+      Map.from_struct(socket.assigns.field)
+      |> Map.put(:branch_options, [
+        %{name: name, template: template.id} | socket.assigns.field.branch_options
+      ])
+
+    {:noreply,
+     socket
+     |> save_field_atoms(field)}
   end
 
   defp active(current, field) do
@@ -429,6 +536,33 @@ defmodule IngestWeb.TemplateBuilderLive do
     end
   end
 
+  defp save_field_atoms(socket, field_params) do
+    fields =
+      Enum.map(socket.assigns.fields, fn f ->
+        field = Map.from_struct(f)
+
+        if field.id == socket.assigns.field.id do
+          field_params
+          |> Map.put(:id, socket.assigns.field.id)
+        else
+          field
+        end
+      end)
+
+    case Ingest.Requests.update_template(socket.assigns.template, %{fields: fields}) do
+      {:ok, _template} ->
+        socket
+        |> push_navigate(
+          to:
+            ~p"/dashboard/templates/#{socket.assigns.template.id}/fields/#{socket.assigns.field.id}"
+        )
+        |> put_flash(:info, "Template fields saved successfully")
+
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        socket |> assign(:field_form, to_form(socket.assigns.field))
+    end
+  end
+
   defp friendly_field(field) do
     case field do
       :select -> "Dropdown"
@@ -437,6 +571,7 @@ defmodule IngestWeb.TemplateBuilderLive do
       :textarea -> "Large Text Area"
       :checkbox -> "Checkbox"
       :date -> "Date Picker"
+      :branch -> "Branching Dropdown"
     end
   end
 end

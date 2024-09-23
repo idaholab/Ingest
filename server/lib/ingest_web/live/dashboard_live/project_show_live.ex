@@ -28,13 +28,24 @@ defmodule IngestWeb.ProjectShowLive do
             <:col :let={request} label="Name"><%= request.name %></:col>
             <:col :let={request} label="Uploads"><%= get_upload_count(request) %></:col>
 
-            <:action :let={_request}>
-              <.link class="text-indigo-600 hover:text-indigo-900">
+            <:action :let={request}>
+              <.link
+                patch={~p"/dashboard/requests/#{request}"}
+                class="text-indigo-600 hover:text-indigo-900"
+              >
                 Edit
               </.link>
             </:action>
-            <:action :let={_request}>
-              <.link data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">
+            <:action :let={request}>
+              <.link
+                data-confirm="Are you absolutely sure you want to delete this Data Request?"
+                phx-value-id={request.id}
+                phx-click={
+                  JS.push("remove_request", value: %{id: request.id})
+                  |> hide("##{request.id}")
+                }
+                class="text-red-600 hover:text-red-900"
+              >
                 Delete
               </.link>
             </:action>
@@ -366,6 +377,16 @@ defmodule IngestWeb.ProjectShowLive do
   def handle_event("delete_invite", %{"id" => id}, socket) do
     Projects.delete_project_invites(Projects.get_project_invites!(id))
     {:noreply, socket |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project}")}
+  end
+
+  @impl true
+  def handle_event("remove_request", %{"id" => id}, socket) do
+    Ingest.Requests.delete_request(Ingest.Requests.get_request!(id))
+
+    {:noreply,
+     socket
+     |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project}")
+     |> put_flash(:info, "Request Deleted Successfully")}
   end
 
   @impl true
