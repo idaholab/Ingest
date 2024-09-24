@@ -69,6 +69,7 @@ defmodule Ingest.MixProject do
       {:oban, "~> 2.17"},
       {:backpex, "~> 0.6.0"},
       {:earmark, "~> 1.4"},
+      {:bodyguard, "~> 2.4"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]

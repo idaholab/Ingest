@@ -1,4 +1,9 @@
 defmodule Ingest.Projects.Project do
+  @moduledoc """
+  Project represents a group of individuals with common access to destinations and templates.
+  """
+  @behaviour Bodyguard.Policy
+
   use Ecto.Schema
   import Ecto.Changeset
   alias Ingest.Destinations.Destination
@@ -36,4 +41,20 @@ defmodule Ingest.Projects.Project do
     |> cast(attrs, [:name, :description, :inserted_by])
     |> validate_required([:name, :description])
   end
+
+  # Anyone can make a project
+  def authorize(:create_project, _user), do: :ok
+
+  # Admins can do anything
+  def authorize(action, %{roles: :admin} = _user, _project)
+      when action in [:update_project, :delete_project],
+      do: :ok
+
+  # Users can manage their own projects
+  def authorize(action, %{id: user_id} = _user, %{inserted_by: user_id} = _project)
+      when action in [:update_project, :delete_project],
+      do: :ok
+
+  # Otherwise, denied
+  def authorize(_, _, _), do: :error
 end

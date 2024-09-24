@@ -175,8 +175,18 @@ defmodule IngestWeb.ProjectsLive do
   @impl true
   def handle_event("delete", %{"id" => id, "count" => count}, socket) do
     project = Ingest.Projects.get_project!(id)
-    {:ok, _} = Ingest.Projects.delete_project(project)
 
-    {:noreply, stream_delete(socket, :projects, {project, count})}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Projects.Project,
+             :delete_project,
+             socket.assigns.current_user,
+             project
+           ),
+         {:ok, _} <- Ingest.Projects.delete_project(project) do
+      {:noreply, stream_delete(socket, :projects, {project, count})}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Unable to delete project")}
+    end
   end
 end

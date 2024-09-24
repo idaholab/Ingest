@@ -192,8 +192,18 @@ defmodule IngestWeb.DestinationsLive do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     destination = Ingest.Destinations.get_own_destination!(socket.assigns.current_user, id)
-    {:ok, _} = Ingest.Destinations.delete_destination(destination)
 
-    {:noreply, stream_delete(socket, :destinations, destination)}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Destinations.Destination,
+             :delete_destination,
+             socket.assigns.current_user,
+             destination
+           ),
+         {:ok, _} <- Ingest.Destinations.delete_destination(destination) do
+      {:noreply, stream_delete(socket, :destinations, destination)}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Unable to delete destination")}
+    end
   end
 end

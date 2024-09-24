@@ -442,17 +442,23 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
         collect_classifications(destination_params)
       )
 
-    case Ingest.Destinations.update_destination(socket.assigns.destination, destination_params) do
-      {:ok, destination} ->
-        notify_parent({:saved, destination})
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Destinations.Destination,
+             :update_destination,
+             socket.assigns.current_user,
+             socket.assigns.destination
+           ),
+         {:ok, destination} <-
+           Ingest.Destinations.update_destination(socket.assigns.destination, destination_params) do
+      notify_parent({:saved, destination})
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Destination updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+      {:noreply,
+       socket
+       |> put_flash(:info, "Destination updated successfully")
+       |> push_patch(to: socket.assigns.patch)}
+    else
+      _ -> {:noreply, assign_form(socket, socket.assigns.destination)}
     end
   end
 

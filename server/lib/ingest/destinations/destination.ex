@@ -4,6 +4,8 @@ defmodule Ingest.Destinations.Destination do
   Typically this reflects the HTTP uploads, but can hopefully be configured in the future
   to work with the high-speed UDP file transers as well.
   """
+  @behaviour Bodyguard.Policy
+
   alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.TemporaryConfig
   alias Ingest.Destinations.AzureConfig
@@ -64,6 +66,21 @@ defmodule Ingest.Destinations.Destination do
     |> cast_embed(:temporary_config, required: false)
     |> validate_required([:name, :type])
   end
+
+  def authorize(:create_destination, _user), do: :ok
+
+  # Admins can do anything
+  def authorize(action, %{roles: :admin} = _user, _destination)
+      when action in [:update_destination, :delete_destination],
+      do: :ok
+
+  # Users can manage their own projects
+  def authorize(action, %{id: user_id} = _user, %{inserted_by: user_id} = _destination)
+      when action in [:update_destination, :delete_destination],
+      do: :ok
+
+  # Otherwise, denied
+  def authorize(_, _, _), do: :error
 end
 
 defmodule Ingest.Destinations.S3Config do
