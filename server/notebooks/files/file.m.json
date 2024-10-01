@@ -1,0 +1,73 @@
+{
+    "id": "56be9ed5-d5c8-4684-abe7-193e9c890a0cv2",
+    "fileName": "example.csv",
+    "fileType": "example.csv",
+    "filePath": "/Users/exampleuser/Documents/example.csv",
+    "fileSize": "2 KB",
+    "lastModified": "2023-03-01T12:10:00Z",
+    "created": "2023-02-01T11:00:00Z",
+    "owner": {
+        "ingest_id": "56be9ed5-d5c8-4684-abe7-193e9c890a0c",
+        "display_name": "John Darrington",
+        "email": "john.darrington@inl.gov"
+    },
+    "project": {
+        "ingest_id": "56be9ed5-d5c8-4684-abe7-193e9c890a0cv2",
+        "name": "Test Projectv2",
+        "owner": {
+            "ingest_id": "56be9ed5-d5c8-4684-abe7-193e9c890a0cv2",
+            "display_name": "John Darrington",
+            "email": "john.darrington@inl.gov"
+        }
+    },
+    "user_provided_metadata": [{
+        "firstName": "John",
+        "lastName": "Doe",
+        "age": 35,
+        "gender": "Male",
+        "email": "johndoe@mail.com",
+        "phoneNumber": "+1234567890",
+        "address": "123 6th St. Melbourne, FL 32904",
+        "nationality": "American",
+        "occupation": "Software Developer",
+        "company": "ABC Corp",
+        "salary": "75,000",
+        "yearsExperience": 10,
+        "programmingLanguages": [
+            "Python",
+            "Java",
+            "JavaScript"
+        ],
+        "operatingSystem": "macOS",
+        "IDE": "IntelliJ IDEA",
+        "isEmployed": true,
+        "department": "IT",
+        "project": "Project Zephyr",
+        "manager": "Jane Smith",
+        "teamSize": 5,
+        "officeLocation": "New York",
+        "isRemote": false,
+        "performanceRating": "Excellent",
+        "hobbies": [
+            "Reading",
+            "Golf",
+            "Chess"
+        ],
+        "pets": [
+            "Dog"
+        ],
+        "favoriteColor": "Blue",
+        "travelledCountries": [
+            "USA",
+            "Canada",
+            "Spain",
+            "France",
+            "Germany"
+        ],
+        "vehicle": {
+            "Brand": "Tesla",
+            "Model": "Model 3",
+            "Year": 2019
+        }
+    }]
+}

@@ -1,0 +1,881 @@
+<!-- livebook:{"app_settings":{"slug":"lakefs"},"file_entries":[{"name":"file.m.json","type":"attachment"}]} -->
+
+# Data Processing/LakeFS Webhooks
+
+```elixir
+Mix.install([
+  {:req, "~> 0.5.6"},
+  {:plug, "~> 1.16"},
+  {:kino, "~> 0.14.1"},
+  {:jason, "~> 1.4"},
+  {:jose, "~> 1.11"}
+])
+```
+
+## DataHub Module
+
+This module is in charge of communicating with DataHub. Makes heavy use of [Req](https://hexdocs.pm/req/readme.html). Like all code, this will eventually be moved out into it's own module inside Ingest once we've got this onboarding finished.
+
+**IMPORTANT**: Set the `DATAHUB_TOKEN`, `DATAHUB_URL`, and `DATAHUB_GMS_URL` (no trailing slash) secret on this notebook in order for this to work.
+
+We send MetadataChangeEvents into DataHub following this [schema](https://datahubproject.io/docs/what/mxe/#schema). Doing anything else, like working with their OpenAPI layer is a moderate nightmare of undefined errors.
+
+We also use this module to get the DownloadLink. Here is the example return from the endpoint when fetching it:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+  body: %{
+    "downloadLink" => %{
+      "value" => %{
+        "branch" => "main",
+        "contact_email" => "alexandria@inl.gov",
+        "endpoint" => "https://datalake.alexandria.inl.gov",
+        "filename" => "spark-sql2.cmd",
+        "repo" => "subcritical-signatures"
+      }
+  }
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+defmodule DataHub do
+  # look up pattern matching if you don't understand this pattern - it's almost
+  # like function overloading, where we use an atom to specify which aspect we're 
+  # going to include on the dataset event
+  def create_dataset_event(path, platform) do
+    dataset_proposal(dataset_urn(path, platform),
+      aspect_name: "datasetKey",
+      aspect: %{
+        name: dataset_urn(path, platform),
+        platform: platform_urn(platform),
+        origin: env()
+      }
+    )
+  end
+
+  def delete_dataset(path, platform) do
+    payload = %{
+      urn: dataset_urn(path, platform)
+    }
+
+    token = System.fetch_env!("LB_DATAHUB_TOKEN")
+    url = System.fetch_env!("LB_DATAHUB_GMS_URL")
+
+    # so far this is the only method using these sets of endpoints so I didn't want to 
+    # make this fancy like the others
+    resp =
+      Req.post!("#{url}/entities?action=delete",
+        json: payload,
+        auth: {:bearer, token}
+      )
+
+    case resp do
+      %{status: 200} -> {:ok, :deleted}
+      _ -> {:error, resp.body}
+    end
+  end
+
+  def create_dataset_event(:properties, path, platform, opts) do
+    custom = Keyword.fetch!(opts, :custom)
+    name = Keyword.get(opts, :name)
+    description = Keyword.get(opts, :description, "")
+
+    dataset_proposal(dataset_urn(path, platform),
+      aspect_name: "datasetProperties",
+      aspect: properties_aspect(name, description, custom)
+    )
+  end
+
+  def create_dataset_event(:owners, path, platform, opts) do
+    owners = Keyword.fetch!(opts, :owners)
+    type = Keyword.get(opts, :owner_type, "DATA_STEWARD")
+
+    dataset_proposal(dataset_urn(path, platform),
+      aspect_name: "ownership",
+      aspect: %{owners: Enum.map(owners, fn owner -> ownership_aspect(owner, type) end)}
+    )
+  end
+
+  def create_dataset_event(:tags, path, platform, opts) do
+    tags = Keyword.fetch!(opts, :tags)
+
+    dataset_proposal(dataset_urn(path, platform),
+      aspect_name: "globalTags",
+      aspect: %{tags: Enum.map(tags, fn t -> %{tag: tag_urn(t)} end)}
+    )
+  end
+
+  def create_dataset_event(:project, path, platform, opts) do
+    name = Keyword.fetch!(opts, :name)
+    description = Keyword.get(opts, :description, "")
+
+    dataset_proposal(dataset_urn(path, platform),
+      aspect_name: "project",
+      aspect: %{name: name, description: description}
+    )
+  end
+
+  def create_dataset_event(:download_link, path, platform, opts) do
+    repo = Keyword.fetch!(opts, :repo)
+    branch = Keyword.fetch!(opts, :branch)
+    filename = Keyword.fetch!(opts, :filename)
+    endpoint = Keyword.fetch!(opts, :endpoint)
+    email = Keyword.get(opts, :email, "alexandria@inl.gov")
+
+    dataset_proposal(dataset_urn(path, platform),
+      aspect_name: "downloadLink",
+      aspect: %{
+        repo: repo,
+        branch: branch,
+        filename: filename,
+        endpoint: endpoint,
+        contact_email: email
+      }
+    )
+  end
+
+  def create_tag_event(name) do
+    %{
+      proposal: %{
+        entityUrn: tag_urn(name),
+        entityType: "tag",
+        aspectName: "tagKey",
+        changeType: "UPSERT",
+        aspect: %{
+          contentType: "application/json",
+          value:
+            Jason.encode!(%{
+              name: name
+            })
+        }
+      }
+    }
+  end
+
+  def send_event(event) do
+    token = System.fetch_env!("LB_DATAHUB_TOKEN")
+    url = System.fetch_env!("LB_DATAHUB_GMS_URL")
+
+    resp =
+      Req.post!("#{url}/aspects?action=ingestProposal",
+        json: event,
+        auth: {:bearer, token}
+      )
+
+    case resp do
+      %{status: 200} -> {:ok, :created}
+      %{status: 201} -> {:ok, :created}
+      %{status: 202} -> {:ok, :updated}
+      _ -> {:error, resp.body}
+    end
+  end
+
+  def get_download_link(urn, opts \\ []) do
+    token = Keyword.get(opts, :token, System.get_env("LB_DATAHUB_TOKEN"))
+    url = Keyword.get(opts, :url, System.get_env("LB_DATAHUB_URL"))
+
+    resp =
+      Req.get!(
+        "#{url}/openapi/v3/entity/dataset/#{urn}?systemMetadata=false&aspects=downloadLink",
+        auth: {:bearer, token}
+      )
+
+    case resp.status do
+      200 -> {:ok, resp.body["downloadLink"]["value"]}
+      _ -> {:error, resp.body}
+    end
+  end
+
+  defp properties_aspect(name, description, custom) when is_map(custom) do
+    %{name: name, description: description, customProperties: custom}
+  end
+
+  defp ownership_aspect(name, type) do
+    %{owner: user_urn(name), type: String.upcase(type)}
+  end
+
+  def tag_aspect(name) do
+    %{tag: tag_urn(name)}
+  end
+
+  defp dataset_urn(name, platform) do
+    "urn:li:dataset:(#{platform_urn(platform)},#{name},#{env()})"
+  end
+
+  defp tag_urn(tag) do
+    "urn:li:tag:#{tag}"
+  end
+
+  defp user_urn(user) do
+    "urn:li:corpuser:#{user}"
+  end
+
+  defp platform_urn(platform) do
+    "urn:li:dataPlatform:#{platform}"
+  end
+
+  defp dataset_proposal(dataset_urn, opts) do
+    aspect_name = Keyword.get(opts, :aspect_name)
+    aspect = Keyword.get(opts, :aspect)
+
+    if aspect && aspect_name do
+      %{
+        proposal: %{
+          entityUrn: dataset_urn,
+          entityType: "dataset",
+          aspectName: aspect_name,
+          changeType: "UPSERT",
+          aspect: %{
+            contentType: "application/json",
+            value: Jason.encode!(aspect)
+          }
+        }
+      }
+    else
+      %{
+        proposal: %{
+          entityUrn: dataset_urn,
+          entityType: "dataset",
+          changeType: "UPSERT"
+        }
+      }
+    end
+  end
+
+  defp env() do
+    if Mix.env() == :dev do
+      "DEV"
+    else
+      "PROD"
+    end
+  end
+end
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Datahub Module Tests
+
+These are the tests for DataHub. Right now it's pointed to the dev version of the Alexandria Catalog. Replace token and url in the notebooks secrets.
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule DataHubTest do
+  use ExUnit.Case, async: true
+  alias DataHub
+
+  test "it creates a dataset" do
+    event = DataHub.create_dataset_event("testingProject.test", "lakefs")
+    assert {:ok, _created} = DataHub.send_event(event)
+  end
+
+  test "it can add properties to a dataset" do
+    event =
+      DataHub.create_dataset_event(:properties, "testingProject.test", "lakefs",
+        name: "Testing Dataset",
+        description: "A testing dataset set by LiveBook",
+        custom: %{custom: "Custom Property"}
+      )
+
+    assert {:ok, _created} = DataHub.send_event(event)
+  end
+
+  test "it can add owners to a dataset" do
+    event =
+      DataHub.create_dataset_event(:owners, "testingProject.test", "lakefs",
+        owners: ["John.Darrington@inl.gov"]
+      )
+
+    assert {:ok, _created} = DataHub.send_event(event)
+  end
+
+  test "it can add tags to a dataset" do
+    event =
+      DataHub.create_dataset_event(:tags, "testingProject.test", "lakefs",
+        tags: ["test tag 1", "test tag 2"]
+      )
+
+    assert {:ok, _created} = DataHub.send_event(event)
+  end
+
+  test "it can add a project to a dataset" do
+    event =
+      DataHub.create_dataset_event(:project, "testingProject.test", "lakefs",
+        name: "Test Project",
+        description: "A Testing Project"
+      )
+
+    assert {:ok, _created} = DataHub.send_event(event)
+  end
+
+  test "it can add a download link to a dataset" do
+    event =
+      DataHub.create_dataset_event(:download_link, "testingProject.test", "lakefs",
+        repo: "test",
+        branch: "main",
+        filename: "test.csv",
+        endpoint: "http://localhost:3000",
+        email: "test@test.com"
+      )
+
+    assert {:ok, _created} = DataHub.send_event(event)
+  end
+
+  test "it fetches a download link for a dataset" do
+    # TODO: replace with your URN
+    assert {:ok, link} =
+             DataHub.get_download_link(
+               "urn:li:dataset:(urn:li:dataPlatform:lakefs,spark-sql2.cmd,DEV)"
+             )
+
+    assert Map.has_key?(link, "branch")
+    assert Map.has_key?(link, "repo")
+    assert Map.has_key?(link, "filename")
+    assert Map.has_key?(link, "endpoint")
+    assert Map.has_key?(link, "contact_email")
+  end
+
+  test "it deletes a dataset" do
+    assert {:ok, _deleted} = DataHub.delete_dataset("testingProject.test", "lakefs")
+  end
+end
+
+ExUnit.run()
+```
+
+## LakeFS Module
+
+The LakeFS module serves two purposes. One is to get the presigned download link straight from the Azure Storage underlying Alexandria (or whatever storage you're using). The second is to react to merge events in order to trigger scanning on the repositories files.
+
+**IMPORTANT**: Set the `LAKEFS_URL` (no trailing slash) and `LAKEFS_ACCESS_KEY` and `LAKEFS_SECRET_KEY` in order to have this work.
+
+Here is a sample event from the LakeFS system on merge to main:
+
+```json
+
+{
+    "event_type": "pre-merge",
+    "event_time": "2024-08-13T03:30:59Z",
+    "action_name": "Metadata Sent to Datahub",
+    "hook_id": "metadata_send_trigger",
+    "repository_id": "test",
+    "branch_id": "main",
+    "source_ref": "909d8e095a33faa5f51deb359d995cb9bfd8ab02b41b0f2ca26999f0728c2a49",
+    "commit_id": "64eb858012e9b9c6552f6449e63cfe6728b9a4be06a6b1db6cfd9ac414288707",
+    "commit_message": "Merge 'Test-Request-by-' into 'main'",
+    "committer": "admin",
+    "commit_metadata": {
+        ".lakefs.merge.strategy": "default"
+    }
+}
+```
+
+You will need to take the `source_ref` from this event and pull a "diff" from the current main branch. This gives you a list of all the changes upon which you can work then.o
+
+The diff body should be something like this when returned by the server:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+  body = %{
+    "pagination" => %{
+      "has_more" => false,
+      "max_per_page" => 1000,
+      "next_offset" => "",
+      "results" => 2
+    },
+    "results" => [
+      %{
+        "path" => "spark-sql2.cmd",
+        "path_type" => "object",
+        "size_bytes" => 1118,
+        "type" => "added"
+      },
+      %{
+        "path" => "spark-sql2.cmd.m.json",
+        "path_type" => "object",
+        "size_bytes" => 546,
+        "type" => "added"
+      }
+    ]
+  }
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+defmodule LakeFS do
+  # note: do not use this function for massive files as it does not treat the response
+  # as a stream - if you need a stream, you'll need to write it in as this is typically
+  # used for getting the m.json files and those are going to be held in memory anyways
+  def download_file(repo, ref, path) do
+    url = System.fetch_env!("LB_LAKEFS_URL")
+    key = System.fetch_env!("LB_LAKEFS_ACCESS_KEY")
+    secret = System.fetch_env!("LB_LAKEFS_SECRET_KEY")
+
+    with %{status: 200, body: body} <-
+           Req.get!("#{url}/api/v1/repositories/#{repo}/refs/#{ref}/objects",
+             params: [path: path],
+             auth: {:basic, "#{key}:#{secret}"}
+           ) do
+      {:ok, body}
+    else
+      err -> {:error, err}
+    end
+  end
+
+  def presigned_download_url(url, repo, ref, path) do
+    key = System.fetch_env!("LB_LAKEFS_ACCESS_KEY")
+    secret = System.fetch_env!("LB_LAKEFS_SECRET_KEY")
+
+    resp =
+      Req.get!("#{url}/api/v1/repositories/#{repo}/refs/#{ref}/objects",
+        params: [path: path, presign: true],
+        auth: {:basic, "#{key}:#{secret}"},
+        redirect: false
+      )
+
+    # we return the raw response struct here for ease of use
+    {:ok, resp}
+  end
+
+  # this function pulls the metadata out of the object storage itself, as we are no longer storing
+  # it as .m.json files but intead on the objects themselves
+  def download_metadata(repo, ref, path) do
+    url = System.fetch_env!("LB_LAKEFS_URL")
+    key = System.fetch_env!("LB_LAKEFS_ACCESS_KEY")
+    secret = System.fetch_env!("LB_LAKEFS_SECRET_KEY")
+
+    with %{status: 200, body: body} <-
+           Req.get!("#{url}/api/v1/repositories/#{repo}/refs/#{ref}/objects/stat",
+             params: [path: path],
+             auth: {:basic, "#{key}:#{secret}"}
+           ) do
+      {:ok, body}
+    else
+      err -> {:error, err}
+    end
+  end
+
+  # the diff merge function takes 3 functions, to be executed depending on whether or not
+  # a file in the merge has been changed, removed, or created
+  def diff_merge(
+        %{
+          "event_type" => "pre-merge",
+          "source_ref" => source_ref,
+          "branch_id" => "main",
+          "repository_id" => repo
+        } = _event,
+        on_delete,
+        on_update,
+        on_create
+      ) do
+    url = System.fetch_env!("LB_LAKEFS_URL")
+    key = System.fetch_env!("LB_LAKEFS_ACCESS_KEY")
+    secret = System.fetch_env!("LB_LAKEFS_SECRET_KEY")
+
+    with %{status: 200, body: %{"results" => results} = _body} <-
+           Req.get!("#{url}/api/v1/repositories/#{repo}/refs/main/diff/#{source_ref}",
+             auth: {:basic, "#{key}:#{secret}"}
+           ) do
+      # Example of a result: 
+      # {"path" => "data01.csv", "path_type" => "object", "size_bytes" => 11, "type" => "changed"}
+      {statuses, messages} =
+        results
+        |> Enum.map(fn result ->
+          case result["type"] do
+            "added" -> on_create.(repo, source_ref, result)
+            "changed" -> on_update.(repo, source_ref, result)
+            "removed" -> on_delete.(repo, source_ref, result)
+          end
+        end)
+        |> Enum.unzip()
+
+      if statuses |> Enum.member?(:error) do
+        {:error, messages}
+      else
+        {:ok, messages}
+      end
+    else
+      err -> {:error, err}
+    end
+  end
+end
+```
+
+<!-- livebook:{"branch_parent_index":2} -->
+
+## LakeFS Module Tests
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule LakeFSTest do
+  use ExUnit.Case, async: true
+  alias LakeFS
+
+  test "it handles a diff event" do
+    # TODO: change event to reflect a real event in your LakeFS install
+    assert {:ok, _results} =
+             LakeFS.diff_merge(
+               %{
+                 "event_type" => "pre-merge",
+                 "repository_id" => "data",
+                 "branch_id" => "main",
+                 "source_ref" =>
+                   "319ed6baf2eed9e6df8ce2525f68d419b7b3b87ddbb62a70a44e9d3c2193daf4"
+               },
+               fn _repo, _ref, file -> {:ok, file} end,
+               fn _repo, _ref, file -> {:ok, file} end,
+               fn _repo, _ref, file -> {:ok, file} end
+             )
+  end
+
+  test "it can download a file" do
+    # TODO: change to reflect a real file and ref in your LakeFS install
+    assert {:ok, _body} =
+             LakeFS.download_file(
+               "data",
+               "319ed6baf2eed9e6df8ce2525f68d419b7b3b87ddbb62a70a44e9d3c2193daf4",
+               "data01.csv.m.json"
+             )
+  end
+
+  test "it can generate a presigned url" do
+    # TODO: change to reflect a real file and ref in your LakeFS install
+    assert {:ok, _body} =
+             LakeFS.presigned_download_url(
+               System.get_env("LB_LAKEFS_URL"),
+               "data",
+               "main",
+               "data01.csv.m.json"
+             )
+  end
+
+  test "it can download metadata" do
+    # TODO: change to reflect a real file and ref in your LakeFS install
+    assert {:ok, _data} =
+             LakeFS.download_metadata(
+               "test",
+               "Sapphire-Data-Request-by-Administrator",
+               "Untitled.owx"
+             )
+  end
+end
+
+ExUnit.run()
+```
+
+## File Processing
+
+This module contains the functions for handling the files that come up during a LakeFS diff after a merge event. Keeping these in a module allows for easy changing and stops us repeating ourselves.
+
+Example result these functions get from LakeFS function:
+`{"path" => "data01.csv", "path_type" => "object", "size_bytes" => 11, "type" => "changed"/"removed"/"added"}`
+
+You can see a sample of what the attached metadata looks like below.
+
+```elixir
+data =
+  Kino.FS.file_path("file.m.json")
+  |> File.read!()
+  |> Jason.decode!()
+
+Kino.Tree.new(data)
+```
+
+```elixir
+defmodule FileProcessor do
+  # we work with both DataHub and LakeFS, we technically don't need to alias them here
+  # but I like telling users what we're working with later on at the top of the file
+  alias DataHub
+  alias LakeFS
+
+  # because of DataHub's upsert functionality, we don't need to do anything special on update vs. create
+  # as we'll do the same things for both
+  def process(repo, ref, %{"path" => path} = _result) do
+    # first just create the entry in case we have nothing else to send about it
+    {:ok, _created} =
+      DataHub.create_dataset_event(dataset_path(repo, path), "lakefs") |> DataHub.send_event()
+
+    # set the download linke
+    {:ok, _sent} =
+      DataHub.create_dataset_event(:download_link, dataset_path(repo, path), "lakefs",
+        repo: repo,
+        branch: "main",
+        endpoint: System.get_env("LB_LAKEFS_URL"),
+        filename: path
+      )
+      |> DataHub.send_event()
+
+    # first we need to pull the metadata out if it exists
+    {:ok, metadata} = LakeFS.download_metadata(repo, ref, path)
+
+    if Map.get(metadata, "metadata", nil) do
+      Enum.map(metadata["metadata"], fn {k, v} ->
+        # right now we only support ingest tagged metadata
+        if k |> String.downcase() |> String.contains?("ingest_metadata") do
+          # we have to double decode due to how it's stored as a string
+          data = v |> Jason.decode!() |> Jason.decode!()
+
+          :ok = send_metadata(repo, path, data)
+        end
+      end)
+    end
+
+    # TODO: add the CSV and Parquet processing here in just a few minutes
+
+    {:ok, :processed}
+  end
+
+  # simple delete from DataHub on file delete, don't need to do anything else....yet
+  def process_delete(repo, _ref, %{"path" => path} = _result) do
+    DataHub.delete_dataset(dataset_path(repo, path), "lakefs")
+  end
+
+  # updates all the metadata for an object in DataHub from the Ingest metadata
+  # note that metadata might be nil
+  defp send_metadata(repo, path, metadata) when is_map(metadata) do
+    # first update the owner
+    {:ok, _sent} =
+      DataHub.create_dataset_event(:owners, dataset_path(repo, path), "lakefs",
+        owners: [metadata["owner"]["email"]]
+      )
+      |> DataHub.send_event()
+
+    # next update the project
+    {:ok, _sent} =
+      DataHub.create_dataset_event(:project, dataset_path(repo, path), "lakefs",
+        name: metadata["project"]["name"]
+      )
+      |> DataHub.send_event()
+
+    # finally set the custom properties as a merge of all the user provided metadata
+    {:ok, _sent} =
+      DataHub.create_dataset_event(:properties, dataset_path(repo, path), "lakefs",
+        name: metadata["fileName"],
+        custom:
+          metadata["user_provided_metadata"] |> Enum.reduce(fn m, acc -> Map.merge(acc, m) end)
+      )
+      |> DataHub.send_event()
+
+    {:ok, :sent}
+  end
+
+  defp dataset_path(repo, path) do
+    "#{repo}.#{String.replace(Path.basename(path), "/", ".")}"
+  end
+end
+```
+
+<!-- livebook:{"branch_parent_index":4} -->
+
+## File Processing Tests
+
+Make sure you've set *all* the LakeFS **and** DataHub secrets mentioned previously.
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule FileProcessorTest do
+  use ExUnit.Case, async: true
+  alias FileProcessor
+
+  test "processes a file correctly" do
+    assert :ok = FileProcessor.process("test", "main", %{"path" => "Untitled.owx"})
+  end
+
+  test "deletes a file correctly" do
+    assert {:ok, _deleted} =
+             FileProcessor.process_delete("test", "main", %{"path" => "Untitled.owx"})
+  end
+end
+
+ExUnit.run()
+```
+
+## Web Server
+
+This is a simple webserver along with the controllers and router - publishing the endpoints necessary for both the callback from LakeFS and for the download function from DataHub. It utilizes the functions and modules we declared previously.
+
+Ingest uses the same Plug system under the hood, granted we have more middleware than what's here.
+
+More info [here](https://news.livebook.dev/livebook-0.13-expose-an-http-api-from-your-notebook-2wE6GY).
+
+Once the cell has been evaluated, you can take a look at your browser bar. You should see a url like `sessions/{sessionID}`. Simply change the url to be `proxy/sessions/{sessionID}/*path` and you should hit whatever path you put in.
+
+You can also launch your notebook by clicking the little rocket on the right, that way you can use its app name "lakefs" and instead navigate to `proxy/apps/lakefs/*path`.
+
+```elixir
+defmodule Server do
+  use Plug.Router
+  alias Plug.Conn
+  alias LakeFS
+  alias DataHub
+  alias FileProcessor
+  alias JOSE
+
+  # the order of plugs matter - it's the middleware stack you'd see in any other web framework
+  plug(Plug.Logger, log: :debug)
+
+  plug(Plug.Parsers,
+    parsers: [:urlencoded, {:json, json_decoder: Jason}]
+  )
+
+  plug(:match)
+  plug(:dispatch)
+
+  # this is the webhook for the LakeFS pre-merge event - this potentially kicks off pipelines
+  # but for now waits for return 
+  post "/merge" do
+    event = conn.body_params
+
+    resp =
+      LakeFS.diff_merge(
+        event,
+        # the & and /arity is how we reference closures
+        &FileProcessor.process_delete/3,
+        &FileProcessor.process/3,
+        &FileProcessor.process/3
+      )
+
+    case resp do
+      {:ok, _created} -> send_resp(conn, 200, "Metadata event processed successfully")
+      {:error, message} -> send_resp(conn, 500, Jason.encode!(message.body))
+      _ -> send_resp(conn, 500, "Unable to process metadata event")
+    end
+  end
+
+  get "/download_link" do
+    # we're going to pull the cookie since the JWT we need is there inside the cookie
+    conn = Conn.fetch_cookies(conn)
+    # JWT.peek lets us pull the token without having to have a signing key to verify
+    # I'm not worried about security here because DataHub will determine finally authenticity
+    # of the JWT
+    token = Map.get(conn.cookies, "PLAY_SESSION", "") |> JOSE.JWT.peek()
+    urn = Map.get(conn.params, "urn", "")
+
+    # if at any point our processes crash, like we don't get what we expect here, the 
+    # plug will return a 500 - so we really don't have to explicity handle every error
+    {:ok, link} = DataHub.get_download_link(urn, token: token.fields["data"]["token"])
+
+    {:ok, redirect} =
+      LakeFS.presigned_download_url(
+        link["endpoint"],
+        link["repo"],
+        "Test-Request-by-",
+        link["filename"]
+      )
+
+    # we want to make sure we're passing all headers that would normally be present
+    conn =
+      Enum.reduce(redirect.headers, conn, fn {header, value}, acc ->
+        Plug.Conn.put_resp_header(acc, header, Enum.join(value, ","))
+      end)
+
+    send_resp(conn, 302, "")
+  end
+
+  match _ do
+    send_resp(conn, 404, "oops, not found")
+  end
+end
+
+Kino.Proxy.listen(Server)
+```
+
+<!-- livebook:{"branch_parent_index":6} -->
+
+## Web Server Tests
+
+We can easily test this webserver, without having to run Postman or manually send requests to it. This is fantastic for debugging! Find more information [here](https://hexdocs.pm/plug/readme.html#testing-plugs).
+
+In order to run the download link test, you will need to get your PLAY_SESSION cookie value from whatever catalog you're running against. You can get that value through your web-browser. Then set the `DATAHUB_COOKIE` secret with its value.
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule ServerTest do
+  use ExUnit.Case, async: true
+  use Plug.Test
+
+  @opts Server.init([])
+
+  test "handle merge event from lakefs" do
+    # Create a test connection 
+    # TODO: change the event information to match your use case
+    # event does not contain all possible fields, only the ones we need
+    conn =
+      conn(
+        :post,
+        "/merge",
+        Jason.encode!(%{
+          event_type: "pre-merge",
+          hook_id: "metadata_send_trigger",
+          repository_id: "test",
+          branch_id: "main",
+          source_ref: "909d8e095a33faa5f51deb359d995cb9bfd8ab02b41b0f2ca26999f0728c2a49"
+        })
+      )
+      |> put_req_header("content-type", "application/json")
+
+    # Invoke the plug
+    conn = Server.call(conn, @opts)
+
+    # Assert the response and status
+    assert conn.state == :sent
+    assert conn.status == 200
+  end
+
+  test "will fail on bad event" do
+    # Create a test connection 
+    # TODO: change the event information to match your use case
+    # event does not contain all possible fields, only the ones we need
+    conn =
+      conn(
+        :post,
+        "/merge",
+        Jason.encode!(%{
+          event_type: "pre-merge",
+          hook_id: "metadata_send_trigger",
+          repository_id: "no-repo",
+          branch_id: "main",
+          source_ref: "bad"
+        })
+      )
+      |> put_req_header("content-type", "application/json")
+
+    # Invoke the plug
+    conn = Server.call(conn, @opts)
+
+    # Assert the response and status
+    assert conn.state == :sent
+    assert conn.status == 500
+  end
+
+  test "handles a download link" do
+    # Create a test connection
+    # TODO: change to an existing URN
+    conn =
+      conn(
+        :get,
+        "/download_link?urn=urn:li:dataset:(urn:li:dataPlatform:lakefs,spark-sql2.cmd,DEV)"
+      ) |> put_req_cookie("PLAY_SESSION", System.get_env("LB_DATAHUB_COOKIE"))
+
+       # Invoke the plug
+    conn = Server.call(conn, @opts)
+
+    # Assert the response and status
+    assert conn.state == :sent
+    assert conn.status == 302
+    assert !is_nil(Plug.Conn.get_resp_header(conn, "location"))
+  end
+end
+
+ExUnit.run()
+```
+
+<!-- livebook:{"offset":26546,"stamp":{"token":"XCP.m55dT4ONAUSzFcSUkpEP9zW6mDRLjWkkPQ6Ij5xZ_A-cOf-LdyiwEfrCYFkKbQ7Ke7gwwvjSG456xThpAmW8Ugj2SZLn7c8POiMxs3dfTmMqQSClSxai9riePfogR79V7IDjZnivnz5-tZ3-YiKQBJoMWlr_IhU5bLqdg3fkHckg393LUSc0zINo3myZyIjqGupDRyEFD3-TgEcwqbfQdPr8mhdBlAJJ8xUd0KWVrEyW4sauV0Y4-emm0SA1hfMNPbkyA8wip7rqIeBwtCT5XdY4MdcGdBZdGRIuzBd3tZJPrG8_1BITPK5Jql5sDy3z1pnYy7OD","version":2}} -->

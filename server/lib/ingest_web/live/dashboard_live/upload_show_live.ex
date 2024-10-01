@@ -178,7 +178,7 @@ defmodule IngestWeb.UploadShowLive do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _uri, socket) do
+  def handle_params(%{"id" => _id}, _uri, socket) do
     {:noreply, socket}
   end
 
