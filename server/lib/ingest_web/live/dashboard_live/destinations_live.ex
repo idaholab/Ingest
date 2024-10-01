@@ -133,10 +133,6 @@ defmodule IngestWeb.DestinationsLive do
        :destinations,
        Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
      )
-     |> stream(
-       :destinations,
-       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
-     )
      |> assign(:section, "destinations"), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
