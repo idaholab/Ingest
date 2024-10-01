@@ -328,7 +328,7 @@ defmodule DataHubTest do
     # TODO: replace with your URN
     assert {:ok, link} =
              DataHub.get_download_link(
-               "urn:li:dataset:(urn:li:dataPlatform:lakefs,subcritical-signatures.spark-sql2.cmd,DEV)"
+               "urn:li:dataset:(urn:li:dataPlatform:lakefs,spark-sql2.cmd,DEV)"
              )
 
     assert Map.has_key?(link, "branch")
@@ -361,7 +361,7 @@ Here is a sample event from the LakeFS system on merge to main:
     "event_time": "2024-08-13T03:30:59Z",
     "action_name": "Metadata Sent to Datahub",
     "hook_id": "metadata_send_trigger",
-    "repository_id": "subcritical-signatures",
+    "repository_id": "test",
     "branch_id": "main",
     "source_ref": "909d8e095a33faa5f51deb359d995cb9bfd8ab02b41b0f2ca26999f0728c2a49",
     "commit_id": "64eb858012e9b9c6552f6449e63cfe6728b9a4be06a6b1db6cfd9ac414288707",
@@ -815,7 +815,7 @@ defmodule ServerTest do
         Jason.encode!(%{
           event_type: "pre-merge",
           hook_id: "metadata_send_trigger",
-          repository_id: "subcritical-signatures",
+          repository_id: "test",
           branch_id: "main",
           source_ref: "909d8e095a33faa5f51deb359d995cb9bfd8ab02b41b0f2ca26999f0728c2a49"
         })
@@ -862,7 +862,7 @@ defmodule ServerTest do
     conn =
       conn(
         :get,
-        "/download_link?urn=urn:li:dataset:(urn:li:dataPlatform:lakefs,subcritical-signatures.spark-sql2.cmd,DEV)"
+        "/download_link?urn=urn:li:dataset:(urn:li:dataPlatform:lakefs,spark-sql2.cmd,DEV)"
       ) |> put_req_cookie("PLAY_SESSION", System.get_env("LB_DATAHUB_COOKIE"))
 
        # Invoke the plug
@@ -878,4 +878,4 @@ end
 ExUnit.run()
 ```
 
-<!-- livebook:{"offset":26628,"stamp":{"token":"XCP.CwOUcBF1pzmTqEjilNnIO0rqYwOMfk9VZbkIrGPvjTB5Y5Nq-F4eIalBbvw1wtzEhVgtunJio958pH2wf6HUlVju5OIPf-1DVz-1u0PtTcCC48pOOAkPxa2sHBIHZV2aSNfZL7BHziJMWPWnbQWS8FyHO5dOpwwLN_lJxiHrvgeuUvwNFCZ4y_-S_IvUco0anarCyPE0SgVlkNFhKg9OwthL6eGJhtRb7Mqi3IaS9mS-HJBYCsGWw0eTFxRw1yi7HQbMOW23QWQTEqJvJ7jzViUU2rnLnw7SFex2xDgTsF4R1L9siINM1jWZUgHa-I-7e-Ke9sv3","version":2}} -->
+<!-- livebook:{"offset":26546,"stamp":{"token":"XCP.m55dT4ONAUSzFcSUkpEP9zW6mDRLjWkkPQ6Ij5xZ_A-cOf-LdyiwEfrCYFkKbQ7Ke7gwwvjSG456xThpAmW8Ugj2SZLn7c8POiMxs3dfTmMqQSClSxai9riePfogR79V7IDjZnivnz5-tZ3-YiKQBJoMWlr_IhU5bLqdg3fkHckg393LUSc0zINo3myZyIjqGupDRyEFD3-TgEcwqbfQdPr8mhdBlAJJ8xUd0KWVrEyW4sauV0Y4-emm0SA1hfMNPbkyA8wip7rqIeBwtCT5XdY4MdcGdBZdGRIuzBd3tZJPrG8_1BITPK5Jql5sDy3z1pnYy7OD","version":2}} -->
