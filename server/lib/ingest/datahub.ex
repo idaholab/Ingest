@@ -213,7 +213,7 @@ defmodule Ingest.DataHub do
   end
 
   defp env() do
-    if Mix.env() == :dev do
+    if Application.get_env(:ingest, :environment) == :dev do
       "DEV"
     else
       "PROD"
