@@ -107,3 +107,13 @@ config :ingest, Ingest.Mailer,
   adapter: Swoosh.Adapters.SMTP,
   relay: "mailhost.inl.gov",
   tls: false
+
+config :ingest, :datahub,
+  token: "",
+  gms_url: "",
+  url: ""
+
+config :ingest, :lakefs,
+  url: "",
+  access_key: "",
+  secret_access_key: ""

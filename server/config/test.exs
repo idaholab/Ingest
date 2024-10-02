@@ -37,3 +37,13 @@ config :logger, level: :warning
 config :phoenix, :plug_init_mode, :runtime
 
 config :ingest, Oban, testing: :inline
+
+config :ingest, :datahub,
+  token: "",
+  gms_url: "",
+  url: ""
+
+config :ingest, :lakefs,
+  url: "",
+  access_key: "",
+  secret_access_key: ""

@@ -18,6 +18,9 @@ defmodule IngestWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+
+    post "/api/v1/merge", IngestWeb.ApiController, :handle_merge_event
+    get "/api/v1/download_link", IngestWeb.ApiController, :get_download_link
   end
 
   scope "/", IngestWeb do

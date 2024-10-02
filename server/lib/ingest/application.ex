@@ -43,7 +43,7 @@ defmodule Ingest.Application do
     ]
 
     children =
-      if Application.get_env(:ingest, :environment) != :dev do
+      if Application.get_env(:ingest, :environment) == :prod do
         [
           Supervisor.child_spec(
             {Oidcc.ProviderConfiguration.Worker,

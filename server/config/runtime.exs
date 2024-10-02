@@ -130,4 +130,14 @@ if config_env() == :prod do
     adapter: Swoosh.Adapters.SMTP,
     relay: System.get_env("SMTP_RELAY"),
     tls: System.get_env("SMTP_TLS")
+
+  config :ingest, :datahub,
+    token: System.get_env("DATAHUB_TOKEN"),
+    gms_url: System.get_env("DATAHUB_GMS_URL"),
+    url: System.get_env("DATAHUB_URL")
+
+  config :ingest, :lakefs,
+    url: System.get_env("LAKEFS_URL"),
+    access_key: System.get_env("LAKEFS_ACCESS_KEY"),
+    secret_access_key: System.get_env("LAKEFS_SECRET_ACCESS_KEY")
 end
