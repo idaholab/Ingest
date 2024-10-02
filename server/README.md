@@ -16,6 +16,7 @@ Ingest is desisgned to be the upload point for various data management solutions
 2. Install the `phx_new` generator - `mix archive.install hex phx_new`
 3. Modify the configuration file in `config/dev.exs` - you will at least need to modify the database configuration to point to your local Postgres server.
 4. Run `mix ecto.reset && mix ecto.migrate` - this will run all the required migrations to setup your database.
+6. Run `mix phx.gen.secret` and copy the output to line 27 in your `config/dev.exs` file - under `secret_key_base`
 5. If you're on VSCode you can use the default run configuration to run your application from the editor, or you may start your server by running `mix phx.server` in either your terminal or an iEX instance
 
 
