@@ -35,7 +35,7 @@ defmodule Ingest.Processors.FileProcessor do
           # we have to double decode due to how it's stored as a string
           data = v |> Jason.decode!() |> Jason.decode!()
 
-          :ok = send_metadata(repo, path, data)
+          {:ok, :sent} = send_metadata(repo, path, data)
         end
       end)
     end
@@ -49,6 +49,8 @@ defmodule Ingest.Processors.FileProcessor do
   def process_delete(repo, _ref, %{"path" => path} = _result) do
     DataHub.delete_dataset(dataset_path(repo, path), "lakefs")
   end
+
+  # the inner function for handling a .csv file and sending the schema to datahub
 
   # updates all the metadata for an object in DataHub from the Ingest metadata
   # note that metadata might be nil
