@@ -78,41 +78,47 @@ defmodule Ingest.Workers.Metadata do
     case destination.type do
       :azure ->
         if destination.azure_config.integrated_metadata do
-          Azure.update_metadata(destination, path.path, %{
-            ingest_metadata: Jason.encode!(metadata)
-          })
+          {:ok, sent} =
+            Azure.update_metadata(destination, path.path, %{
+              ingest_metadata: Jason.encode!(metadata)
+            })
         else
-          Azure.upload_full_object(destination, filename, metadata)
+          {:ok, sent} =
+            Azure.upload_full_object(destination, filename, metadata)
         end
 
       :s3 ->
         if destination.s3_config.integrated_metadata do
-          S3.upload_full_object(destination, path.path, [
-            {:ingest_metadata, Jason.encode!(metadata)}
-          ])
+          {:ok, sent} =
+            S3.upload_full_object(destination, path.path, [
+              {:ingest_metadata, Jason.encode!(metadata)}
+            ])
         else
-          S3.upload_full_object(destination, filename, metadata)
+          {:ok, sent} =
+            S3.upload_full_object(destination, filename, metadata)
         end
 
       :lakefs ->
         if destination.lakefs_config.integrated_metadata do
-          Lakefs.update_metadata(
-            destination,
-            upload.request,
-            upload.user,
-            path.path,
-            [
-              {:ingest_metadata, Jason.encode!(metadata)}
-            ]
-          )
+          {:ok, sent} =
+            Lakefs.update_metadata(
+              destination,
+              upload.request,
+              upload.user,
+              path.path,
+              [
+                {:ingest_metadata, Jason.encode!(metadata)}
+              ]
+            )
         else
-          Lakefs.upload_full_object(
-            destination,
-            upload.request,
-            upload.user,
-            filename,
-            metadata
-          )
+          {:ok, sent} =
+            Lakefs.upload_full_object(
+              destination,
+              upload.request,
+              upload.user,
+              filename,
+              metadata
+            )
         end
 
       _ ->

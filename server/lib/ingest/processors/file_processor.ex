@@ -29,13 +29,13 @@ defmodule Ingest.Processors.FileProcessor do
     {:ok, metadata} = LakeFS.download_metadata(repo, ref, path)
 
     if Map.get(metadata, "metadata", nil) do
-      Enum.each(metadata["metadata"], fn {k, v} ->
+      Enum.map(metadata["metadata"], fn {k, v} ->
         # right now we only support ingest tagged metadata
         if k |> String.downcase() |> String.contains?("ingest_metadata") do
           # we have to double decode due to how it's stored as a string
           data = v |> Jason.decode!() |> Jason.decode!()
 
-          {:ok, :sent} = send_metadata(repo, path, data)
+          {:ok, _sent} = send_metadata(repo, path, data)
         end
       end)
     end
