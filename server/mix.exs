@@ -70,6 +70,7 @@ defmodule Ingest.MixProject do
       {:backpex, "~> 0.6.0"},
       {:earmark, "~> 1.4"},
       {:bodyguard, "~> 2.4"},
+      {:explorer, "~> 0.9.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]

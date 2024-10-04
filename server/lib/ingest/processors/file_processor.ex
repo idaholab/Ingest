@@ -5,6 +5,7 @@ defmodule Ingest.Processors.FileProcessor do
 
   # we work with both DataHub and LakeFS, we technically don't need to alias them here
   # but I like telling users what we're working with later on at the top of the file
+  require Logger
   alias Ingest.DataHub
   alias Ingest.LakeFS
 
@@ -29,18 +30,20 @@ defmodule Ingest.Processors.FileProcessor do
     {:ok, metadata} = LakeFS.download_metadata(repo, ref, path)
 
     if Map.get(metadata, "metadata", nil) do
-      Enum.map(metadata["metadata"], fn {k, v} ->
+      metadata["metadata"]
+      |> Enum.filter(fn {k, v} ->
         # right now we only support ingest tagged metadata
-        if k |> String.downcase() |> String.contains?("ingest_metadata") do
-          # we have to double decode due to how it's stored as a string
-          data = v |> Jason.decode!() |> Jason.decode!()
+        k |> String.downcase() |> String.contains?("ingest_metadata")
+      end)
+      |> Enum.each(fn {_k, v} ->
+        # we have to double decode due to how it's stored as a string
+        data = v |> Jason.decode!() |> Jason.decode!()
 
-          {:ok, _sent} = send_metadata(repo, path, data)
-        end
+        {:ok, _sent} = send_metadata(repo, path, data)
       end)
     end
 
-    # TODO: add the CSV and Parquet processing here in just a few minutes
+    {:ok, _sent} = process_file_metadata(Path.extname(path), repo, ref, path)
 
     {:ok, :processed}
   end
@@ -50,7 +53,104 @@ defmodule Ingest.Processors.FileProcessor do
     DataHub.delete_dataset(dataset_path(repo, path), "lakefs")
   end
 
-  # the inner function for handling a .csv file and sending the schema to datahub
+  # the inner function for handling a .parquet file and getting its metadata as
+  # and explorer dataframe
+  def process_file_metadata(".parquet", repo, ref, path) do
+    config = Application.get_env(:ingest, :lakefs)
+    key = config[:access_key]
+    secret = config[:secret_access_key]
+    endpoint = config[:url]
+
+    frame =
+      Explorer.DataFrame.from_parquet!(
+        %FSS.S3.Entry{
+          key: path,
+          config: %FSS.S3.Config{
+            bucket: "#{repo}/#{ref}",
+            access_key_id: key,
+            secret_access_key: secret,
+            endpoint: endpoint,
+            region: "us-east-1"
+          }
+        },
+        lazy: true
+      )
+
+    type_map = Explorer.DataFrame.dtypes(frame)
+
+    fields =
+      Enum.map(type_map, fn {k, v} ->
+        %{
+          fieldPath: k,
+          nativeDataType:
+            if is_tuple(v) do
+              {type, precision} = v
+              Atom.to_string(type)
+            else
+              Atom.to_string(v)
+            end,
+          type: %{type: %{DataHub.linkedin_data_type(v) => %{}}}
+        }
+      end)
+
+    DataHub.create_dataset_event(:schema, dataset_path(repo, path), "lakefs",
+      name: "#{path} schema",
+      version: 0,
+      fields: fields
+    )
+    |> DataHub.send_event()
+  end
+
+  def process_file_metadata(".csv", repo, ref, path) do
+    config = Application.get_env(:ingest, :lakefs)
+    key = config[:access_key]
+    secret = config[:secret_access_key]
+    endpoint = config[:url]
+
+    frame =
+      Explorer.DataFrame.from_csv!(
+        %FSS.S3.Entry{
+          key: path,
+          config: %FSS.S3.Config{
+            bucket: "#{repo}/#{ref}",
+            access_key_id: key,
+            secret_access_key: secret,
+            endpoint: endpoint,
+            region: "us-east-1"
+          }
+        },
+        lazy: false
+      )
+
+    type_map = Explorer.DataFrame.dtypes(frame)
+
+    fields =
+      Enum.map(type_map, fn {k, v} ->
+        %{
+          fieldPath: k,
+          nativeDataType:
+            if is_tuple(v) do
+              {type, precision} = v
+              Atom.to_string(type)
+            else
+              Atom.to_string(v)
+            end,
+          type: %{type: %{DataHub.linkedin_data_type(v) => %{}}}
+        }
+      end)
+
+    DataHub.create_dataset_event(:schema, dataset_path(repo, path), "lakefs",
+      name: "#{path} schema",
+      version: 0,
+      fields: fields
+    )
+    |> DataHub.send_event()
+  end
+
+  def get_file_metadata(_any, _repo, _ref, _path) do
+    Logger.info("no metadata get function for the file type, skipping")
+    nil
+  end
 
   # updates all the metadata for an object in DataHub from the Ingest metadata
   # note that metadata might be nil

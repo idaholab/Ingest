@@ -62,6 +62,28 @@ defmodule Ingest.DataHubTest do
     assert {:ok, _created} = DataHub.send_event(event)
   end
 
+  test "it can add a generic schema to a dataset" do
+    event =
+      DataHub.create_dataset_event(:schema, "schematest", "lakefs",
+        name: "Test Schema",
+        version: 0,
+        fields: [
+          %{
+            fieldPath: "name",
+            nativeDataType: "string",
+            type: %{type: %{DataHub.linkedin_data_type(:string) => %{}}}
+          },
+          %{
+            fieldPath: "age",
+            nativeDataType: "number",
+            type: %{type: %{DataHub.linkedin_data_type(:number) => %{}}}
+          }
+        ]
+      )
+
+    assert {:ok, _created} = DataHub.send_event(event)
+  end
+
   test "it fetches a download link for a dataset" do
     # TODO: replace with your URN
     assert {:ok, link} =
