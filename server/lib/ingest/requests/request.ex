@@ -37,7 +37,7 @@ defmodule Ingest.Requests.Request do
   end
 
   @doc false
-  def changeset(request, attrs, meta \\ %{}) do
+  def changeset(request, attrs, _meta \\ %{}) do
     request
     |> cast(attrs, [
       :name,

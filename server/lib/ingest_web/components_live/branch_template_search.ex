@@ -4,7 +4,6 @@ defmodule IngestWeb.LiveComponents.BranchTemplateSearch do
   needed for the operation.
   """
   use IngestWeb, :live_component
-  alias Ingest.Projects
 
   @impl true
   def render(assigns) do

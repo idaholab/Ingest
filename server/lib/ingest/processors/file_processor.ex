@@ -31,7 +31,7 @@ defmodule Ingest.Processors.FileProcessor do
 
     if Map.get(metadata, "metadata", nil) do
       metadata["metadata"]
-      |> Enum.filter(fn {k, v} ->
+      |> Enum.filter(fn {k, _v} ->
         # right now we only support ingest tagged metadata
         k |> String.downcase() |> String.contains?("ingest_metadata")
       end)
@@ -84,7 +84,7 @@ defmodule Ingest.Processors.FileProcessor do
           fieldPath: k,
           nativeDataType:
             if is_tuple(v) do
-              {type, precision} = v
+              {type, _precision} = v
               Atom.to_string(type)
             else
               Atom.to_string(v)
@@ -130,7 +130,7 @@ defmodule Ingest.Processors.FileProcessor do
           fieldPath: k,
           nativeDataType:
             if is_tuple(v) do
-              {type, precision} = v
+              {type, _precision} = v
               Atom.to_string(type)
             else
               Atom.to_string(v)

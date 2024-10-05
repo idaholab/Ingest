@@ -22,7 +22,7 @@ defmodule Ingest.Requests.Template do
   end
 
   @doc false
-  def changeset(%Template{} = template, attrs, meta \\ %{}) do
+  def changeset(%Template{} = template, attrs, _meta \\ %{}) do
     template
     |> cast(attrs, [:name, :description, :inserted_by])
     |> cast_embed(:fields, required: false, on_replace: :delete_if_exists)

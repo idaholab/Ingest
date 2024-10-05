@@ -78,29 +78,29 @@ defmodule Ingest.Workers.Metadata do
     case destination.type do
       :azure ->
         if destination.azure_config.integrated_metadata do
-          {:ok, sent} =
+          {:ok, _sent} =
             Azure.update_metadata(destination, path.path, %{
               ingest_metadata: Jason.encode!(metadata)
             })
         else
-          {:ok, sent} =
+          {:ok, _sent} =
             Azure.upload_full_object(destination, filename, metadata)
         end
 
       :s3 ->
         if destination.s3_config.integrated_metadata do
-          {:ok, sent} =
+          {:ok, _sent} =
             S3.upload_full_object(destination, path.path, [
               {:ingest_metadata, Jason.encode!(metadata)}
             ])
         else
-          {:ok, sent} =
+          {:ok, _sent} =
             S3.upload_full_object(destination, filename, metadata)
         end
 
       :lakefs ->
         if destination.lakefs_config.integrated_metadata do
-          {:ok, sent} =
+          {:ok, _sent} =
             Lakefs.update_metadata(
               destination,
               upload.request,
@@ -111,7 +111,7 @@ defmodule Ingest.Workers.Metadata do
               ]
             )
         else
-          {:ok, sent} =
+          {:ok, _sent} =
             Lakefs.upload_full_object(
               destination,
               upload.request,
