@@ -64,7 +64,7 @@ defmodule Ingest.Accounts.User do
     |> validate_email(opts)
   end
 
-  def backpex_changeset(user, attrs, meta \\ %{}) do
+  def backpex_changeset(user, attrs, _meta \\ %{}) do
     user
     |> cast(attrs, [:email, :name, :roles])
   end

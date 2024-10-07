@@ -49,6 +49,7 @@ defmodule Ingest.Requests.TemplateField do
       values: [:select, :text, :number, :textarea, :checkbox, :date, :branch]
 
     field :select_options, {:array, :string}, default: []
+    # the map has two keys, template and name
     field :branch_options, {:array, :map}, default: []
     field :required, :boolean
     field :file_extensions, {:array, :string}
