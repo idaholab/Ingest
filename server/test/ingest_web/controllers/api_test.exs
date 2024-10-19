@@ -1,6 +1,7 @@
 defmodule IngestWeb.ApiTest do
   use IngestWeb.ConnCase, async: true
 
+  @tag :lakefs
   test "handle merge event from lakefs", %{conn: conn} do
     # Create a test connection
     # TODO: change the event information to match your use case
@@ -23,6 +24,7 @@ defmodule IngestWeb.ApiTest do
     assert conn.status == 200
   end
 
+  @tag :lakefs
   test "will fail on bad event", %{conn: conn} do
     # Create a test connection
     # TODO: change the event information to match your use case
@@ -51,6 +53,7 @@ defmodule IngestWeb.ApiTest do
     assert conn.status == 500
   end
 
+  @tag :lakefs
   test "handles a download link", %{conn: conn} do
     # Create a test connection
     # TODO: change to an existing URN

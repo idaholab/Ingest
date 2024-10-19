@@ -5,6 +5,7 @@ defmodule Ingest.LakeFSTest do
   use ExUnit.Case, async: true
   alias Ingest.LakeFS
 
+  @tag :lakefs
   test "it handles a diff event" do
     # TODO: change event to reflect a real event in your LakeFS install
     assert {:ok, _results} =
@@ -22,6 +23,7 @@ defmodule Ingest.LakeFSTest do
              )
   end
 
+  @tag :lakefs
   test "it can download a file" do
     # TODO: change to reflect a real file and ref in your LakeFS install
     assert {:ok, _body} =
@@ -32,6 +34,7 @@ defmodule Ingest.LakeFSTest do
              )
   end
 
+  @tag :lakefs
   test "it can generate a presigned url" do
     # TODO: change to reflect a real file and ref in your LakeFS install
     assert {:ok, _body} =
@@ -43,6 +46,7 @@ defmodule Ingest.LakeFSTest do
              )
   end
 
+  @tag :lakefs
   test "it can download metadata" do
     # TODO: change to reflect a real file and ref in your LakeFS install
     assert {:ok, _data} =

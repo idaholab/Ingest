@@ -5,11 +5,13 @@ defmodule Ingest.DataHubTest do
   use ExUnit.Case, async: true
   alias Ingest.DataHub
 
+  @tag :datahub
   test "it creates a dataset" do
     event = DataHub.create_dataset_event("testingProject.test", "lakefs")
     assert {:ok, _created} = DataHub.send_event(event)
   end
 
+  @tag :datahub
   test "it can add properties to a dataset" do
     event =
       DataHub.create_dataset_event(:properties, "testingProject.test", "lakefs",
@@ -21,6 +23,7 @@ defmodule Ingest.DataHubTest do
     assert {:ok, _created} = DataHub.send_event(event)
   end
 
+  @tag :datahub
   test "it can add owners to a dataset" do
     event =
       DataHub.create_dataset_event(:owners, "testingProject.test", "lakefs",
@@ -30,6 +33,7 @@ defmodule Ingest.DataHubTest do
     assert {:ok, _created} = DataHub.send_event(event)
   end
 
+  @tag :datahub
   test "it can add tags to a dataset" do
     event =
       DataHub.create_dataset_event(:tags, "testingProject.test", "lakefs",
@@ -39,6 +43,7 @@ defmodule Ingest.DataHubTest do
     assert {:ok, _created} = DataHub.send_event(event)
   end
 
+  @tag :datahub
   test "it can add a project to a dataset" do
     event =
       DataHub.create_dataset_event(:project, "testingProject.test", "lakefs",
@@ -49,6 +54,7 @@ defmodule Ingest.DataHubTest do
     assert {:ok, _created} = DataHub.send_event(event)
   end
 
+  @tag :datahub
   test "it can add a download link to a dataset" do
     event =
       DataHub.create_dataset_event(:download_link, "testingProject.test", "lakefs",
@@ -62,6 +68,7 @@ defmodule Ingest.DataHubTest do
     assert {:ok, _created} = DataHub.send_event(event)
   end
 
+  @tag :datahub
   test "it can add a generic schema to a dataset" do
     event =
       DataHub.create_dataset_event(:schema, "schematest", "lakefs",
@@ -84,6 +91,7 @@ defmodule Ingest.DataHubTest do
     assert {:ok, _created} = DataHub.send_event(event)
   end
 
+  @tag :datahub
   test "it fetches a download link for a dataset" do
     # TODO: replace with your URN
     assert {:ok, link} =
@@ -98,6 +106,7 @@ defmodule Ingest.DataHubTest do
     assert Map.has_key?(link, "contact_email")
   end
 
+  @tag :datahub
   test "it deletes a dataset" do
     assert {:ok, _deleted} = DataHub.delete_dataset("testingProject.test", "lakefs")
   end
