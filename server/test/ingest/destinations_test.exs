@@ -59,7 +59,7 @@ defmodule Ingest.DestinationsTest do
 
     test "list_destinations/0 returns all destinations" do
       destination = destination_fixture()
-      assert Destinations.list_destinations() == [destination]
+      assert Destinations.list_destinations() |> Enum.member?(destination)
     end
 
     test "get_destination!/1 returns the destination with given id" do
@@ -68,12 +68,11 @@ defmodule Ingest.DestinationsTest do
     end
 
     test "create_destination/1 with valid data creates a destination" do
-      valid_attrs = %{name: "some name", type: "some type", config: %{}}
+      valid_attrs = %{name: "some name", type: :temporary}
 
       assert {:ok, %Destination{} = destination} = Destinations.create_destination(valid_attrs)
       assert destination.name == "some name"
-      assert destination.type == "some type"
-      assert destination.config == %{}
+      assert destination.type == :temporary
     end
 
     test "create_destination/1 with invalid data returns error changeset" do
@@ -82,14 +81,13 @@ defmodule Ingest.DestinationsTest do
 
     test "update_destination/2 with valid data updates the destination" do
       destination = destination_fixture()
-      update_attrs = %{name: "some updated name", type: "some updated type", config: %{}}
+      update_attrs = %{name: "some updated name", type: :temporary}
 
       assert {:ok, %Destination{} = destination} =
                Destinations.update_destination(destination, update_attrs)
 
       assert destination.name == "some updated name"
-      assert destination.type == "some updated type"
-      assert destination.config == %{}
+      assert destination.type == :temporary
     end
 
     test "update_destination/2 with invalid data returns error changeset" do

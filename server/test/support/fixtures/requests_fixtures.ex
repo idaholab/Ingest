@@ -38,7 +38,8 @@ defmodule Ingest.RequestsFixtures do
         description: "some description",
         name: "some name",
         public: true,
-        status: :draft
+        status: :draft,
+        project_id: Ingest.ProjectsFixtures.project_fixture().id
       })
       |> Ingest.Requests.create_request()
 

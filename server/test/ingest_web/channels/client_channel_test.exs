@@ -5,7 +5,7 @@ defmodule IngestWeb.ClientChannelTest do
   setup do
     client = client_fixture()
 
-    {:ok, reply, socket} =
+    {:ok, _reply, socket} =
       IngestWeb.UserSocket
       |> socket("user_id", %{current_user: client.owner_id, client_id: client.id})
       |> subscribe_and_join(IngestWeb.ClientChannel, "client:#{client.id}")

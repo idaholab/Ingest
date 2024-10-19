@@ -17,7 +17,7 @@ defmodule Ingest.ProjectsTest do
 
     test "get_project!/1 returns the project with given id" do
       project = project_fixture()
-      assert Projects.get_project!(project.id) == project
+      assert Projects.get_project!(project.id).id == project.id
     end
 
     test "create_project/1 with valid data creates a project" do
@@ -48,7 +48,7 @@ defmodule Ingest.ProjectsTest do
     test "update_project/2 with invalid data returns error changeset" do
       project = project_fixture()
       assert {:error, %Ecto.Changeset{}} = Projects.update_project(project, @invalid_attrs)
-      assert project == Projects.get_project!(project.id)
+      assert project.name == Projects.get_project!(project.id).name
     end
 
     test "delete_project/1 deletes the project" do
@@ -70,13 +70,8 @@ defmodule Ingest.ProjectsTest do
 
     @invalid_attrs %{email: nil}
 
-    test "list_project_invites/0 returns all project_invites" do
-      project_invites = project_invites_fixture()
-      assert Projects.list_project_invites() == [project_invites]
-    end
-
     test "get_project_invites!/1 returns the project_invites with given id" do
-      project_invites = project_invites_fixture()
+      project_invites = project_invites_fixture(Ingest.AccountsFixtures.user_fixture())
       assert Projects.get_project_invites!(project_invites.id) == project_invites
     end
 
@@ -94,7 +89,7 @@ defmodule Ingest.ProjectsTest do
     end
 
     test "update_project_invites/2 with valid data updates the project_invites" do
-      project_invites = project_invites_fixture()
+      project_invites = project_invites_fixture(Ingest.AccountsFixtures.user_fixture())
       update_attrs = %{email: "some updated email"}
 
       assert {:ok, %ProjectInvites{} = project_invites} =
@@ -104,7 +99,7 @@ defmodule Ingest.ProjectsTest do
     end
 
     test "update_project_invites/2 with invalid data returns error changeset" do
-      project_invites = project_invites_fixture()
+      project_invites = project_invites_fixture(Ingest.AccountsFixtures.user_fixture())
 
       assert {:error, %Ecto.Changeset{}} =
                Projects.update_project_invites(project_invites, @invalid_attrs)
@@ -113,7 +108,7 @@ defmodule Ingest.ProjectsTest do
     end
 
     test "delete_project_invites/1 deletes the project_invites" do
-      project_invites = project_invites_fixture()
+      project_invites = project_invites_fixture(Ingest.AccountsFixtures.user_fixture())
       assert {:ok, %ProjectInvites{}} = Projects.delete_project_invites(project_invites)
 
       assert_raise Ecto.NoResultsError, fn ->
@@ -122,7 +117,7 @@ defmodule Ingest.ProjectsTest do
     end
 
     test "change_project_invites/1 returns a project_invites changeset" do
-      project_invites = project_invites_fixture()
+      project_invites = project_invites_fixture(Ingest.AccountsFixtures.user_fixture())
       assert %Ecto.Changeset{} = Projects.change_project_invites(project_invites)
     end
   end

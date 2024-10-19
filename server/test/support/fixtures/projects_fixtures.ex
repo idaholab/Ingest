@@ -25,11 +25,11 @@ defmodule Ingest.ProjectsFixtures do
   @doc """
   Generate a project_invites.
   """
-  def project_invites_fixture(attrs \\ %{}) do
+  def project_invites_fixture(attrs \\ %{}, %Ingest.Accounts.User{} = user) do
     {:ok, project_invites} =
       attrs
       |> Enum.into(%{
-        email: "some email"
+        email: user.email
       })
       |> Ingest.Projects.create_project_invites()
 

@@ -15,7 +15,10 @@ defmodule Ingest.UploadsFixtures do
         filename: "some filename",
         size: 42
       })
-      |> Ingest.Uploads.create_upload()
+      |> Ingest.Uploads.create_upload(
+        Ingest.RequestsFixtures.request_fixture(),
+        Ingest.AccountsFixtures.user_fixture()
+      )
 
     upload
   end
@@ -28,7 +31,9 @@ defmodule Ingest.UploadsFixtures do
       attrs
       |> Enum.into(%{
         data: %{},
-        uploaded: true
+        uploaded: true,
+        upload_id: upload_fixture().id,
+        template_id: Ingest.RequestsFixtures.template_fixture().id
       })
       |> Ingest.Uploads.create_metadata()
 

@@ -33,10 +33,16 @@ defmodule IngestWeb.ApiTest do
         "/api/v1/merge",
         Jason.encode!(%{
           event_type: "pre-merge",
+          event_time: "2024-10-02T18:52:45Z",
+          action_name: "Metadata Sent to Datahub",
           hook_id: "metadata_send_trigger",
-          repository_id: "no-repo",
+          repository_id: "test2",
           branch_id: "main",
-          source_ref: "bad"
+          source_ref: "e118169f5341a890f05b127727859c166977da268dca13ff2cfde599245b127e",
+          commit_id: "6ddda463ecbceab5db8fc219199282cbad8406483964ace972272a32d2d62bfb",
+          commit_message: "Merge 'Test-by-John' into 'main'",
+          committer: "00uc1raqm08pdOQpA4h6",
+          commit_metadata: %{".lakefs.merge.strategy" => "default"}
         })
       )
 

@@ -40,7 +40,7 @@ defmodule Ingest.AccountsFixtures do
         seen: true,
         subject: "some subject"
       })
-      |> Ingest.Accounts.create_notifications()
+      |> Ingest.Accounts.create_notifications(Ingest.AccountsFixtures.user_fixture())
 
     notifications
   end

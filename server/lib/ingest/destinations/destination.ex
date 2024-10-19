@@ -24,10 +24,10 @@ defmodule Ingest.Destinations.Destination do
       values: Application.compile_env(:ingest, :data_classifications)
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
-    embeds_one :s3_config, S3Config
-    embeds_one :azure_config, AzureConfig
-    embeds_one :lakefs_config, LakeFSConfig
-    embeds_one :temporary_config, TemporaryConfig
+    embeds_one :s3_config, S3Config, on_replace: :update
+    embeds_one :azure_config, AzureConfig, on_replace: :update
+    embeds_one :lakefs_config, LakeFSConfig, on_replace: :update
+    embeds_one :temporary_config, TemporaryConfig, on_replace: :update
 
     timestamps()
   end

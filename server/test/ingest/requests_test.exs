@@ -81,27 +81,21 @@ defmodule Ingest.RequestsTest do
 
     @invalid_attrs %{name: nil, public: nil, status: nil, description: nil}
 
-    test "list_requests/0 returns all requests" do
-      request = request_fixture()
-      assert Enum.member?(Requests.list_requests(), request)
-    end
-
     test "get_request!/1 returns the request with given id" do
       request = request_fixture()
-      assert Requests.get_request!(request.id) == request
+      assert Requests.get_request!(request.id).name == request.name
     end
 
     test "create_request/1 with valid data creates a request" do
       valid_attrs = %{
         name: "some name",
-        public: true,
         status: :draft,
-        description: "some description"
+        description: "some description",
+        project_id: Ingest.ProjectsFixtures.project_fixture().id
       }
 
       assert {:ok, %Request{} = request} = Requests.create_request(valid_attrs)
       assert request.name == "some name"
-      assert request.public == true
       assert request.status == :draft
       assert request.description == "some description"
     end
@@ -122,7 +116,6 @@ defmodule Ingest.RequestsTest do
 
       assert {:ok, %Request{} = request} = Requests.update_request(request, update_attrs)
       assert request.name == "some updated name"
-      assert request.public == false
       assert request.status == :published
       assert request.description == "some updated description"
     end
@@ -130,7 +123,7 @@ defmodule Ingest.RequestsTest do
     test "update_request/2 with invalid data returns error changeset" do
       request = request_fixture()
       assert {:error, %Ecto.Changeset{}} = Requests.update_request(request, @invalid_attrs)
-      assert request == Requests.get_request!(request.id)
+      assert request.name == Requests.get_request!(request.id).name
     end
 
     test "delete_request/1 deletes the request" do

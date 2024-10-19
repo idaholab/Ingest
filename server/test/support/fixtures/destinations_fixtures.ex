@@ -39,7 +39,7 @@ defmodule Ingest.DestinationsFixtures do
       |> Enum.into(%{
         config: %{},
         name: "some name",
-        type: "some type"
+        type: :temporary
       })
       |> Ingest.Destinations.create_destination()
 
