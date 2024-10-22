@@ -475,4 +475,107 @@ defmodule Ingest.Accounts do
   def change_notifications(%Notifications{} = notifications, attrs \\ %{}) do
     Notifications.changeset(notifications, attrs)
   end
+
+  alias Ingest.Accounts.UserKeys
+
+  @doc """
+  Returns the list of user_keys.
+
+  ## Examples
+
+      iex> list_user_keys()
+      [%UserKeys{}, ...]
+
+  """
+  def list_user_keys do
+    Repo.all(UserKeys)
+  end
+
+  def list_user_keys(%User{} = user) do
+    Repo.all(from u in UserKeys, where: u.user_id == ^user.id)
+  end
+
+  @doc """
+  Gets a single user_keys.
+
+  Raises `Ecto.NoResultsError` if the User keys does not exist.
+
+  ## Examples
+
+      iex> get_user_keys!(123)
+      %UserKeys{}
+
+      iex> get_user_keys!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_user_keys!(id), do: Repo.get!(UserKeys, id)
+
+  def get_user_key!(%User{} = user, key),
+    do: Repo.one!(from u in UserKeys, where: u.access_key == ^key and u.user_id == ^user.id)
+
+  @doc """
+  Creates a user_keys.
+
+  ## Examples
+
+      iex> create_user_keys(%{field: value})
+      {:ok, %UserKeys{}}
+
+      iex> create_user_keys(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_user_keys(%User{} = user, attrs \\ %{}) do
+    %UserKeys{user_id: user.id}
+    |> UserKeys.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a user_keys.
+
+  ## Examples
+
+      iex> update_user_keys(user_keys, %{field: new_value})
+      {:ok, %UserKeys{}}
+
+      iex> update_user_keys(user_keys, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user_keys(%UserKeys{} = user_keys, attrs) do
+    user_keys
+    |> UserKeys.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a user_keys.
+
+  ## Examples
+
+      iex> delete_user_keys(user_keys)
+      {:ok, %UserKeys{}}
+
+      iex> delete_user_keys(user_keys)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_user_keys(%UserKeys{} = user_keys) do
+    Repo.delete(user_keys)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking user_keys changes.
+
+  ## Examples
+
+      iex> change_user_keys(user_keys)
+      %Ecto.Changeset{data: %UserKeys{}}
+
+  """
+  def change_user_keys(%UserKeys{} = user_keys, attrs \\ %{}) do
+    UserKeys.changeset(user_keys, attrs)
+  end
 end

@@ -4,6 +4,10 @@ end
 
 defmodule Ingest.Encrypted.Binary do
   use Cloak.Ecto.Binary, vault: Ingest.Vault
+end
+
+defmodule Ingest.Encrypted.JSONBinary do
+  use Cloak.Ecto.Binary, vault: Ingest.Vault
 
   # we override the default behavior here so that we can Base64 encode/decode the values to make sure they're json
   # compatible - without this, the encryption won't work

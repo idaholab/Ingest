@@ -44,4 +44,21 @@ defmodule Ingest.AccountsFixtures do
 
     notifications
   end
+
+  @doc """
+  Generate a user_keys.
+  """
+  def user_keys_fixture(user, attrs \\ %{}) do
+    {:ok, user_keys} =
+      Ingest.Accounts.create_user_keys(
+        user,
+        attrs
+        |> Enum.into(%{
+          access_key: UUID.uuid4(:hex),
+          expires: ~U[2024-10-20 14:32:00Z]
+        })
+      )
+
+    user_keys
+  end
 end

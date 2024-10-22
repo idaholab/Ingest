@@ -549,4 +549,88 @@ defmodule Ingest.AccountsTest do
       assert %Ecto.Changeset{} = Accounts.change_notifications(notifications)
     end
   end
+
+  describe "user_keys" do
+    alias Ingest.Accounts.UserKeys
+
+    import Ingest.AccountsFixtures
+
+    @invalid_attrs %{access_key: nil, secret_key: nil, expires: nil}
+
+    test "list_user_keys/0 returns all user_keys" do
+      user_keys = user_keys_fixture(user_fixture())
+      assert Accounts.list_user_keys() == [user_keys]
+    end
+
+    test "list_user_keys/1 returns only a users's user_keys" do
+      user = user_fixture()
+      user_keys = user_keys_fixture(user_fixture())
+      user_keys_real = user_keys_fixture(user)
+      assert Accounts.list_user_keys(user) == [user_keys_real]
+    end
+
+    test "get_user_keys!/1 returns the user_keys with given id" do
+      user_keys = user_keys_fixture(user_fixture())
+      assert Accounts.get_user_keys!(user_keys.access_key) == user_keys
+    end
+
+    test "get_user_key!/2 returns the user_keys with given id for a given user" do
+      user = user_fixture()
+      user_keys = user_keys_fixture(user)
+      _keys = user_keys_fixture(user_fixture())
+      assert Accounts.get_user_key!(user, user_keys.access_key) == user_keys
+    end
+
+    test "create_user_keys/1 with valid data creates a user_keys" do
+      valid_attrs = %{
+        access_key: UUID.uuid4(:hex),
+        secret_key: :crypto.hash(:sha256, :crypto.strong_rand_bytes(32)),
+        expires: ~U[2024-10-20 14:32:00Z]
+      }
+
+      assert {:ok, %UserKeys{} = user_keys} =
+               Accounts.create_user_keys(user_fixture(), valid_attrs)
+
+      assert user_keys.access_key == valid_attrs.access_key
+      assert user_keys.secret_key == valid_attrs.secret_key
+      assert user_keys.expires == ~U[2024-10-20 14:32:00.000000Z]
+    end
+
+    test "create_user_keys/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} =
+               Accounts.create_user_keys(user_fixture(), @invalid_attrs)
+    end
+
+    test "update_user_keys/2 with valid data updates the user_keys" do
+      user_keys = user_keys_fixture(user_fixture())
+
+      update_attrs = %{
+        access_key: UUID.uuid4(:hex),
+        secret_key: :crypto.hash(:sha256, :crypto.strong_rand_bytes(32)),
+        expires: ~U[2024-10-21 14:32:00.000000Z]
+      }
+
+      assert {:ok, %UserKeys{} = user_keys} = Accounts.update_user_keys(user_keys, update_attrs)
+      assert user_keys.access_key == update_attrs.access_key
+      assert user_keys.secret_key == update_attrs.secret_key
+      assert user_keys.expires == ~U[2024-10-21 14:32:00.000000Z]
+    end
+
+    test "update_user_keys/2 with invalid data returns error changeset" do
+      user_keys = user_keys_fixture(user_fixture())
+      assert {:error, %Ecto.Changeset{}} = Accounts.update_user_keys(user_keys, @invalid_attrs)
+      assert user_keys == Accounts.get_user_keys!(user_keys.access_key)
+    end
+
+    test "delete_user_keys/1 deletes the user_keys" do
+      user_keys = user_keys_fixture(user_fixture())
+      assert {:ok, %UserKeys{}} = Accounts.delete_user_keys(user_keys)
+      assert_raise Ecto.NoResultsError, fn -> Accounts.get_user_keys!(user_keys.access_key) end
+    end
+
+    test "change_user_keys/1 returns a user_keys changeset" do
+      user_keys = user_keys_fixture(user_fixture())
+      assert %Ecto.Changeset{} = Accounts.change_user_keys(user_keys)
+    end
+  end
 end

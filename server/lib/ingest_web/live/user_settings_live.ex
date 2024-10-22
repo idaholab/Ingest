@@ -71,6 +71,70 @@ defmodule IngestWeb.UserSettingsLive do
           </:actions>
         </.simple_form>
       </div>
+
+      <div class="px-4 sm:px-6 lg:px-8 pt-10">
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="text-base font-semibold leading-6 text-gray-900">Personal Access Keys</h1>
+            <p class="mt-2 text-sm text-gray-700">
+              A list of your personal access keys. These keys allow you to upload files using either S3 tooling or Azure Blob Storage tooling.
+            </p>
+          </div>
+
+          <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <div class="mt-6">
+              <.link patch={~p"/users/settings/new_key"}>
+                <button
+                  type="button"
+                  class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  <.icon name="hero-plus" /> New Access Key
+                </button>
+              </.link>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 flow-root">
+          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <.table id="personal_keys" rows={@streams.keys}>
+                <:col :let={{_id, key}} label="Key"><%= key.access_key %></:col>
+                <:col :let={{_id, key}} label="Expiration">
+                  <%= "#{key.expires.day}-#{key.expires.month}-#{key.expires.year}" %>
+                </:col>
+
+                <:action :let={{id, key}}>
+                  <.link
+                    class="text-red-600 hover:text-red-900"
+                    phx-click={
+                      JS.push("delete_key", value: %{id: key.access_key})
+                      |> hide("##{id}")
+                    }
+                    data-confirm="Are you sure?"
+                  >
+                    Delete
+                  </.link>
+                </:action>
+              </.table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <.modal
+        :if={@live_action in [:new_key]}
+        id="new_key_modal"
+        show
+        on_cancel={JS.patch(~p"/users/settings")}
+      >
+        <.live_component
+          live_action={@live_action}
+          module={IngestWeb.LiveComponents.AccessKeyForm}
+          id="keys-modal-component"
+          current_user={@current_user}
+          patch={~p"/users/settings"}
+        />
+      </.modal>
     </div>
     """
   end
@@ -95,6 +159,7 @@ defmodule IngestWeb.UserSettingsLive do
 
     socket =
       socket
+      |> stream_configure(:keys, dom_id: &"#{&1.access_key}")
       |> assign(:current_password, nil)
       |> assign(:email_form_current_password, nil)
       |> assign(:current_email, user.email)
@@ -104,6 +169,15 @@ defmodule IngestWeb.UserSettingsLive do
       |> assign(:section, "settings")
 
     {:ok, socket, layout: {IngestWeb.Layouts, :dashboard}}
+  end
+
+  @impl true
+  def handle_params(_params, _uri, socket) do
+    keys = Accounts.list_user_keys(socket.assigns.current_user)
+
+    {:noreply,
+     socket
+     |> stream(:keys, keys)}
   end
 
   def handle_event("validate_email", params, socket) do
@@ -166,5 +240,15 @@ defmodule IngestWeb.UserSettingsLive do
       {:error, changeset} ->
         {:noreply, assign(socket, password_form: to_form(changeset))}
     end
+  end
+
+  @impl true
+  def handle_event("delete_key", %{"id" => id}, socket) do
+    Accounts.delete_user_keys(Accounts.get_user_key!(socket.assigns.current_user, id))
+
+    {:noreply,
+     socket
+     |> put_flash(:info, "Successfully deleted access key.")
+     |> push_navigate(to: ~p"/users/settings")}
   end
 end

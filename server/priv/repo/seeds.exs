@@ -24,6 +24,8 @@ alias Ingest.Uploads
     roles: :admin
   })
 
+{:ok, _key} = Accounts.create_user_keys(user)
+
 {:ok, second_user} =
   Accounts.register_user(%{
     email: "user@user.com",
