@@ -49,6 +49,12 @@ defmodule IngestWeb.Endpoint do
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
+  plug Plug.Parsers,
+    parsers: [:urlencoded, {:multipart, length: 100_000_000_000_000_000_000_000_000_000}, :json],
+    pass: ["*/*"],
+    length: 100_000_000_000_000_000_000_000_000_000,
+    json_decoder: Phoenix.json_library()
+
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
