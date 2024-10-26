@@ -71,6 +71,7 @@ defmodule Ingest.MixProject do
       {:earmark, "~> 1.4"},
       {:bodyguard, "~> 2.4"},
       {:explorer, "~> 0.9.0"},
+      {:reverse_proxy_plug, "~> 3.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]
@@ -87,6 +88,7 @@ defmodule Ingest.MixProject do
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
+      "clean.db": ["cmd rm -rf databases"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": [
         "tailwind.install --if-missing",
@@ -94,7 +96,11 @@ defmodule Ingest.MixProject do
         "cmd cd assets && npm install"
       ],
       "assets.build": ["tailwind default", "esbuild default"],
-      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
+      "sqlite.fetch": [
+        "cmd cd priv/sqlite_extensions && curl -L https://github.com/asg017/sqlite-vec/releases/download/v0.1.1/install.sh | sh",
+        "cmd cd priv/sqlite_extensions && sh install.sh"
+      ]
     ]
   end
 end

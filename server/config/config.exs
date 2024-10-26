@@ -90,6 +90,8 @@ config :error_tracker,
 # which are currently in use, or the system will break
 config :ingest, :data_classifications, [:ouo, :pii, :ec, :ucni, :cui, :uur]
 
+config :reverse_proxy_plug, :http_client, ReverseProxyPlug.HTTPClient.Adapters.Req
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

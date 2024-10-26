@@ -14,13 +14,39 @@ defmodule IngestWeb.Router do
     plug :put_secure_browser_headers
     plug :fetch_current_user
     plug :put_user_token
+
+    # we move the parsers into here because we don't want to accidentally parse the
+    # body if hitting our reverse proxy to the other destination
+    plug Plug.Parsers,
+      parsers: [:urlencoded, {:multipart, length: 100_000_000_000_000_000_000_000_000_000}, :json],
+      pass: ["*/*"],
+      length: 100_000_000_000_000_000_000_000_000_000,
+      json_decoder: Phoenix.json_library()
   end
 
   pipeline :api do
     plug :accepts, ["json"]
 
-    post "/api/v1/merge", IngestWeb.ApiController, :handle_merge_event
-    get "/api/v1/download_link", IngestWeb.ApiController, :get_download_link
+    # we move the parsers into here because we don't want to accidentally parse the
+    # body if hitting our reverse proxy to the other destination
+    plug Plug.Parsers,
+      parsers: [:urlencoded, {:multipart, length: 100_000_000_000_000_000_000_000_000_000}, :json],
+      pass: ["*/*"],
+      length: 100_000_000_000_000_000_000_000_000_000,
+      json_decoder: Phoenix.json_library()
+  end
+
+  scope "/api/v1", IngestWeb do
+    pipe_through :api
+
+    post "/merge", ApiController, :handle_merge_event
+    get "/download_link", ApiController, :get_download_link
+  end
+
+  # secondary scope without the parsers so that we can reverse proxy to the destinations - this is how we allow
+  # S3/LakeFS/AzureBlob direct upload with standard tools - while maintaing the records of the uploads so we can
+  # solicit information
+  scope "/api/v1", Ingest do
   end
 
   scope "/", IngestWeb do
