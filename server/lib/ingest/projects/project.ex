@@ -50,10 +50,21 @@ defmodule Ingest.Projects.Project do
       when action in [:update_project, :delete_project],
       do: :ok
 
-  # Users can manage their own projects
-  def authorize(action, %{id: user_id} = _user, %{inserted_by: user_id} = _project)
-      when action in [:update_project, :delete_project],
-      do: :ok
+  # Users can manage their own projects or ones they are maintainers on
+  def authorize(
+        action,
+        %{id: user_id} = _user,
+        %{id: project_id, inserted_by: owner} = _project
+      )
+      when action in [:update_project, :delete_project] do
+    member = Ingest.Projects.get_member_project(user_id, project_id)
+
+    if member do
+      Enum.member?([:maintainer, :owner], member.role) || user_id == owner
+    else
+      user_id == owner
+    end
+  end
 
   # Otherwise, denied
   def authorize(_, _, _), do: :error

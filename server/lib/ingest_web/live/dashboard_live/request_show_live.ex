@@ -175,7 +175,7 @@ defmodule IngestWeb.RequestShowLive do
                   <span class="ml-4 mt-0.5 flex min-w-0 flex-col">
                     <span class="text-sm font-medium ">Publish</span>
                     <span class="text-sm font-medium text-gray-500">
-                      Make your request available.
+                      Make your request available by clicking the button below your request's title.
                     </span>
                   </span>
                 </span>
@@ -212,189 +212,98 @@ defmodule IngestWeb.RequestShowLive do
           </span>
           <p><%= @request.description %></p>
           <!-- PUBLIC/PRIVATE -->
-          <div class="mt-20">
-            <label id="listbox-label" class="sr-only">Change published status</label>
-            <div class="relative">
-              <div class="inline-flex divide-x divide-white-700 rounded-md shadow-sm">
-                <div class={
-                  if @request.status == :published do
-                    "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
-                  else
-                    "inline-flex items-center gap-x-1.5 rounded-l-md bg-indigo-600 px-3 py-2 text-white shadow-sm"
-                  end
-                }>
-                  <svg
-                    class="-ml-0.5 h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  <p :if={@request.status == :draft} class="text-sm font-semibold">Draft</p>
-                  <p :if={@request.status == :published} class="text-sm font-semibold">Published</p>
-                </div>
-                <button
-                  :if={
-                    (@request.templates != [] || @project_templates != []) &&
-                      (@request.destinations != [] || @project_destinations != [])
-                  }
-                  phx-click={JS.toggle(to: "#publish_dropdown", in: "opacity-100", out: "opacity-0")}
-                  type="button"
-                  class={
-                    if @request.status == :published do
-                      "inline-flex items-center rounded-l-none rounded-r-md bg-green-600 p-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-gray-50"
-                    else
-                      "inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
-                    end
-                  }
-                  aria-haspopup="listbox"
-                  aria-expanded="true"
-                  aria-labelledby="listbox-label"
+          <div
+            :if={Bodyguard.permit?(Ingest.Requests.Request, :update_request, @current_user, @request)}
+            class="mt-20"
+          >
+            <fieldset aria-label="Privacy setting">
+              <div class="-space-y-px rounded-md bg-white">
+                <label
+                  :if={@request.status == :draft}
+                  class=" z-10 border-indigo-200 bg-indigo-50 relative flex cursor-pointer rounded-tl-md rounded-tr-md border p-4 focus:outline-none"
                 >
-                  <span class="sr-only">Change published status</span>
-                  <svg
-                    class="h-5 w-5 text-white"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                </button>
+                  <input
+                    checked
+                    type="radio"
+                    class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
+                  />
+                  <span class="ml-3 flex flex-col">
+                    <span class="block text-sm text-indigo-900 font-medium">Draft</span>
+                    <span class="block text-sm text-indigo-700">
+                      Disable uploads and searching for this request.
+                    </span>
+                  </span>
+                </label>
 
-                <button
-                  :if={
-                    (@request.destinations == [] && @project_destinations == []) ||
-                      (@request.templates == [] && @project_templates == [])
-                  }
-                  disable
-                  type="button"
-                  class="inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 cursor-not-allowed p-2 hover:bg-indigo-700 "
-                  aria-haspopup="listbox"
-                  aria-expanded="true"
-                  aria-labelledby="listbox-label"
+                <label
+                  :if={@request.status != :draft}
+                  class="relative flex cursor-pointer rounded-tl-md rounded-tr-md border p-4 focus:outline-none"
                 >
-                  <span class="sr-only">Change published status</span>
-                  <svg
-                    class="h-5 w-5 text-white"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                      clip-rule="evenodd"
+                  <input
+                    type="radio"
+                    phx-click="set_draft"
+                    class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
+                  />
+                  <span class="ml-3 flex flex-col">
+                    <!-- Checked: "text-indigo-900", Not Checked: "text-gray-900" -->
+                    <span class="block text-sm font-medium">Draft</span>
+                    <!-- Checked: "text-indigo-700", Not Checked: "text-gray-500" -->
+                    <span class="block text-sm">
+                      Disable uploads and searching for this request.
+                    </span>
+                  </span>
+                </label>
+                <!-- Checked: "z-10 border-indigo-200 bg-indigo-50", Not Checked: "border-gray-200" -->
+                <label
+                  :if={@request.status != :published}
+                  class={"relative flex #{ if (@request.templates != [] || @project_templates != []) &&
+                  (@request.destinations != [] || @project_destinations != []) do "cursor-pointer" else "cursor-not-allowed" end} border p-4 focus:outline-none"}
+                >
+                  <%= if (@request.templates != [] || @project_templates != []) &&
+                (@request.destinations != [] || @project_destinations != []) do %>
+                    <input
+                      phx-click="set_published"
+                      type="radio"
+                      class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
                     />
-                  </svg>
-                </button>
+                  <% else %>
+                    <input
+                      type="radio"
+                      disabled
+                      class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
+                    />
+                  <% end %>
+                  <span class="ml-3 flex flex-col">
+                    <!-- Checked: "text-indigo-900", Not Checked: "text-gray-900" -->
+                    <span class="block text-sm font-medium">Published</span>
+                    <!-- Checked: "text-indigo-700", Not Checked: "text-gray-500" -->
+                    <span class="block text-sm">
+                      Enable uploads and the ability to search for this request by project.
+                    </span>
+                  </span>
+                </label>
+
+                <label
+                  :if={@request.status == :published}
+                  class="relative flex cursor-pointer border p-4 focus:outline-none z-10 border-indigo-200 bg-indigo-50"
+                >
+                  <input
+                    type="radio"
+                    checked
+                    class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
+                  />
+                  <span class="ml-3 flex flex-col">
+                    <!-- Checked: "text-indigo-900", Not Checked: "text-gray-900" -->
+                    <span class="block text-sm text-indigo-900 font-medium">Published</span>
+                    <!-- Checked: "text-indigo-700", Not Checked: "text-gray-500" -->
+                    <span class="block text-sm text-indigo-700">
+                      Enable uploads and the ability to search for this request by project.
+                    </span>
+                  </span>
+                </label>
+                <!-- Checked: "z-10 border-indigo-200 bg-indigo-50", Not Checked: "border-gray-200" -->
               </div>
-
-              <ul
-                phx-click-away={
-                  JS.toggle(to: "#publish_dropdown", in: "opacity-100", out: "opacity-0")
-                }
-                id="publish_dropdown"
-                class=" hidden absolute left-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                tabindex="-1"
-                role="listbox"
-                aria-labelledby="listbox-label"
-                aria-activedescendant="listbox-option-0"
-              >
-                <li
-                  class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
-                  id="listbox-option-0"
-                  role="option"
-                  phx-click="set_draft"
-                >
-                  <div class="flex flex-col cursor-pointer">
-                    <div class="flex justify-between">
-                      <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                      <p class="font-normal">Draft</p>
-
-                      <span :if={@request.status == :draft}>
-                        <svg
-                          class="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                    <p class="mt-2">
-                      Disable uploads for this request.
-                    </p>
-                  </div>
-                </li>
-                <li
-                  class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
-                  id="listbox-option-0"
-                  role="option"
-                  phx-click="set_published"
-                >
-                  <div class="flex flex-col cursor-pointer">
-                    <div class="flex justify-between">
-                      <p class="font-normal">Published</p>
-
-                      <span :if={@request.status == :published}>
-                        <svg
-                          class="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                    <p class="mt-2">
-                      Enable this request for data uploads.
-                    </p>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="relative ">
-            <div class="absolute inset-0 flex items-center" aria-hidden="true"></div>
-          </div>
-          <div class="relative flex justify-center">
-            <.icon
-              :if={@request.status == :published}
-              name="hero-check-circle"
-              class="text-green-600 w-40 h-40"
-            />
-            <.icon
-              :if={@request.status == :draft}
-              name="hero-exclamation-circle"
-              class="text-gray-600 w-40 h-40"
-            />
-          </div>
-
-          <div class="relative flex justify-center">
-            <p :if={@request.status == :published}>Request Published and Acting Normally</p>
-            <p :if={@request.status == :draft}>Request Not Published</p>
+            </fieldset>
           </div>
         </div>
       </div>
@@ -446,6 +355,14 @@ defmodule IngestWeb.RequestShowLive do
                   <td class="relative w-14 p-0">
                     <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
                       <.link
+                        :if={
+                          Bodyguard.permit?(
+                            Ingest.Requests.Request,
+                            :update_request,
+                            @current_user,
+                            @request
+                          )
+                        }
                         data-confirm="Are you sure?"
                         phx-click="remove_template"
                         phx-value-id={template.id}
@@ -460,7 +377,12 @@ defmodule IngestWeb.RequestShowLive do
             </table>
           </div>
           <div class="relative flex justify-center mt-10">
-            <.link patch={~p"/dashboard/requests/#{@request.id}/search/templates"}>
+            <.link
+              :if={
+                Bodyguard.permit?(Ingest.Requests.Request, :update_request, @current_user, @request)
+              }
+              patch={~p"/dashboard/requests/#{@request.id}/search/templates"}
+            >
               <button
                 type="button"
                 class="inline-flex items-center rounded-md bg-gray-600 hover:text-white text-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -521,6 +443,14 @@ defmodule IngestWeb.RequestShowLive do
                     </span>
 
                     <span
+                      :if={
+                        Bodyguard.permit?(
+                          Ingest.Requests.Request,
+                          :update_request,
+                          @current_user,
+                          @request
+                        )
+                      }
                       data-confirm="Are you sure?"
                       phx-click="remove_member"
                       phx-value-email={member.email}
@@ -535,7 +465,17 @@ defmodule IngestWeb.RequestShowLive do
             <form action="#" class="mt-12 flex text-center">
               <label id="listbox-label" class="sr-only">Change visibility </label>
               <div class="relative pl-12">
-                <div class="inline-flex divide-x divide-white-700 rounded-md shadow-sm">
+                <div
+                  :if={
+                    Bodyguard.permit?(
+                      Ingest.Requests.Request,
+                      :update_request,
+                      @current_user,
+                      @request
+                    )
+                  }
+                  class="inline-flex divide-x divide-white-700 rounded-md shadow-sm"
+                >
                   <div class={
                     if @request.visibility == :public do
                       "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
@@ -770,6 +710,14 @@ defmodule IngestWeb.RequestShowLive do
                           Active
                         </span>
                         <span
+                          :if={
+                            Bodyguard.permit?(
+                              Ingest.Requests.Request,
+                              :update_request,
+                              @current_user,
+                              @request
+                            )
+                          }
                           data-confirm="Are you sure?"
                           phx-click="remove_destination"
                           phx-value-id={destination.id}
@@ -789,7 +737,12 @@ defmodule IngestWeb.RequestShowLive do
             </div>
 
             <div class="relative flex justify-center mt-10">
-              <.link patch={~p"/dashboard/requests/#{@request.id}/search/destinations"}>
+              <.link
+                :if={
+                  Bodyguard.permit?(Ingest.Requests.Request, :update_request, @current_user, @request)
+                }
+                patch={~p"/dashboard/requests/#{@request.id}/search/destinations"}
+              >
                 <button
                   type="button"
                   class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm text-black hover:text-white font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -1039,6 +992,14 @@ defmodule IngestWeb.RequestShowLive do
                           <p class="text-xs italic">coming soon</p>
                         </a>
                         <a
+                          :if={
+                            Bodyguard.permit?(
+                              Ingest.Requests.Request,
+                              :update_request,
+                              @current_user,
+                              @request
+                            )
+                          }
                           phx-click="delete_upload"
                           phx-value-upload={upload.id}
                           class="block px-3 py-1 text-sm leading-6 text-red-600 hover:bg-gray-50 cursor-pointer"
@@ -1104,82 +1065,159 @@ defmodule IngestWeb.RequestShowLive do
 
   @impl true
   def handle_event("remove_destination", %{"id" => id}, socket) do
-    destination = Ingest.Destinations.get_destination!(id)
-    {1, _} = Ingest.Requests.remove_destination(socket.assigns.request, destination)
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.Request,
+             :update_request,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         destination <- Ingest.Destinations.get_destination!(id) do
+      {1, _} = Ingest.Requests.remove_destination(socket.assigns.request, destination)
 
-    {:noreply,
-     stream_delete(socket, :destinations, destination)
-     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+      {:noreply,
+       stream_delete(socket, :destinations, destination)
+       |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
+    end
   end
 
   @impl true
   def handle_event("remove_template", %{"id" => id}, socket) do
-    template = Ingest.Requests.get_template!(id)
-    {1, _} = Ingest.Requests.remove_template(socket.assigns.request, template)
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.Request,
+             :update_request,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         template <- Ingest.Requests.get_template!(id) do
+      {:noreply,
+       stream_delete(socket, :templates, template)
+       |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
 
-    {:noreply,
-     stream_delete(socket, :templates, template)
-     |> push_patch(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+      {1, _} = Ingest.Requests.remove_template(socket.assigns.request, template)
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
+    end
   end
 
   @impl true
   def handle_event("set_published", _params, socket) do
-    {:ok, request} = Requests.update_request(socket.assigns.request, %{status: :published})
-
-    {:noreply,
-     socket
-     |> assign(:request, Requests.get_request!(request.id))
-     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.Request,
+             :update_request,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         {:ok, request} <- Requests.update_request(socket.assigns.request, %{status: :published}) do
+      {:noreply,
+       socket
+       |> assign(:request, Requests.get_request!(request.id))
+       |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
+    end
   end
 
   @impl true
   def handle_event("set_draft", _params, socket) do
-    {:ok, request} = Requests.update_request(socket.assigns.request, %{status: :draft})
-
-    {:noreply,
-     socket
-     |> assign(:request, Requests.get_request!(request.id))
-     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.Request,
+             :update_request,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         {:ok, request} <- Requests.update_request(socket.assigns.request, %{status: :draft}) do
+      {:noreply,
+       socket
+       |> assign(:request, Requests.get_request!(request.id))
+       |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
+    end
   end
 
   @impl true
   def handle_event("set_private", _params, socket) do
-    {:ok, request} = Requests.update_request(socket.assigns.request, %{visibility: :private})
-
-    {:noreply,
-     socket
-     |> assign(:request, Requests.get_request!(request.id))
-     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.Request,
+             :update_request,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         {:ok, request} <-
+           Requests.update_request(socket.assigns.request, %{visibility: :private}) do
+      {:noreply,
+       socket
+       |> assign(:request, Requests.get_request!(request.id))
+       |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
+    end
   end
 
   @impl true
   def handle_event("set_internal", _params, socket) do
-    {:ok, request} = Requests.update_request(socket.assigns.request, %{visibility: :internal})
-
-    {:noreply,
-     socket
-     |> assign(:request, Requests.get_request!(request.id))
-     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.Request,
+             :update_request,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         {:ok, request} <-
+           Requests.update_request(socket.assigns.request, %{visibility: :internal}) do
+      {:noreply,
+       socket
+       |> assign(:request, Requests.get_request!(request.id))
+       |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
+    end
   end
 
   @impl true
   def handle_event("set_public", _params, socket) do
-    {:ok, request} = Requests.update_request(socket.assigns.request, %{visibility: :public})
-
-    {:noreply,
-     socket
-     |> assign(:request, Requests.get_request!(request.id))
-     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.Request,
+             :update_request,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         {:ok, request} <-
+           Requests.update_request(socket.assigns.request, %{visibility: :public}) do
+      {:noreply,
+       socket
+       |> assign(:request, Requests.get_request!(request.id))
+       |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
+    end
   end
 
   def handle_event("remove_member", %{"email" => email}, socket) do
-    Requests.delete_user(socket.assigns.request, email)
-
-    {:noreply,
-     socket
-     |> assign(:request, Requests.get_request!(socket.assigns.request.id))
-     |> put_flash(:info, "Member has been removed from this data request!")
-     |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.Request,
+             :update_request,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         :ok <- Requests.delete_user(socket.assigns.request, email) do
+      {:noreply,
+       socket
+       |> assign(:request, Requests.get_request!(socket.assigns.request.id))
+       |> put_flash(:info, "Member has been removed from this data request!")
+       |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
+    end
   end
 
   @impl true
@@ -1209,15 +1247,20 @@ defmodule IngestWeb.RequestShowLive do
 
   @impl true
   def handle_event("delete_upload", %{"upload" => upload_id}, socket) do
-    case Uploads.delete_upload(Uploads.get_upload!(upload_id)) do
-      {:ok, upload} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Successfully deleted upload")
-         |> stream_delete(:uploads, upload)}
-
-      {:error, _changeset} ->
-        {:noreply, socket |> put_flash(:error, "Unable to delete upload.")}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.Request,
+             :update_request,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         {:ok, upload} <- Uploads.delete_upload(Uploads.get_upload!(upload_id)) do
+      {:noreply,
+       socket
+       |> put_flash(:info, "Successfully deleted upload")
+       |> stream_delete(:uploads, upload)}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
     end
   end
 

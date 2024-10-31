@@ -65,6 +65,14 @@ defmodule IngestWeb.TemplatesLive do
                 </:action>
                 <:action :let={{id, template}}>
                   <.link
+                    :if={
+                      Bodyguard.permit?(
+                        Ingest.Requests.Template,
+                        :delete_template,
+                        @current_user,
+                        template
+                      )
+                    }
                     class="text-red-600 hover:text-red-900"
                     phx-click={JS.push("delete", value: %{id: template.id}) |> hide("##{id}")}
                     data-confirm="Are you sure?"
@@ -102,10 +110,10 @@ defmodule IngestWeb.TemplatesLive do
     {:ok,
      socket
      |> assign(:section, "templates")
-     |> assign(:templates, Ingest.Requests.list_own_templates(socket.assigns.current_user))
+     |> assign(:templates, Ingest.Requests.list_owned_templates(socket.assigns.current_user))
      |> stream(
        :templates,
-       Ingest.Requests.list_own_templates(socket.assigns.current_user)
+       Ingest.Requests.list_owned_templates(socket.assigns.current_user)
      ), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
@@ -129,9 +137,18 @@ defmodule IngestWeb.TemplatesLive do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    template = Ingest.Requests.get_template!(id)
-    {:ok, _} = Ingest.Requests.delete_template(template)
-
-    {:noreply, stream_delete(socket, :templates, template)}
+    with :ok <-
+           Bodyguard.permit(
+             Ingest.Requests.template(),
+             :delete_template,
+             socket.assigns.current_user,
+             socket.assigns.request
+           ),
+         template <- Ingest.Requests.get_template!(id),
+         {:ok, _} <- Ingest.Requests.delete_template(template) do
+      {:noreply, stream_delete(socket, :templates, template)}
+    else
+      _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
+    end
   end
 end

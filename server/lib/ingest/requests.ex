@@ -45,7 +45,7 @@ defmodule Ingest.Requests do
       ** (Ecto.NoResultsError)
 
   """
-  def get_template!(id), do: Repo.get!(Template, id)
+  def get_template!(id), do: Repo.get!(Template, id) |> Repo.preload(:template_members)
 
   @doc """
   Creates a template.
@@ -416,5 +416,153 @@ defmodule Ingest.Requests do
         where: d.request_id == type(^request.id, :binary_id) and d.email == ^email
       )
     )
+  end
+
+  alias Ingest.Requests.TemplateMembers
+
+  def get_owned_template!(%User{} = user, id) do
+    Repo.one!(
+      from tm in TemplateMembers,
+        where: (tm.user_id == ^user.id or tm.email == ^user.email) and tm.template_id == ^id,
+        select: tm
+    )
+  end
+
+  def list_owned_templates(%User{} = user) do
+    Repo.all(
+      from t in Template,
+        left_join: tm in assoc(t, :template_members),
+        where: tm.id == ^user.id or tm.email == ^user.email or t.inserted_by == ^user.id,
+        group_by: t.id,
+        select: t
+    )
+  end
+
+  def add_user_to_template(%Template{} = template, %User{} = user, role \\ :member) do
+    %TemplateMembers{}
+    |> TemplateMembers.changeset(%{user_id: user.id, template_id: template.id, role: role})
+    |> Repo.insert()
+  end
+
+  def add_user_to_template_by_email(%Template{} = template, email, role \\ :member) do
+    member = Ingest.Accounts.get_user_by_email(email)
+
+    if member do
+      %TemplateMembers{}
+      |> TemplateMembers.changeset(%{
+        email: email,
+        user_id: member.id,
+        template_id: template.id,
+        role: role
+      })
+      |> Repo.insert()
+    else
+      %TemplateMembers{}
+      |> TemplateMembers.changeset(%{email: email, template_id: template.id, role: role})
+      |> Repo.insert()
+    end
+  end
+
+  def backfill_shared_templates(%User{} = user) do
+    from(tm in TemplateMembers,
+      where:
+        tm.email ==
+          ^user.email
+    )
+    |> Repo.update_all(set: [user_id: user.id])
+  end
+
+  def get_user_template(member_id, template_id) do
+    query =
+      from tm in TemplateMembers,
+        where: tm.member_id == ^member_id and tm.template_id == ^template_id
+
+    Repo.one!(query)
+  end
+
+  def remove_template_user(%TemplateMembers{} = tm) do
+    query =
+      from t in TemplateMembers,
+        where: t.user_id == ^tm.user_id and t.project_id == ^tm.template_id
+
+    Repo.delete_all(query)
+  end
+
+  @doc """
+  Returns the list of template_members.
+
+  ## Examples
+
+      iex> list_template_members()
+      [%TemplateMembers{}, ...]
+
+  """
+  def list_template_members do
+    Repo.all(TemplateMembers)
+  end
+
+  @doc """
+  Creates a template_members.
+
+  ## Examples
+
+      iex> create_template_members(%{field: value})
+      {:ok, %TemplateMembers{}}
+
+      iex> create_template_members(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_template_members(attrs \\ %{}) do
+    %TemplateMembers{}
+    |> TemplateMembers.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a template_members.
+
+  ## Examples
+
+      iex> update_template_members(template_members, %{field: new_value})
+      {:ok, %TemplateMembers{}}
+
+      iex> update_template_members(template_members, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_template_members(%TemplateMembers{} = template_members, attrs) do
+    template_members
+    |> TemplateMembers.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a template_members.
+
+  ## Examples
+
+      iex> delete_template_members(template_members)
+      {:ok, %TemplateMembers{}}
+
+      iex> delete_template_members(template_members)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_template_members(%TemplateMembers{} = template_members) do
+    Repo.delete(template_members)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking template_members changes.
+
+  ## Examples
+
+      iex> change_template_members(template_members)
+      %Ecto.Changeset{data: %TemplateMembers{}}
+
+  """
+  def change_template_members(%TemplateMembers{} = template_members, attrs \\ %{}) do
+    TemplateMembers.changeset(template_members, attrs)
   end
 end

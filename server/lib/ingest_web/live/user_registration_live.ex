@@ -94,6 +94,7 @@ defmodule IngestWeb.UserRegistrationLive do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         Projects.queue_project_invite_notifications(user)
+        Ingest.Requests.backfill_shared_templates(user)
 
         {:ok, _} =
           Accounts.deliver_user_confirmation_instructions(

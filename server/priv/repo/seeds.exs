@@ -118,6 +118,8 @@ alias Ingest.Uploads
     ]
   })
 
+{:ok, _member} = Requests.add_user_to_template(template, second_user)
+
 {:ok, _template_2} =
   Requests.create_template(%{
     name: "Test Template 2",

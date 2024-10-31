@@ -45,4 +45,18 @@ defmodule Ingest.RequestsFixtures do
 
     request
   end
+
+  @doc """
+  Generate a template_members.
+  """
+  def template_members_fixture(attrs \\ %{}) do
+    {:ok, template_members} =
+      attrs
+      |> Enum.into(%{
+        role: "some role"
+      })
+      |> Ingest.Requests.create_template_members()
+
+    template_members
+  end
 end

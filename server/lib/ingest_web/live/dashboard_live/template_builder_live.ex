@@ -14,6 +14,12 @@ defmodule IngestWeb.TemplateBuilderLive do
             <%= @template.description %>
           </p>
         </div>
+        <.link
+          :if={@template.inserted_by == @current_user.id}
+          navigate={~p"/dashboard/templates/#{@template.id}/share"}
+        >
+          <.button class="bg-primary">Share</.button>
+        </.link>
       </div>
       <div class="mt-5 border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
         <h3 class="text-base font-semibold leading-6 text-gray-900">Form Builder</h3>
@@ -340,6 +346,21 @@ defmodule IngestWeb.TemplateBuilderLive do
           fields={@fields}
           module={IngestWeb.LiveComponents.TemplateFieldForm}
           id="template-field-modal-component"
+          current_user={@current_user}
+        />
+      </.modal>
+
+      <.modal
+        :if={@live_action in [:share]}
+        id="template_share_modal"
+        show
+        on_cancel={JS.patch(@on_cancel)}
+      >
+        <.live_component
+          live_action={@live_action}
+          template={@template}
+          module={IngestWeb.LiveComponents.ShareTemplateForm}
+          id="template-share-modal-component"
           current_user={@current_user}
         />
       </.modal>

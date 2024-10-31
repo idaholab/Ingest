@@ -4,6 +4,8 @@ defmodule Ingest.Requests.Request do
   eventually a destination - this is the full package and root object when users are uploading
   files to the Ingest system.
   """
+  @behaviour Bodyguard.Policy
+
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -50,4 +52,24 @@ defmodule Ingest.Requests.Request do
     ])
     |> validate_required([:name, :description, :project_id])
   end
+
+  def authorize(:create_request, _user), do: :ok
+
+  # Admins can do anything
+  def authorize(action, %{roles: :admin} = _user, _project)
+      when action in [:update_request, :delete_request],
+      do: :ok
+
+  # Users can manage their own request
+  def authorize(
+        action,
+        %{id: user_id} = _user,
+        %{inserted_by: owner} = _project
+      )
+      when action in [:update_request, :delete_request] do
+    user_id == owner
+  end
+
+  # Otherwise, denied
+  def authorize(_, _, _), do: :error
 end

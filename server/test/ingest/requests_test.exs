@@ -137,4 +137,58 @@ defmodule Ingest.RequestsTest do
       assert %Ecto.Changeset{} = Requests.change_request(request)
     end
   end
+
+  describe "template_members" do
+    alias Ingest.Requests.TemplateMembers
+
+    import Ingest.RequestsFixtures
+
+    @invalid_attrs %{role: nil}
+
+    test "list_template_members/0 returns all template_members" do
+      template_members = template_members_fixture()
+      assert Requests.list_template_members() == [template_members]
+    end
+
+    test "get_template_members!/1 returns the template_members with given id" do
+      template_members = template_members_fixture()
+      assert Requests.get_template_members!(template_members.id) == template_members
+    end
+
+    test "create_template_members/1 with valid data creates a template_members" do
+      valid_attrs = %{role: "some role"}
+
+      assert {:ok, %TemplateMembers{} = template_members} = Requests.create_template_members(valid_attrs)
+      assert template_members.role == "some role"
+    end
+
+    test "create_template_members/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Requests.create_template_members(@invalid_attrs)
+    end
+
+    test "update_template_members/2 with valid data updates the template_members" do
+      template_members = template_members_fixture()
+      update_attrs = %{role: "some updated role"}
+
+      assert {:ok, %TemplateMembers{} = template_members} = Requests.update_template_members(template_members, update_attrs)
+      assert template_members.role == "some updated role"
+    end
+
+    test "update_template_members/2 with invalid data returns error changeset" do
+      template_members = template_members_fixture()
+      assert {:error, %Ecto.Changeset{}} = Requests.update_template_members(template_members, @invalid_attrs)
+      assert template_members == Requests.get_template_members!(template_members.id)
+    end
+
+    test "delete_template_members/1 deletes the template_members" do
+      template_members = template_members_fixture()
+      assert {:ok, %TemplateMembers{}} = Requests.delete_template_members(template_members)
+      assert_raise Ecto.NoResultsError, fn -> Requests.get_template_members!(template_members.id) end
+    end
+
+    test "change_template_members/1 returns a template_members changeset" do
+      template_members = template_members_fixture()
+      assert %Ecto.Changeset{} = Requests.change_template_members(template_members)
+    end
+  end
 end

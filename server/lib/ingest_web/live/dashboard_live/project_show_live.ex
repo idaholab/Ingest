@@ -30,6 +30,17 @@ defmodule IngestWeb.ProjectShowLive do
 
             <:action :let={request}>
               <.link
+                navigate={~p"/dashboard/requests/#{request}"}
+                class="text-indigo-600 hover:text-indigo-900"
+              >
+                View
+              </.link>
+            </:action>
+            <:action :let={request}>
+              <.link
+                :if={
+                  Bodyguard.permit?(Ingest.Projects.Project, :update_project, @current_user, @project)
+                }
                 patch={~p"/dashboard/requests/#{request}"}
                 class="text-indigo-600 hover:text-indigo-900"
               >
@@ -38,6 +49,9 @@ defmodule IngestWeb.ProjectShowLive do
             </:action>
             <:action :let={request}>
               <.link
+                :if={
+                  Bodyguard.permit?(Ingest.Projects.Project, :update_project, @current_user, @project)
+                }
                 data-confirm="Are you absolutely sure you want to delete this Data Request?"
                 phx-value-id={request.id}
                 phx-click={
@@ -66,6 +80,9 @@ defmodule IngestWeb.ProjectShowLive do
 
             <:action :let={{_id, template}}>
               <.link
+                :if={
+                  Bodyguard.permit?(Ingest.Projects.Project, :update_project, @current_user, @project)
+                }
                 data-confirm={check_use(@project, "Template")}
                 phx-value-id={template.id}
                 class="text-red-600 hover:text-red-900"
@@ -80,7 +97,12 @@ defmodule IngestWeb.ProjectShowLive do
           </.table>
 
           <div class="relative flex justify-center mt-10">
-            <.link patch={~p"/dashboard/projects/#{@project.id}/search/templates"}>
+            <.link
+              :if={
+                Bodyguard.permit?(Ingest.Projects.Project, :update_project, @current_user, @project)
+              }
+              patch={~p"/dashboard/projects/#{@project.id}/search/templates"}
+            >
               <button
                 type="button"
                 class="inline-flex items-center rounded-md bg-gray-600 hover:text-white text-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -127,6 +149,14 @@ defmodule IngestWeb.ProjectShowLive do
                     </span>
 
                     <span
+                      :if={
+                        Bodyguard.permit?(
+                          Ingest.Projects.Project,
+                          :update_project,
+                          @current_user,
+                          @project
+                        )
+                      }
                       data-confirm={check_use(@project, "Destination")}
                       phx-click="remove_destination"
                       phx-value-id={destination.id}
@@ -144,7 +174,12 @@ defmodule IngestWeb.ProjectShowLive do
             </ul>
 
             <div class="relative flex justify-center mt-10">
-              <.link patch={~p"/dashboard/projects/#{@project.id}/search/destinations"}>
+              <.link
+                :if={
+                  Bodyguard.permit?(Ingest.Projects.Project, :update_project, @current_user, @project)
+                }
+                patch={~p"/dashboard/projects/#{@project.id}/search/destinations"}
+              >
                 <button
                   type="button"
                   class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm text-black hover:text-white font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -226,6 +261,14 @@ defmodule IngestWeb.ProjectShowLive do
                     </span>
 
                     <span
+                      :if={
+                        Bodyguard.permit?(
+                          Ingest.Projects.Project,
+                          :update_project,
+                          @current_user,
+                          @project
+                        ) || member.id == @current_user.id
+                      }
                       data-confirm="Are you sure?"
                       phx-click="remove_member"
                       phx-value-member={member.id}

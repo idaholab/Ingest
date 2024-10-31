@@ -112,6 +112,7 @@ defmodule IngestWeb.Router do
       live "/dashboard/templates/new", TemplatesLive, :new
       live "/dashboard/templates/:id", TemplateBuilderLive, :index
       live "/dashboard/templates/:id/new", TemplateBuilderLive, :new
+      live "/dashboard/templates/:id/share", TemplateBuilderLive, :share
       live "/dashboard/templates/:id/fields/:field_id", TemplateBuilderLive, :field
 
       live "/dashboard/templates/:id/fields/:field_id/search_templates",

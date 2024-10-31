@@ -169,7 +169,7 @@ defmodule Ingest.Projects do
       from pm in ProjectMembers,
         where: pm.member_id == ^member_id and pm.project_id == ^project_id
 
-    Repo.one!(query)
+    Repo.one(query)
   end
 
   def remove_project_member(%ProjectMembers{} = pm) do
