@@ -167,6 +167,8 @@ defmodule Ingest.Uploads do
     Repo.delete(upload)
   end
 
+  # TODO: write delete_upload_by_name that takes a Request and User and filename to delete all uploads that match
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking upload changes.
 

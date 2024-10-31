@@ -26,6 +26,29 @@ defmodule IngestWeb.ApiController do
     end
   end
 
+  def handle_precommit_event(conn, params) do
+    # TODO: pull project name from parameters - match with project name and pull the first, active Data Request for the project
+    event = conn.body_params
+
+    resp =
+      LakeFS.diff_merge(
+        event,
+        # the & and /arity is how we reference closures
+        # TODO: replace these functions with new functions the functions should do the following:
+        # on_create: We should take the email of whoever the USER is that is making this commit on LakeFS, the request from line 30 and make a new Upload record for that request (Ingest.Uploads.Upload) (do not do duplicates, so make sure it doesn't exist already)
+        # on_delete: Same as above, but remove all uploads with the same name from that user for that request
+        &FileProcessor.process_delete/3,
+        &FileProcessor.process/3,
+        &FileProcessor.process/3
+      )
+
+    case resp do
+      {:ok, _created} -> send_resp(conn, 200, "Metadata event processed successfully")
+      {:error, message} -> send_resp(conn, 500, Jason.encode!(message.body))
+      _ -> send_resp(conn, 500, "Unable to process metadata event")
+    end
+  end
+
   def get_download_link(conn, params) do
     # we're going to pull the cookie since the JWT we need is there inside the cookie
     conn = Conn.fetch_cookies(conn)

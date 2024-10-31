@@ -27,6 +27,8 @@ defmodule IngestWeb.Router do
     pipe_through :api
 
     post "/merge", ApiController, :handle_merge_event
+
+    # TODO: add another POST endpoint that fires on the pre-commit hook, use ApiController, write new function the caller will call it like this /api/v1/precommit&projectName=IngestProjectName
     get "/download_link", ApiController, :get_download_link
   end
 
