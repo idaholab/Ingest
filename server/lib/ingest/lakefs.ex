@@ -58,6 +58,8 @@ defmodule Ingest.LakeFS do
     end
   end
 
+  # TODO: write function that queries LakeFS for a user's email based on the UserID on a file's metadata
+
   # the diff merge function takes 3 functions, to be executed depending on whether or not
   # a file in the merge has been changed, removed, or created
   def diff_merge(

@@ -56,4 +56,6 @@ defmodule Ingest.LakeFSTest do
                "Untitled.owx"
              )
   end
+
+  # TODO: write test for the get user email function
 end

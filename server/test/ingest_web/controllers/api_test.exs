@@ -24,6 +24,8 @@ defmodule IngestWeb.ApiTest do
     assert conn.status == 200
   end
 
+  # TODO: write a test to test pre-commmit event from LakeFS
+
   @tag :lakefs
   test "will fail on bad event", %{conn: conn} do
     # Create a test connection
