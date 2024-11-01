@@ -53,7 +53,8 @@ defmodule Ingest.RequestsFixtures do
     {:ok, template_members} =
       attrs
       |> Enum.into(%{
-        role: "some role"
+        role: :member,
+        template_id: template_fixture().id
       })
       |> Ingest.Requests.create_template_members()
 

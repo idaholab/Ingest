@@ -45,7 +45,7 @@ defmodule Ingest.Requests do
       ** (Ecto.NoResultsError)
 
   """
-  def get_template!(id), do: Repo.get!(Template, id) |> Repo.preload(:template_members)
+  def get_template!(id), do: Repo.get!(Template, id)
 
   @doc """
   Creates a template.
