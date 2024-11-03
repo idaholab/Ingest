@@ -3,7 +3,7 @@ defmodule Ingest.Repo.Migrations.Lakefs do
 
   def change do
     alter table(:destinations) do
-      add :lakefs_config, :map
+      add :lakefs_config, :binary
     end
   end
 end

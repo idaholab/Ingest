@@ -73,6 +73,22 @@ defmodule Ingest.Requests.Template do
   def authorize(_, _, _), do: :error
 end
 
+defmodule Ingest.Requests.TemplateSearch do
+  @moduledoc """
+  Reflects the virtual table for FTS5 trigram searching.
+  """
+  use Ecto.Schema
+
+  @primary_key false
+  schema "templates_search" do
+    field :rowid, :integer
+    field :id, :binary_id
+    field :name, :string
+    field :description, :string
+    field :rank, :float, virtual: true
+  end
+end
+
 defmodule Ingest.Requests.TemplateField do
   @moduledoc """
   TemplateField represents the the fields we use the build the form for the user uploading files

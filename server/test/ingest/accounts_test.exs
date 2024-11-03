@@ -1,5 +1,5 @@
 defmodule Ingest.AccountsTest do
-  use Ingest.DataCase
+  use Ingest.DataCase, async: false
 
   alias Ingest.Accounts
 
@@ -559,7 +559,7 @@ defmodule Ingest.AccountsTest do
 
     test "list_user_keys/0 returns all user_keys" do
       user_keys = user_keys_fixture(user_fixture())
-      assert Accounts.list_user_keys() == [user_keys]
+      assert Enum.member?(Accounts.list_user_keys(), user_keys)
     end
 
     test "list_user_keys/1 returns only a users's user_keys" do

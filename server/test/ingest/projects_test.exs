@@ -1,5 +1,5 @@
 defmodule Ingest.ProjectsTest do
-  use Ingest.DataCase
+  use Ingest.DataCase, async: false
 
   alias Ingest.Projects
 

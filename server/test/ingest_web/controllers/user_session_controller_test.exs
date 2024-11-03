@@ -1,5 +1,5 @@
 defmodule IngestWeb.UserSessionControllerTest do
-  use IngestWeb.ConnCase, async: true
+  use IngestWeb.ConnCase, async: false
 
   import Ingest.AccountsFixtures
 

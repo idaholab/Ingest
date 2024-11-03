@@ -2,12 +2,10 @@ defmodule Ingest.Repo.Migrations.CreateUsersAuthTables do
   use Ecto.Migration
 
   def change do
-    execute "CREATE EXTENSION IF NOT EXISTS citext", ""
-
     create table(:users, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :text, null: true
-      add :email, :citext, null: false
+      add :email, :text, null: false, collate: :nocase
       add :hashed_password, :string, null: true
       add :confirmed_at, :naive_datetime
       timestamps()

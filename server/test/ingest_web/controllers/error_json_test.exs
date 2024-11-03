@@ -1,5 +1,5 @@
 defmodule IngestWeb.ErrorJSONTest do
-  use IngestWeb.ConnCase, async: true
+  use IngestWeb.ConnCase, async: false
 
   test "renders 404" do
     assert IngestWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}

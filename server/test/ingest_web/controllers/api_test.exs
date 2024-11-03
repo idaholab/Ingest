@@ -1,5 +1,5 @@
 defmodule IngestWeb.ApiTest do
-  use IngestWeb.ConnCase, async: true
+  use IngestWeb.ConnCase, async: false
 
   @tag :lakefs
   test "handle merge event from lakefs", %{conn: conn} do

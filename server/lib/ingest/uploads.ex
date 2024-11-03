@@ -54,10 +54,11 @@ defmodule Ingest.Uploads do
       from u in Upload,
         left_join: m in Metadata,
         on: m.upload_id == u.id,
+        group_by: u.id,
         where:
           (is_nil(m.id) and u.uploaded_by == ^user.id) or
             (u.uploaded_by == ^user.id and m.submitted == false),
-        select: count(u.id, :distinct)
+        select: count(u.id)
     )
   end
 

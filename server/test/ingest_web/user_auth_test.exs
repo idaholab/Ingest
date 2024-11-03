@@ -1,5 +1,5 @@
 defmodule IngestWeb.UserAuthTest do
-  use IngestWeb.ConnCase, async: true
+  use IngestWeb.ConnCase, async: false
 
   alias Phoenix.LiveView
   alias Ingest.Accounts

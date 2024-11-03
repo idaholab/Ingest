@@ -2,7 +2,7 @@ defmodule Ingest.LakeFSTest do
   @moduledoc """
   Tests for the Lakefs Module.
   """
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   alias Ingest.LakeFS
 
   @tag :lakefs

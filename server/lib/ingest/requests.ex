@@ -4,6 +4,8 @@ defmodule Ingest.Requests do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Projects.ProjectSearch
+  alias Ingest.Requests.TemplateSearch
   alias Ingest.Uploads.Upload
   alias Ingest.Requests.TemplateField
   alias Ingest.Accounts.User
@@ -330,19 +332,13 @@ defmodule Ingest.Requests do
       %{exclude: exclude} = Enum.into(opts, @defaults)
 
       query =
-        from t in Template,
+        from ts in TemplateSearch,
+          join: t in Template,
+          on: ts.id == t.id,
           where:
-            fragment(
-              "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
-              ^search_term
-            ) and t.id not in ^Enum.map(exclude, fn d -> d.id end),
-          order_by: {
-            :desc,
-            fragment(
-              "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
-              ^search_term
-            )
-          }
+            fragment("templates_search MATCH ?", ^search_term) and
+              t.id not in ^Enum.map(exclude, fn t -> t.id end),
+          select: t
 
       Repo.all(query)
     end
@@ -357,19 +353,13 @@ defmodule Ingest.Requests do
       %{exclude: exclude} = Enum.into(opts, @defaults)
 
       query =
-        from t in Template,
+        from ts in TemplateSearch,
+          join: t in Template,
+          on: ts.id == t.id,
           where:
-            fragment(
-              "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
-              ^search_term
-            ) and t.id not in ^Enum.map(exclude, fn d -> d.id end) and t.inserted_by == ^user.id,
-          order_by: {
-            :desc,
-            fragment(
-              "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
-              ^search_term
-            )
-          }
+            fragment("templates_search MATCH ?", ^search_term) and
+              t.id not in ^Enum.map(exclude, fn t -> t.id end) and t.inserted_by == ^user.id,
+          select: t
 
       Repo.all(query)
     end
@@ -381,24 +371,16 @@ defmodule Ingest.Requests do
     else
       search_term = String.replace(search_term, " ", "")
 
-      Repo.all(
-        from(r in Request,
+      query =
+        from r in Request,
           join: p in Project,
           on: p.id == r.project_id,
-          where:
-            fragment(
-              "p1.searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
-              ^search_term
-            ) and r.status == :published,
-          order_by: {
-            :desc,
-            fragment(
-              "ts_rank_cd(p1.searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
-              ^search_term
-            )
-          }
-        )
-      )
+          join: ps in ProjectSearch,
+          on: ps.id == p.id,
+          where: fragment("projects_search MATCH ?", ^search_term) and r.status == :published,
+          select: r
+
+      Repo.all(query)
       |> Repo.preload(:project)
     end
   end

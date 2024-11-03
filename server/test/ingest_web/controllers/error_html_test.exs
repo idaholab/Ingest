@@ -1,5 +1,5 @@
 defmodule IngestWeb.ErrorHTMLTest do
-  use IngestWeb.ConnCase, async: true
+  use IngestWeb.ConnCase, async: false
 
   # Bring render_to_string/4 for testing custom views
   import Phoenix.Template

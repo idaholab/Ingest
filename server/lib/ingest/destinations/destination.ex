@@ -83,6 +83,21 @@ defmodule Ingest.Destinations.Destination do
   def authorize(_, _, _), do: :error
 end
 
+defmodule Ingest.Destinations.DestinationSearch do
+  @moduledoc """
+  Reflects the virtual table for FTS5 trigram searching.
+  """
+  use Ecto.Schema
+
+  @primary_key false
+  schema "destinations_search" do
+    field :rowid, :integer
+    field :id, :binary_id
+    field :name, :string
+    field :rank, :float, virtual: true
+  end
+end
+
 defmodule Ingest.Destinations.S3Config do
   @moduledoc """
   S3 bucket configuration storage

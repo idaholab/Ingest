@@ -21,21 +21,37 @@ if System.get_env("PHX_SERVER") do
 end
 
 if config_env() == :prod do
-  database_url =
-    System.get_env("DATABASE_URL") ||
-      raise """
-      environment variable DATABASE_URL is missing.
-      For example: ecto://USER:PASS@HOST/DATABASE
-      """
+  database_path =
+    System.get_env(
+      "DATABASE_PATH",
+      System.user_home() |> Path.join(".ingest") |> Path.join("ingest")
+    )
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
   config :ingest, Ingest.Repo,
-    ssl: true,
-    ssl_opts: [verify: :verify_none],
-    url: database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    socket_options: maybe_ipv6
+    database: database_path,
+    journal_mode: :wal,
+    auto_vacuum: :incremental,
+    datetime_type: :iso8601,
+    binary_id_type: :binary,
+    uuid_type: :binary,
+    load_extensions: [
+      "./priv/sqlite_extensions/crypto",
+      "./priv/sqlite_extensions/fileio",
+      "./priv/sqlite_extensions/fuzzy",
+      "./priv/sqlite_extensions/math",
+      "./priv/sqlite_extensions/stats",
+      "./priv/sqlite_extensions/text",
+      "./priv/sqlite_extensions/unicode",
+      "./priv/sqlite_extensions/uuid",
+      "./priv/sqlite_extensions/vec0",
+      "./priv/sqlite_extensions/vsv"
+    ]
+
+  config :ecto_sqlite3,
+    binary_id_type: :binary,
+    uuid_type: :binary
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you

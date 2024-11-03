@@ -1,5 +1,5 @@
 defmodule Ingest.FileProcessorTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   alias Ingest.Processors.FileProcessor
 
   @tag :lakefs

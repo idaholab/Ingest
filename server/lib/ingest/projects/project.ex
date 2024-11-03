@@ -69,3 +69,19 @@ defmodule Ingest.Projects.Project do
   # Otherwise, denied
   def authorize(_, _, _), do: :error
 end
+
+defmodule Ingest.Projects.ProjectSearch do
+  @moduledoc """
+  Reflects the virtual table for FTS5 trigram searching.
+  """
+  use Ecto.Schema
+
+  @primary_key false
+  schema "projects_search" do
+    field :rowid, :integer
+    field :id, :binary_id
+    field :name, :string
+    field :description, :string
+    field :rank, :float, virtual: true
+  end
+end

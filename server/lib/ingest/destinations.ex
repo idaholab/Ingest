@@ -4,6 +4,7 @@ defmodule Ingest.Destinations do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Destinations.DestinationSearch
   alias Ingest.Destinations.AzureConfig
   alias Ingest.Destinations.S3Config
   alias Ingest.Repo
@@ -299,44 +300,35 @@ defmodule Ingest.Destinations do
     %{exclude: exclude} = Enum.into(opts, @defaults)
 
     query =
-      from(d in Destination,
+      from ds in DestinationSearch,
+        join: d in Destination,
+        on: ds.id == d.id,
         where:
-          fragment(
-            "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
-            ^search_term
-          ) and d.id not in ^Enum.map(exclude, fn d -> d.id end),
-        order_by: {
-          :desc,
-          fragment(
-            "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
-            ^search_term
-          )
-        }
-      )
+          fragment("d0.name MATCH ?", ^search_term) and
+            d.id not in ^Enum.map(exclude, fn d -> d.id end),
+        order_by: [asc: :rank],
+        select: d
 
     Repo.all(query)
   end
 
   @defaults %{exclude: []}
   def search_own(search_term, %User{} = user, opts \\ []) do
-    %{exclude: exclude} = Enum.into(opts, @defaults)
+    if search_term == "" do
+      []
+    else
+      %{exclude: exclude} = Enum.into(opts, @defaults)
 
-    query =
-      from(d in Destination,
-        where:
-          fragment(
-            "searchable @@ to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*'))",
-            ^search_term
-          ) and d.id not in ^Enum.map(exclude, fn d -> d.id end) and d.inserted_by == ^user.id,
-        order_by: {
-          :desc,
-          fragment(
-            "ts_rank_cd(searchable, to_tsquery(concat(regexp_replace(trim(?), '\W+', ':* & '), ':*')), 4)",
-            ^search_term
-          )
-        }
-      )
+      query =
+        from ds in DestinationSearch,
+          join: d in Destination,
+          on: ds.id == d.id,
+          where:
+            fragment("destinations_search MATCH ?", ^search_term) and
+              d.id not in ^Enum.map(exclude, fn d -> d.id end) and d.inserted_by == ^user.id,
+          select: d
 
-    Repo.all(query)
+      Repo.all(query)
+    end
   end
 end

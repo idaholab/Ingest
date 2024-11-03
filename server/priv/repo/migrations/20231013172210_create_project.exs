@@ -11,19 +11,6 @@ defmodule Ingest.Repo.Migrations.CreateProject do
       timestamps()
     end
 
-    execute """
-      ALTER TABLE projects
-        ADD COLUMN searchable tsvector
-        GENERATED ALWAYS AS (
-          setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
-          setweight(to_tsvector('english', coalesce(description, '')), 'B')
-        ) STORED;
-    """
-
-    execute """
-      CREATE INDEX projects_searchable_idx ON projects USING gin(searchable);
-    """
-
     create index(:projects, [:inserted_by])
   end
 end

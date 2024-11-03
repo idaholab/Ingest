@@ -1,5 +1,5 @@
 defmodule IngestWeb.ClientChannelTest do
-  use IngestWeb.ChannelCase
+  use IngestWeb.ChannelCase, async: false
   import Ingest.DestinationsFixtures
 
   setup do

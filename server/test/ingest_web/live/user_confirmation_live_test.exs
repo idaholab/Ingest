@@ -1,5 +1,5 @@
 defmodule IngestWeb.UserConfirmationLiveTest do
-  use IngestWeb.ConnCase
+  use IngestWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
   import Ingest.AccountsFixtures

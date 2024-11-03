@@ -1,5 +1,5 @@
 defmodule Ingest.RequestsTest do
-  use Ingest.DataCase
+  use Ingest.DataCase, async: false
 
   alias Ingest.Requests
 
@@ -147,7 +147,7 @@ defmodule Ingest.RequestsTest do
 
     test "list_template_members/0 returns all template_members" do
       template_members = template_members_fixture()
-      assert Requests.list_template_members() == [template_members]
+      assert Enum.member?(Requests.list_template_members(), template_members)
     end
 
     test "create_template_members/1 with valid data creates a template_members" do

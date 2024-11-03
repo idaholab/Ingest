@@ -1,5 +1,5 @@
 defmodule Ingest.DestinationsTest do
-  use Ingest.DataCase
+  use Ingest.DataCase, async: false
 
   alias Ingest.Destinations
 

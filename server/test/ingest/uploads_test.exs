@@ -1,5 +1,5 @@
 defmodule Ingest.UploadsTest do
-  use Ingest.DataCase
+  use Ingest.DataCase, async: false
 
   alias Ingest.Uploads
 

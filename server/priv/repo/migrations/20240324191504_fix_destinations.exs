@@ -3,8 +3,8 @@ defmodule Ingest.Repo.Migrations.FixDestinations do
 
   def change do
     alter table(:destinations) do
-      add :azure_config_final, :map
-      add :s3_config_final, :map
+      add :azure_config_final, :binary
+      add :s3_config_final, :binary
     end
 
     rename table(:destinations), :azure_config, to: :azure_config_staging

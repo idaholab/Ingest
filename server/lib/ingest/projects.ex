@@ -4,6 +4,7 @@ defmodule Ingest.Projects do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Projects.ProjectSearch
   alias Ingest.Repo
 
   alias Ingest.Projects.Project
@@ -185,20 +186,14 @@ defmodule Ingest.Projects do
     %{exclude: exclude} = Enum.into(opts, @defaults)
 
     query =
-      from(p in Project,
+      from ps in ProjectSearch,
+        join: p in Project,
+        on: ps.id == p.id,
         where:
-          fragment(
-            "searchable @@ websearch_to_tsquery(?)",
-            ^search_term
-          ) and p.id not in ^Enum.map(exclude, fn p -> p.id end),
-        order_by: {
-          :desc,
-          fragment(
-            "ts_rank_cd(searchable, websearch_to_tsquery(?), 4)",
-            ^search_term
-          )
-        }
-      )
+          fragment("projects_search MATCH ?", ^search_term) and
+            p.id not in ^Enum.map(exclude, fn p -> p.id end),
+        order_by: [asc: :rank],
+        select: p
 
     Repo.all(query)
   end

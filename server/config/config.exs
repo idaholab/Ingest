@@ -10,10 +10,6 @@ import Config
 config :ingest,
   ecto_repos: [Ingest.Repo]
 
-# Available resource types for CanDo - the permissions layer
-config :ingest, :can_do,
-  resource_types: [Ingest.Projects.Project, Ingest.Requests.Request, Ingest.Requests.Template]
-
 config :ingest, :generators,
   migration: true,
   binary_id: true
@@ -78,7 +74,7 @@ config :ingest, Ingest.Vault,
   ]
 
 config :ingest, Oban,
-  engine: Oban.Engines.Basic,
+  engine: Oban.Engines.Lite,
   queues: [default: 10, metadata: 10],
   repo: Ingest.Repo
 

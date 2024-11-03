@@ -57,6 +57,9 @@ COPY ./server/priv priv
 
 COPY ./server/lib lib
 
+# fetch the sqlite3 extensions
+RUN mix sqlite.fetch
+
 COPY ./server/assets assets
 
 RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
@@ -98,8 +101,9 @@ RUN chown nobody /app
 # set runner ENV
 ENV MIX_ENV="prod"
 
-# Only copy the final release from the build stage
+# Only copy the final release and sqlite3 extensions from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/prod/rel/ingest ./
+COPY --from=builder --chown=nobody:root /app/priv ./
 
 USER nobody
 

@@ -2,7 +2,7 @@ defmodule Ingest.DataHubTest do
   @moduledoc """
   All tests related to DataHub module.
   """
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   alias Ingest.DataHub
 
   @tag :datahub

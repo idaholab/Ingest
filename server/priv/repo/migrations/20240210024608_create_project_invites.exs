@@ -5,8 +5,8 @@ defmodule Ingest.Repo.Migrations.CreateProjectInvites do
     create table(:project_invites, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :email, :string
-      add :project_id, references(:projects, on_delete: :nothing, type: :binary_id)
-      add :invited_user_id, references(:users, on_delete: :nothing, type: :binary_id)
+      add :project_id, references(:projects, on_delete: :delete_all, type: :binary_id)
+      add :invited_user_id, references(:users, on_delete: :delete_all, type: :binary_id)
 
       timestamps()
     end

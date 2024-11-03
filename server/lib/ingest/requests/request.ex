@@ -73,3 +73,19 @@ defmodule Ingest.Requests.Request do
   # Otherwise, denied
   def authorize(_, _, _), do: :error
 end
+
+defmodule Ingest.Requests.RequestSearch do
+  @moduledoc """
+  Reflects the virtual table for FTS5 trigram searching.
+  """
+  use Ecto.Schema
+
+  @primary_key false
+  schema "requests_search" do
+    field :rowid, :integer
+    field :id, :binary_id
+    field :name, :string
+    field :description, :string
+    field :rank, :float, virtual: true
+  end
+end
