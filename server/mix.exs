@@ -7,7 +7,15 @@ defmodule Ingest.Umbrella.MixProject do
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      releases: [
+        ingest_umbrella: [
+          applications: [
+            ingest: :permanent,
+            ingest_web: :permanent
+          ]
+        ]
+      ]
     ]
   end
 

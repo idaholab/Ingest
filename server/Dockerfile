@@ -44,6 +44,8 @@ ENV MIX_ENV="prod"
 
 # install mix dependencies
 COPY ./server/mix.exs ./server/mix.lock ./
+COPY ./server/apps/ingest/mix.exs ./server/apps/ingest/mix.lock ./apps/ingest
+COPY ./server/apps/ingest_web/mix.exs ./server/apps/ingest_web/mix.lock ./apps/ingest_web
 RUN mix deps.get --only $MIX_ENV
 RUN mkdir config
 
@@ -53,19 +55,20 @@ RUN mkdir config
 COPY ./server/config/config.exs ./server/config/prod.exs config/
 RUN mix deps.compile
 
-COPY ./server/priv priv
+COPY ./server/apps/ingest_web/priv apps/ingest_web/priv
 
-COPY ./server/lib lib
+COPY ./server/apps apps
+
 
 # fetch the sqlite3 extensions
 RUN mix sqlite.fetch
 
-COPY ./server/assets assets
+COPY ./server/apps/ingest_web/assets apps/ingest_web/assets
 
 RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
 
 # compile assets
-RUN mix assets.deploy
+RUN cd apps/ingest_web && mix assets.deploy
 
 # Compile the release
 RUN mix compile
@@ -102,7 +105,7 @@ RUN chown nobody /app
 ENV MIX_ENV="prod"
 
 # Only copy the final release and sqlite3 extensions from the build stage
-COPY --from=builder --chown=nobody:root /app/_build/prod/rel/ingest ./
+COPY --from=builder --chown=nobody:root /app/_build/prod/rel/ingest_umbrella ./
 COPY --from=builder --chown=nobody:root /app/priv ./
 
 USER nobody
@@ -112,4 +115,4 @@ USER nobody
 # above and adding an entrypoint. See https://github.com/krallin/tini for details
 # ENTRYPOINT ["/tini", "--"]
 
-CMD ["/app/bin/server"]
+CMD ["/app/bin/ingest_umbrella"]
