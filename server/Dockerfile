@@ -44,8 +44,8 @@ ENV MIX_ENV="prod"
 
 # install mix dependencies
 COPY ./server/mix.exs ./server/mix.lock ./
-COPY ./server/apps/ingest/mix.exs ./server/apps/ingest/mix.lock ./apps/ingest
-COPY ./server/apps/ingest_web/mix.exs ./server/apps/ingest_web/mix.lock ./apps/ingest_web
+COPY ./server/apps/ingest/mix.exs  ./apps/ingest
+COPY ./server/apps/ingest_web/mix.exs ./apps/ingest_web
 RUN mix deps.get --only $MIX_ENV
 RUN mkdir config
 
