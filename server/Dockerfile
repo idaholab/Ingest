@@ -114,4 +114,4 @@ USER nobody
 # ENTRYPOINT ["/tini", "--"]
 
 
-CMD ["/app/start.sh"]
+ENTRYPOINT ["/app/start.sh"]
