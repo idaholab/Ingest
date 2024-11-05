@@ -55,15 +55,11 @@ RUN mkdir config
 COPY ./server/config/config.exs ./server/config/prod.exs config/
 RUN mix deps.compile
 
-COPY ./server/apps/ingest_web/priv apps/ingest_web/priv
-
-COPY ./server/apps apps
+COPY ./server/apps ./apps
 
 
 # fetch the sqlite3 extensions
 RUN mix sqlite.fetch
-
-COPY ./server/apps/ingest_web/assets apps/ingest_web/assets
 
 RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
 
