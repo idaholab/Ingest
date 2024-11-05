@@ -37,16 +37,16 @@ if config_env() == :prod do
     binary_id_type: :binary,
     uuid_type: :binary,
     load_extensions: [
-      "./priv/sqlite_extensions/crypto",
-      "./priv/sqlite_extensions/fileio",
-      "./priv/sqlite_extensions/fuzzy",
-      "./priv/sqlite_extensions/math",
-      "./priv/sqlite_extensions/stats",
-      "./priv/sqlite_extensions/text",
-      "./priv/sqlite_extensions/unicode",
-      "./priv/sqlite_extensions/uuid",
-      "./priv/sqlite_extensions/vec0",
-      "./priv/sqlite_extensions/vsv"
+      "/sqlite_extensions/crypto",
+      "/sqlite_extensions/fileio",
+      "/sqlite_extensions/fuzzy",
+      "/sqlite_extensions/math",
+      "/sqlite_extensions/stats",
+      "/sqlite_extensions/text",
+      "/sqlite_extensions/unicode",
+      "/sqlite_extensions/uuid",
+      "/sqlite_extensions/vec0",
+      "/sqlite_extensions/vsv"
     ]
 
   config :ecto_sqlite3,

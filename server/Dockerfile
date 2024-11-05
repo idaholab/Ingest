@@ -101,7 +101,7 @@ ENV MIX_ENV="prod"
 
 # Only copy the final release and sqlite3 extensions from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/prod/rel/ingest_umbrella ./
-COPY --from=builder --chown=nobody:root /app/priv ./
+COPY --from=builder --chown=nobody:root /app/apps/ingest/priv/sqlite_extensions /sqlite_extensions
 
 USER nobody
 
