@@ -27,7 +27,7 @@ ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 FROM hexpm/elixir:1.17.2-erlang-27.0.1-debian-bullseye-20240701-slim as builder
 
 # install build dependencies
-RUN apt-get update -y && apt-get install -y build-essential git nodejs npm curl \
+RUN apt-get update -y && apt-get install -y build-essential git nodejs npm curl unzip \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 COPY ./azure_storage azure_storage
