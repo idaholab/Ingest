@@ -23,6 +23,7 @@ defmodule Ingest.Application do
       Ingest.Repo,
       # Start OBAN
       {Oban, Application.fetch_env!(:ingest, Oban)},
+      {DNSCluster, query: Application.get_env(:ingest, :dns_cluster_query) || :ignore},
       # Start the PubSub system
       {Phoenix.PubSub, name: Ingest.PubSub},
       # Start Finch
@@ -31,7 +32,6 @@ defmodule Ingest.Application do
       Supervisor.child_spec({Cachex, name: :clients}, id: :cachex_clients),
       {Task.Supervisor, name: :upload_tasks},
       # Start the Endpoint (http/https)
-      IngestWeb.Endpoint,
       Ingest.Vault
       # Start a worker by calling: Ingest.Worker.start_link(arg)
       # {Ingest.Worker, arg}
@@ -72,11 +72,4 @@ defmodule Ingest.Application do
     Supervisor.start_link(children, opts)
   end
 
-  # Tell Phoenix to update the endpoint configuration
-  # whenever the application is updated.
-  @impl true
-  def config_change(changed, _new, removed) do
-    IngestWeb.Endpoint.config_change(changed, removed)
-    :ok
-  end
 end
