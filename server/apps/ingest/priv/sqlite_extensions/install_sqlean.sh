@@ -122,21 +122,14 @@ main() {
 
     extension="\${url##*.}"
 
-    if [ "$extension" = "zip" ]; then
-      tmpfile="$prefix/tmp_sqlean.zip"
-    else
-      tmpfile="$prefix/tmp_sqlean.tar.gz"
-    fi
+    tmpfile="$prefix/tmp_sqlean.zip"
+   
 
     curl --fail --location --progress-bar --output "$tmpfile" "$url"
 
-    if [ "$extension" = "zip" ]; then
       unzip "$tmpfile" -d $prefix
       rm $tmpfile
-    else
-      tar -xzf "$tmpfile" -C $prefix
-      rm $tmpfile
-    fi
+
 
     echo "✅ $target $type binaries installed at $prefix."
 }
