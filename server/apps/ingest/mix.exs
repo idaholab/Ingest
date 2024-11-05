@@ -59,6 +59,7 @@ defmodule Ingest.MixProject do
       {:oban, "~> 2.17"},
       {:earmark, "~> 1.4"},
       {:bodyguard, "~> 2.4"},
+      {:error_tracker, "~> 0.1"},
       {:explorer, "~> 0.9.0"},
       {:ecto_sqlite3_extras, "~> 1.2.2"},
       {:credo, "~> 1.7.9", only: [:dev, :test], runtime: false},
