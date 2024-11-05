@@ -30,7 +30,7 @@ FROM hexpm/elixir:1.17.2-erlang-27.0.1-debian-bullseye-20240701-slim as builder
 RUN apt-get update -y && apt-get install -y build-essential git nodejs npm \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
-COPY ../azure_storage azure_storage
+COPY ./azure_storage azure_storage
 
 # prepare build dir
 WORKDIR /app
