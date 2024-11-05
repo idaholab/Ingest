@@ -60,8 +60,6 @@ COPY ./server/apps apps
 # fetch the sqlite3 extensions
 RUN mix sqlite.fetch
 
-RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
-
 # compile assets
 RUN cd apps/ingest_web && mix assets.deploy
 
