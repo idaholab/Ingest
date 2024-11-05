@@ -123,9 +123,9 @@ main() {
     extension="\${url##*.}"
 
     if [ "$extension" = "zip" ]; then
-      tmpfile="$prefix/tmp.zip"
+      tmpfile="$prefix/tmp_sqlean.zip"
     else
-      tmpfile="$prefix/tmp.tar.gz"
+      tmpfile="$prefix/tmp_sqlean.tar.gz"
     fi
 
     curl --fail --location --progress-bar --output "$tmpfile" "$url"

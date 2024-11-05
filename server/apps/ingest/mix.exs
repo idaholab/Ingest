@@ -83,7 +83,7 @@ defmodule Ingest.MixProject do
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "sqlite.fetch": [
         "cmd cd priv/sqlite_extensions && curl -L https://github.com/asg017/sqlite-vec/releases/download/v0.1.1/install.sh | sh",
-        "cmd cd priv/sqlite_extensions && sh install.sh"
+        "cmd cd priv/sqlite_extensions && sh install_sqlean.sh"
       ]
     ]
   end
