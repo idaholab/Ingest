@@ -72,6 +72,9 @@ RUN mix compile
 COPY ./server/config/runtime.exs config/
 
 COPY ./server/rel rel
+COPY ./server/start.sh start.sh
+RUN chmod +x start.sh
+
 RUN mix release
 
 # start a new build stage so that the final image will only contain
@@ -111,7 +114,4 @@ USER nobody
 # ENTRYPOINT ["/tini", "--"]
 
 
-CMD ["sh", "-c", '
-      /app/bin/ingest_umbrella eval "Ingest.Release.migrate";
-      /app/bin/ingest_umbrella start;
-']
+CMD ["/app/start.sh"]
