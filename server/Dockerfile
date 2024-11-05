@@ -44,8 +44,8 @@ ENV MIX_ENV="prod"
 
 # install mix dependencies
 COPY ./server/mix.exs ./server/mix.lock ./
-COPY ./server/apps/ingest/mix.exs  ./apps/ingest/mix.exs
-COPY ./server/apps/ingest_web/mix.exs ./apps/ingest_web/mix.exs
+COPY ./server/apps/ingest/mix.exs  apps/ingest/mix.exs
+COPY ./server/apps/ingest_web/mix.exs apps/ingest_web/mix.exs
 RUN mix deps.get --only $MIX_ENV
 RUN mkdir config
 
@@ -55,7 +55,7 @@ RUN mkdir config
 COPY ./server/config/config.exs ./server/config/prod.exs config/
 RUN mix deps.compile
 
-COPY ./server/apps ./apps
+COPY ./server/apps apps
 
 # fetch the sqlite3 extensions
 RUN mix sqlite.fetch
