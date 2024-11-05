@@ -48,6 +48,7 @@ defmodule Ingest.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:cachex, "~> 3.6.0"},
+      {:phoenix_live_view, "~> 1.0.0-rc.7", override: true},
       {:cloak_ecto, "~> 1.3.0"},
       {:req, "~> 0.5.0"},
       {:timex, "~> 3.7.11"},
@@ -59,7 +60,7 @@ defmodule Ingest.MixProject do
       {:oban, "~> 2.17"},
       {:earmark, "~> 1.4"},
       {:bodyguard, "~> 2.4"},
-      {:error_tracker, "~> 0.1"},
+      {:error_tracker, "~> 0.4"},
       {:explorer, "~> 0.9.0"},
       {:ecto_sqlite3_extras, "~> 1.2.2"},
       {:credo, "~> 1.7.9", only: [:dev, :test], runtime: false},
@@ -75,7 +76,7 @@ defmodule Ingest.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
+      setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["clean.db", "ecto.setup"],
       "clean.db": ["cmd rm -rf databases"],

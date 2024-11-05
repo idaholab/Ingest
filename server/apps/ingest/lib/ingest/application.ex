@@ -17,8 +17,6 @@ defmodule Ingest.Application do
     end
 
     children = [
-      # Start the Telemetry supervisor
-      IngestWeb.Telemetry,
       # Start the Ecto repository
       Ingest.Repo,
       # Start OBAN
@@ -71,5 +69,4 @@ defmodule Ingest.Application do
     opts = [strategy: :one_for_one, name: Ingest.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
 end

@@ -42,14 +42,14 @@ defmodule IngestWeb.MixProject do
       {:phoenix_ecto, "~> 4.6.3"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 1.0.0-rc.6", override: true},
+      {:phoenix_live_view, "~> 1.0.0-rc.7", override: true},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.0"},
       {:esbuild, "~> 0.8.2", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.2.4", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.17.0"},
       {:finch, "~> 0.13"},
-      {:error_tracker, "~> 0.1"},
+      {:error_tracker, "~> 0.4"},
       {:telemetry_metrics, "~> 1.0.0"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
@@ -81,15 +81,19 @@ defmodule IngestWeb.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get",  "assets.setup", "assets.build"],
+      setup: ["deps.get", "assets.setup", "assets.build"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": [
         "tailwind.install --if-missing",
         "esbuild.install --if-missing",
         "cmd cd assets && npm install"
       ],
-      "assets.build": ["tailwind default", "esbuild default"],
-      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
+      "assets.build": ["tailwind ingest_web", "esbuild ingest_web"],
+      "assets.deploy": [
+        "tailwind ingest_web --minify",
+        "esbuild ingest_web --minify",
+        "phx.digest"
+      ]
     ]
   end
 end
