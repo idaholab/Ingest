@@ -112,6 +112,6 @@ USER nobody
 
 
 CMD ["sh", "-c", '
-      /app/bin/ingest_umbrella eval "Ingest.Release.migrate"
-      /app/bin/ingest_umbrella start
+      /app/bin/ingest_umbrella eval "Ingest.Release.migrate";
+      /app/bin/ingest_umbrella start;
 ']
