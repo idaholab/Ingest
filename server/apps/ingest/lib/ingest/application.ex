@@ -10,12 +10,6 @@ defmodule Ingest.Application do
   def start(_type, _args) do
     Oban.Telemetry.attach_default_logger()
 
-    # since we're using sqlite3, we want the db to always be in-sync with this executable
-    # so we run the migrations on startup at every point
-    for repo <- Application.fetch_env!(:ingest, :ecto_repos) do
-      {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
-    end
-
     children = [
       # Start the Ecto repository
       Ingest.Repo,
