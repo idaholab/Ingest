@@ -72,8 +72,6 @@ RUN mix compile
 COPY ./server/config/runtime.exs config/
 
 COPY ./server/rel rel
-COPY ./server/start.sh start.sh
-RUN chmod +x start.sh
 
 RUN mix release
 
@@ -97,6 +95,10 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 WORKDIR "/app"
+
+COPY ./server/start.sh start.sh
+RUN chmod +x start.sh
+
 RUN chown nobody /app
 
 # set runner ENV
