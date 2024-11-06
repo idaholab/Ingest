@@ -4,7 +4,7 @@ metadata:
   name: ingest
 spec:
   replicas: 2
-  strategy: 
+  strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
@@ -38,6 +38,8 @@ spec:
               value: "4000"
             - name: PHX_HOST
               value: "#{Host}#"
+            - name: PHX_SERVER
+              value: "true"
             - name: OKTA_ISSUER
               value: "#{Okta.Issuer}#"
             - name: OKTA_CLIENT_ID
@@ -61,7 +63,7 @@ spec:
           image: "#{AcrRegistry}#/#{Acr.MigrationPath}#:#{Build.BuildNumber}#"
           env:
             - name: DATABASE_URL
-              value: '#{DatabaseUrl}#'
+              value: "#{DatabaseUrl}#"
             - name: SECRET_KEY_BASE
               value: "#{SecretKeyBase}#"
       dnsPolicy: None
