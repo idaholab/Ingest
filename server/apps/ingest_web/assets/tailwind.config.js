@@ -27,9 +27,9 @@ module.exports = {
   },
   content: [
     "./js/**/*.js",
-    "../lib/ingest_web.ex",
-    "../lib/ingest_web/**/*.*ex",
-    "../../deps/backpex/**/*.*ex",
+    "../lib/*_web.ex",
+    "../lib/*_web/**/*.*ex",
+    "../deps/backpex/**/*.*ex",
   ],
   theme: {
     extend: {
