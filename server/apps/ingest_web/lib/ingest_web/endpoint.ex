@@ -29,7 +29,7 @@ defmodule IngestWeb.Endpoint do
   # when deploying your static files in production.
   plug Plug.Static,
     at: "/",
-    from: :ingest,
+    from: :ingest_web,
     gzip: false,
     only: IngestWeb.static_paths()
 
