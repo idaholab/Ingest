@@ -60,13 +60,13 @@ COPY ./server/apps/ingest_web/priv apps/ingest_web/priv
 
 RUN npm --prefix apps/ingest_web/assets ci --progress=false --no-audit --loglevel=error
 
- compile assets
+# compile assets
 RUN cd apps/ingest_web && mix assets.deploy
 
 # Compile the release
 COPY ./server/apps apps
 
-## fetch the sqlite3 extensions
+# fetch the sqlite3 extensions
 RUN mix sqlite.fetch
 
 RUN mix compile
