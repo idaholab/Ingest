@@ -56,6 +56,7 @@ COPY ./server/config/config.exs ./server/config/prod.exs config/
 RUN mix deps.compile
 
 COPY ./server/apps/ingest_web/assets apps/ingest_web/assets
+COPY ./server/apps/ingest_web/priv apps/ingest_web/priv
 
 # fetch the sqlite3 extensions
 RUN mix sqlite.fetch
