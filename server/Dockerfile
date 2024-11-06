@@ -58,7 +58,7 @@ RUN mix deps.compile
 COPY ./server/apps/ingest_web/assets apps/ingest_web/assets
 COPY ./server/apps/ingest_web/priv apps/ingest_web/priv
 
-RUN npm --prefix apps/ingest_web/assets ci --progress=false --no-audit --loglevel=error
+RUN cd apps/ingest_web/assets && npm ci --progress=false --no-audit --loglevel=error
 
 # compile assets
 RUN cd apps/ingest_web && mix assets.deploy
