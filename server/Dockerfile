@@ -58,16 +58,17 @@ RUN mix deps.compile
 COPY ./server/apps/ingest_web/assets apps/ingest_web/assets
 COPY ./server/apps/ingest_web/priv apps/ingest_web/priv
 
-# fetch the sqlite3 extensions
-RUN mix sqlite.fetch
-
 RUN npm --prefix apps/ingest_web/assets ci --progress=false --no-audit --loglevel=error
 
-# compile assets
+ compile assets
 RUN cd apps/ingest_web && mix assets.deploy
 
 # Compile the release
 COPY ./server/apps apps
+
+## fetch the sqlite3 extensions
+RUN mix sqlite.fetch
+
 RUN mix compile
 
 # Changes to config/runtime.exs don't require recompiling the code
