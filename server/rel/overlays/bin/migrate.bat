@@ -1,1 +1,1 @@
-call "%~dp0\ingest" eval Ingest.Release.migrate
+call "%~dp0\ingest_web" eval IngestWeb.Release.migrate
