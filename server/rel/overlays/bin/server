@@ -2,4 +2,4 @@
 set -eu
 
 cd -P -- "$(dirname -- "$0")"
-PHX_SERVER=true exec ./ingest_web start
+PHX_SERVER=true exec ./ingest_umbrella start
