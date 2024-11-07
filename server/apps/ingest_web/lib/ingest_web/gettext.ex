@@ -20,5 +20,5 @@ defmodule IngestWeb.Gettext do
 
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
   """
-  use Gettext.Backend, otp_app: :ingest
+  use Gettext.Backend, otp_app: :ingest_web
 end

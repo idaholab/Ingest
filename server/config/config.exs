@@ -15,7 +15,7 @@ config :ingest, :generators,
   binary_id: true
 
 # Configures the endpoint
-config :ingest, IngestWeb.Endpoint,
+config :ingest_web, IngestWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
   url: [host: "localhost"],
   render_errors: [
