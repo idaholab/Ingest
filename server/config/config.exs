@@ -80,7 +80,7 @@ config :ingest, Oban,
 
 config :error_tracker,
   repo: Ingest.Repo,
-  otp_app: :ingest
+  otp_app: :ingest_web
 
 # classification acronyms - NOTE: if you change these, ensure that you're not removing any \
 # which are currently in use, or the system will break
