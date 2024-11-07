@@ -55,6 +55,7 @@ RUN mkdir config
 COPY ./server/config/config.exs ./server/config/prod.exs config/
 RUN mix deps.compile
 
+COPY ./server/apps apps
 COPY ./server/apps/ingest_web/assets apps/ingest_web/assets
 COPY ./server/apps/ingest_web/priv apps/ingest_web/priv
 
@@ -62,9 +63,6 @@ RUN cd apps/ingest_web/assets && npm ci --progress=false --no-audit --loglevel=e
 
 # compile assets
 RUN cd apps/ingest_web && mix assets.deploy
-
-# Compile the release
-COPY ./server/apps apps
 
 # fetch the sqlite3 extensions
 RUN mix sqlite.fetch
