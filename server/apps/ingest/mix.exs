@@ -66,6 +66,7 @@ defmodule Ingest.MixProject do
       {:credo, "~> 1.7.9", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:rustler, "~> 0.35.0", override: true},
+      {:erlport, "~> 0.10.0"},
     ]
   end
 
