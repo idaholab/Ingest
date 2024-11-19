@@ -16,8 +16,7 @@ defmodule ElixirPython.Python do
     path =
       [
         :code.priv_dir(:ingest),
-        "python",
-        "parsers"
+        "python/parsers",
       ]
       |> Path.join()
 
