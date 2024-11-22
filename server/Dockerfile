@@ -27,10 +27,10 @@ ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 FROM hexpm/elixir:1.17.2-erlang-27.0.1-debian-bullseye-20240701-slim as builder
 
 # install build dependencies
-RUN apt-get update -y && apt-get install -y build-essential git nodejs npm \
+RUN apt-get update -y && apt-get install -y build-essential git nodejs npm curl unzip \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
-COPY azure_storage azure_storage
+COPY ./azure_storage azure_storage
 
 # prepare build dir
 WORKDIR /app
@@ -44,6 +44,8 @@ ENV MIX_ENV="prod"
 
 # install mix dependencies
 COPY ./server/mix.exs ./server/mix.lock ./
+COPY ./server/apps/ingest/mix.exs  apps/ingest/mix.exs
+COPY ./server/apps/ingest_web/mix.exs apps/ingest_web/mix.exs
 RUN mix deps.get --only $MIX_ENV
 RUN mkdir config
 
@@ -53,24 +55,25 @@ RUN mkdir config
 COPY ./server/config/config.exs ./server/config/prod.exs config/
 RUN mix deps.compile
 
-COPY ./server/priv priv
+COPY ./server/apps apps
+COPY ./server/apps/ingest_web/assets apps/ingest_web/assets
+COPY ./server/apps/ingest_web/priv apps/ingest_web/priv
 
-COPY ./server/lib lib
-
-COPY ./server/assets assets
-
-RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
+RUN cd apps/ingest_web/assets && npm ci --progress=false --no-audit --loglevel=error
 
 # compile assets
-RUN mix assets.deploy
+RUN cd apps/ingest_web && mix assets.deploy
 
-# Compile the release
+# fetch the sqlite3 extensions
+RUN mix sqlite.fetch
+
 RUN mix compile
 
 # Changes to config/runtime.exs don't require recompiling the code
 COPY ./server/config/runtime.exs config/
 
 COPY ./server/rel rel
+
 RUN mix release
 
 # start a new build stage so that the final image will only contain
@@ -93,13 +96,18 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 WORKDIR "/app"
+
+COPY ./server/start.sh start.sh
+RUN chmod +x start.sh
+
 RUN chown nobody /app
 
 # set runner ENV
 ENV MIX_ENV="prod"
 
-# Only copy the final release from the build stage
-COPY --from=builder --chown=nobody:root /app/_build/prod/rel/ingest ./
+# Only copy the final release and sqlite3 extensions from the build stage
+COPY --from=builder --chown=nobody:root /app/_build/prod/rel/ingest_umbrella ./
+COPY --from=builder --chown=nobody:root /app/apps/ingest/priv/sqlite_extensions /sqlite_extensions
 
 USER nobody
 
@@ -108,4 +116,5 @@ USER nobody
 # above and adding an entrypoint. See https://github.com/krallin/tini for details
 # ENTRYPOINT ["/tini", "--"]
 
-CMD ["/app/bin/server"]
+
+ENTRYPOINT ["/app/start.sh"]

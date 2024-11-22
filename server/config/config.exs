@@ -10,16 +10,12 @@ import Config
 config :ingest,
   ecto_repos: [Ingest.Repo]
 
-# Available resource types for CanDo - the permissions layer
-config :ingest, :can_do,
-  resource_types: [Ingest.Projects.Project, Ingest.Requests.Request, Ingest.Requests.Template]
-
 config :ingest, :generators,
   migration: true,
   binary_id: true
 
 # Configures the endpoint
-config :ingest, IngestWeb.Endpoint,
+config :ingest_web, IngestWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
   url: [host: "localhost"],
   render_errors: [
@@ -41,23 +37,23 @@ config :ingest, Ingest.Mailer, adapter: Swoosh.Adapters.Local
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",
-  default: [
+  ingest_web: [
     args:
       ~w(js/app.js --bundle --target=esnext --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
-    cd: Path.expand("../assets", __DIR__),
+    cd: Path.expand("../apps/ingest_web/assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "3.3.2",
-  default: [
+  ingest_web: [
     args: ~w(
       --config=tailwind.config.js
       --input=css/app.css
       --output=../priv/static/assets/app.css
     ),
-    cd: Path.expand("../assets", __DIR__)
+    cd: Path.expand("../apps/ingest_web/assets", __DIR__)
   ]
 
 # Configures Elixir's Logger
@@ -78,13 +74,13 @@ config :ingest, Ingest.Vault,
   ]
 
 config :ingest, Oban,
-  engine: Oban.Engines.Basic,
+  engine: Oban.Engines.Lite,
   queues: [default: 10, metadata: 10],
   repo: Ingest.Repo
 
 config :error_tracker,
   repo: Ingest.Repo,
-  otp_app: :ingest
+  otp_app: :ingest_web
 
 # classification acronyms - NOTE: if you change these, ensure that you're not removing any \
 # which are currently in use, or the system will break

@@ -9,13 +9,29 @@ config :argon2_elixir, t_cost: 1, m_cost: 8
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :ingest, Ingest.Repo,
-  username: "",
-  password: "",
-  hostname: "localhost",
-  database: "ingest_test#{System.get_env("MIX_TEST_PARTITION")}",
-  port: 5432,
+  database: "./databases/ingest_test",
+  journal_mode: :wal,
+  auto_vacuum: :incremental,
+  datetime_type: :iso8601,
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 10
+  binary_id_type: :binary,
+  uuid_type: :binary,
+  load_extensions: [
+    "./priv/sqlite_extensions/crypto",
+    "./priv/sqlite_extensions/fileio",
+    "./priv/sqlite_extensions/fuzzy",
+    "./priv/sqlite_extensions/math",
+    "./priv/sqlite_extensions/stats",
+    "./priv/sqlite_extensions/text",
+    "./priv/sqlite_extensions/unicode",
+    "./priv/sqlite_extensions/uuid",
+    "./priv/sqlite_extensions/vec0",
+    "./priv/sqlite_extensions/vsv"
+  ]
+
+config :ecto_sqlite3,
+  binary_id_type: :binary,
+  uuid_type: :binary
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.

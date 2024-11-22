@@ -2,14 +2,29 @@ import Config
 
 # Configure your database
 config :ingest, Ingest.Repo,
-  username: "",
-  password: "",
-  hostname: "localhost",
-  port: 5432,
-  database: "ingest_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  adapter: Ecto.Adapters.SQLite3,
+  database: "./databases/ingest",
+  binary_id_type: :binary,
+  uuid_type: :binary,
+  journal_mode: :wal,
+  auto_vacuum: :incremental,
+  datetime_type: :iso8601,
+  load_extensions: [
+    "./priv/sqlite_extensions/crypto",
+    "./priv/sqlite_extensions/fileio",
+    "./priv/sqlite_extensions/fuzzy",
+    "./priv/sqlite_extensions/math",
+    "./priv/sqlite_extensions/stats",
+    "./priv/sqlite_extensions/text",
+    "./priv/sqlite_extensions/unicode",
+    "./priv/sqlite_extensions/uuid",
+    "./priv/sqlite_extensions/vec0",
+    "./priv/sqlite_extensions/vsv"
+  ]
+
+config :ecto_sqlite3,
+  binary_id_type: :string,
+  uuid_type: :string
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -17,7 +32,7 @@ config :ingest, Ingest.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :ingest, IngestWeb.Endpoint,
+config :ingest_web, IngestWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
@@ -54,7 +69,7 @@ config :ingest, IngestWeb.Endpoint,
 # different ports.
 
 # Watch static and templates for browser reloading.
-config :ingest, IngestWeb.Endpoint,
+config :ingest_web, IngestWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
