@@ -50,8 +50,8 @@ if config_env() == :prod do
     ]
 
   config :ecto_sqlite3,
-    binary_id_type: :binary,
-    uuid_type: :binary
+    binary_id_type: :string,
+    uuid_type: :string
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you

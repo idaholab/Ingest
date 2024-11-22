@@ -23,8 +23,8 @@ config :ingest, Ingest.Repo,
   ]
 
 config :ecto_sqlite3,
-  binary_id_type: :binary,
-  uuid_type: :binary
+  binary_id_type: :string,
+  uuid_type: :string
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
