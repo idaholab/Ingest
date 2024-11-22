@@ -40,24 +40,6 @@ defmodule Ingest.Application do
       # ),
     ]
 
-    children =
-      if Application.get_env(:ingest, :environment) == :prod do
-        [
-          Supervisor.child_spec(
-            {Oidcc.ProviderConfiguration.Worker,
-             %{
-               issuer: Application.get_env(:ingest, :openid_connect_okta)[:issuer],
-               name: __MODULE__.Okta
-               # provider_configuration_opts: %{request_opts: Ingest.Utilities.httpc_opts()}
-             }},
-            id: :okta
-          )
-          | children
-        ]
-      else
-        children
-      end
-
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Ingest.Supervisor]
