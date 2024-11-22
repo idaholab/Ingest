@@ -15,6 +15,17 @@ defmodule Ingest.AccountsTest do
       %{id: id} = user = user_fixture()
       assert %User{id: ^id} = Accounts.get_user_by_email(user.email)
     end
+
+    test "returns the user even if email is different case" do
+      {:ok, user} =
+        %{
+          email: "TestUpper@email.com",
+          password: valid_user_password()
+        }
+        |> Ingest.Accounts.register_user()
+
+      assert user = Accounts.get_user_by_email("testupper@email.com")
+    end
   end
 
   describe "get_user_by_email_and_password/2" do
