@@ -8,7 +8,9 @@ defmodule Ingest.Repo.Migrations.CreateDestinations do
       add :s3_config, :binary
       add :azure_config, :binary
       add :type, :string
-      add :inserted_by, references(:users, on_delete: :delete_all, type: :binary_id)
+
+      add :inserted_by,
+          references(:users, on_delete: :delete_all, on_update: :update_all, type: :binary_id)
 
       timestamps()
     end

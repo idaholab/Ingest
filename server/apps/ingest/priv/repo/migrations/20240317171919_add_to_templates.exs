@@ -3,7 +3,8 @@ defmodule Ingest.Repo.Migrations.AddToTemplates do
 
   def change do
     alter table(:metadata) do
-      add :template_id, references(:templates, on_delete: :delete_all, type: :binary_id)
+      add :template_id,
+          references(:templates, on_delete: :delete_all, on_update: :update_all, type: :binary_id)
     end
 
     rename table(:metadata), :uploaded, to: :submitted

@@ -7,8 +7,12 @@ defmodule Ingest.Repo.Migrations.CreateUploads do
       add :filename, :string
       add :ext, :string
       add :size, :integer
-      add :uploaded_by, references(:users, on_delete: :nothing, type: :binary_id)
-      add :request_id, references(:requests, on_delete: :delete_all, type: :binary_id)
+
+      add :uploaded_by,
+          references(:users, on_delete: :nothing, on_update: :update_all, type: :binary_id)
+
+      add :request_id,
+          references(:requests, on_delete: :delete_all, on_update: :update_all, type: :binary_id)
 
       timestamps()
     end
@@ -17,7 +21,9 @@ defmodule Ingest.Repo.Migrations.CreateUploads do
       add :id, :binary_id, primary_key: true
       add :body, :binary
       add :uploaded, :boolean
-      add :upload_id, references(:uploads, on_delete: :delete_all, type: :binary_id)
+
+      add :upload_id,
+          references(:uploads, on_delete: :delete_all, on_update: :update_all, type: :binary_id)
 
       timestamps()
     end

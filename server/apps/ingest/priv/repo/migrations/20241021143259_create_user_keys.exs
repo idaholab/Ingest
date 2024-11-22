@@ -6,7 +6,9 @@ defmodule Ingest.Repo.Migrations.CreateUserKeys do
       add :access_key, :string, primary_key: true
       add :secret_key, :binary
       add :expires, :utc_datetime
-      add :user_id, references(:users, on_delete: :delete_all, type: :binary_id)
+
+      add :user_id,
+          references(:users, on_delete: :delete_all, on_update: :update_all, type: :binary_id)
 
       timestamps()
     end

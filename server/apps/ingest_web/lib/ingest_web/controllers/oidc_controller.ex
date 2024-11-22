@@ -12,7 +12,7 @@ defmodule IngestWeb.OidcController do
     with {:ok, token} <-
            Oidcc.retrieve_token(
              code,
-             Ingest.Application.OneID,
+             IngestWeb.Application.OneID,
              config[:client_id],
              config[:client_secret],
              %{redirect_uri: config[:redirect_uri]}
@@ -20,7 +20,7 @@ defmodule IngestWeb.OidcController do
       with {:ok, claims} <-
              Oidcc.retrieve_userinfo(
                token,
-               Ingest.Application.OneID,
+               IngestWeb.Application.OneID,
                config[:client_id],
                config[:client_secret],
                %{expected_subject: "sub"}
@@ -65,7 +65,7 @@ defmodule IngestWeb.OidcController do
     with {:ok, token} <-
            Oidcc.retrieve_token(
              code,
-             Ingest.Application.Okta,
+             IngestWeb.Application.Okta,
              config[:client_id],
              config[:client_secret],
              %{redirect_uri: config[:redirect_uri]}
@@ -73,7 +73,7 @@ defmodule IngestWeb.OidcController do
       with {:ok, claims} <-
              Oidcc.retrieve_userinfo(
                token,
-               Ingest.Application.Okta,
+               IngestWeb.Application.Okta,
                config[:client_id],
                config[:client_secret],
                %{expected_subject: "sub"}

@@ -15,7 +15,11 @@ defmodule Ingest.Repo.Migrations.CreateUsersAuthTables do
 
     create table(:users_tokens, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :user_id,
+          references(:users, type: :binary_id, on_delete: :delete_all, on_update: :update_all),
+          null: false
+
       add :token, :binary, null: false
       add :context, :string, null: false
       add :sent_to, :string

@@ -10,7 +10,9 @@ defmodule Ingest.Repo.Migrations.ChangeDestinationConfig do
       add :id, :binary_id, primary_key: true
       add :uploaded, :boolean, default: false, null: false
       add :data, :binary
-      add :upload_id, references(:uploads, on_delete: :delete_all, type: :binary_id)
+
+      add :upload_id,
+          references(:uploads, on_delete: :delete_all, on_update: :update_all, type: :binary_id)
 
       timestamps()
     end
