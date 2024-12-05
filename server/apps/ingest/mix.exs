@@ -65,7 +65,7 @@ defmodule Ingest.MixProject do
       {:ecto_sqlite3_extras, "~> 1.2.2"},
       {:credo, "~> 1.7.9", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
-      {:rustler, "~> 0.35.0", override: true},
+      {:rustler, "~> 0.35.0", override: true}
     ]
   end
 
@@ -78,7 +78,7 @@ defmodule Ingest.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup"],
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run apps/ingest/priv/repo/seeds.exs"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["clean.db", "ecto.setup"],
       "clean.db": ["cmd rm -rf databases"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
