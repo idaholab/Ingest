@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :ingest, Ingest.Repo,
   adapter: Ecto.Adapters.SQLite3,
-  database: "apps/ingest/databases/ingest",
+  database: "databases/ingest",
   binary_id_type: :binary,
   uuid_type: :binary,
   journal_mode: :wal,

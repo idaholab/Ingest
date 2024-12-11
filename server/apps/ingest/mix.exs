@@ -80,7 +80,7 @@ defmodule Ingest.MixProject do
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["clean.db", "ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["clean.db", "ecto.setup"],
-      "clean.db": ["cmd rm -rf databases"],
+      "clean.db": ["cmd rm -rf apps/ingest/databases"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "sqlite.fetch": [
         "cmd cd priv/sqlite_extensions && ./install_sqlean.sh",
