@@ -451,7 +451,8 @@ defmodule IngestWeb.ProjectShowLive do
 
       Ingest.Projects.ProjectNotifier.notify_project_invite(
         i.email,
-        socket.assigns.project
+        socket.assigns.project,
+        IngestWeb.Endpoint.url()
       )
 
       IngestWeb.Notifications.notify(:project_invite, user, socket.assigns.project)
@@ -460,7 +461,8 @@ defmodule IngestWeb.ProjectShowLive do
 
       Ingest.Projects.ProjectNotifier.notify_project_invite(
         i.email,
-        socket.assigns.project
+        socket.assigns.project,
+        IngestWeb.Endpoint.url()
       )
     end
 

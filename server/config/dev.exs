@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :ingest, Ingest.Repo,
   adapter: Ecto.Adapters.SQLite3,
-  database: "databases/ingest",
+  database: Path.join(__DIR__, "databases/ingest"),
   binary_id_type: :binary,
   uuid_type: :binary,
   journal_mode: :wal,
@@ -39,7 +39,7 @@ config :ingest_web, IngestWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "",
+  secret_key_base: "z5aeLcCGuJYv2pb7ZISYCWmEB3eirkBhYuLH2ylEwfF4zgBiYxD/lBUezCJsZIvi",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}

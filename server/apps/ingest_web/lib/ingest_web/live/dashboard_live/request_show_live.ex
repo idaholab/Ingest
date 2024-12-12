@@ -1229,14 +1229,16 @@ defmodule IngestWeb.RequestShowLive do
              :notification,
              upload.user,
              upload,
-             upload.request
+             upload.request,
+             IngestWeb.Endpoint.url()
            ),
          {:ok, _notification} <-
            UploadNotifier.notify_upload_metadata(
              :email,
              upload.user.email,
              upload,
-             upload.request
+             upload.request,
+             IngestWeb.Endpoint.url()
            ) do
       {:noreply, socket |> put_flash(:info, "Successfully notified the upload's owner.")}
     else
