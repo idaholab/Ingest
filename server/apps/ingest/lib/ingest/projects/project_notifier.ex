@@ -21,7 +21,7 @@ defmodule Ingest.Projects.ProjectNotifier do
     end
   end
 
-  def notify_project_invite(email, %Project{} = project) do
+  def notify_project_invite(email, %Project{} = project, endpoint) do
     deliver(email, "You've been invited to the #{project.name} project!", """
     ==============================
 
@@ -29,7 +29,7 @@ defmodule Ingest.Projects.ProjectNotifier do
 
       You've received an invitation to join the #{project.name} project. Click the link below to respond.
 
-      #{IngestWeb.Endpoint.url()}/dashboard/projects/accept/#{project.id}
+      #{endpoint}/dashboard/projects/accept/#{project.id}
 
       If you don't recognize this project, ignore this message.
 

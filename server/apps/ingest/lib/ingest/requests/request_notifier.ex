@@ -21,7 +21,7 @@ defmodule Ingest.Requests.RequestNotifier do
     end
   end
 
-  def notify_data_request_invite(email, %Request{} = request) do
+  def notify_data_request_invite(email, %Request{} = request, endpoint) do
     deliver(email, "You've been invited to upload to the #{request.name} data request!", """
     ==============================
 
@@ -29,7 +29,7 @@ defmodule Ingest.Requests.RequestNotifier do
 
       You've received an invitation to join the #{request.name} data request. Click the link below to respond.
 
-      #{IngestWeb.Endpoint.url()}/dashboard/uploads/#{request.id}
+      #{endpoint}/dashboard/uploads/#{request.id}
 
       If you don't recognize this request, ignore this message.
 

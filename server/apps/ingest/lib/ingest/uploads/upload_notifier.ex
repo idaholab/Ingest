@@ -27,7 +27,8 @@ defmodule Ingest.Uploads.UploadNotifier do
         :notification,
         %User{} = user,
         %Upload{} = upload,
-        %Ingest.Requests.Request{} = request
+        %Ingest.Requests.Request{} = request,
+        endpoint
       ) do
     Accounts.create_notifications(
       %{
@@ -38,7 +39,7 @@ defmodule Ingest.Uploads.UploadNotifier do
           You have an outstanding request for supporting data for a recent upload. Please navigate to the link below and enter the supporting data.
 
         """,
-        action_link: "#{IngestWeb.Endpoint.url()}/dashboard/uploads/#{request.id}/#{upload.id}"
+        action_link: "#{endpoint}/dashboard/uploads/#{request.id}/#{upload.id}"
       },
       user
     )
@@ -48,7 +49,8 @@ defmodule Ingest.Uploads.UploadNotifier do
         :email,
         email,
         %Upload{} = upload,
-        %Ingest.Requests.Request{} = request
+        %Ingest.Requests.Request{} = request,
+        endpoint
       ) do
     deliver(
       email,
@@ -60,7 +62,7 @@ defmodule Ingest.Uploads.UploadNotifier do
 
         You have an outstanding request for supporting data for a recent upload. Please navigate to the link below and enter the supporting data.
 
-        #{IngestWeb.Endpoint.url()}/dashboard/uploads/#{request.id}/#{upload.id}
+        #{endpoint}/dashboard/uploads/#{request.id}/#{upload.id}
 
         If you don't recognize this filename or email sender, ignore this message.
 

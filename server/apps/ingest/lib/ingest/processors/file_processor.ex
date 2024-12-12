@@ -21,7 +21,8 @@ defmodule Ingest.Processors.FileProcessor do
       DataHub.create_dataset_event(:download_link, dataset_path(repo, path), "lakefs",
         repo: repo,
         branch: "main",
-        endpoint: "#{IngestWeb.Endpoint.url()}/api/v1/download_link",
+        endpoint:
+          "#{Application.get_env(:ingest_web, IngestWeb.Endpoint)[:url]}/api/v1/download_link",
         filename: path
       )
       |> DataHub.send_event()
