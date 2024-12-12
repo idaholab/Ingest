@@ -1,8 +1,10 @@
-/client/target/
-/client/.idea
+**/target/
 .ingest_client_config.yml
 server/__azurite_db_blob__.json
 server/__azurite_db_blob_extent__.json
 server/__blobstorage__
-server/.DS_Store
+.DS_Store
 __azurite_db_table__.json
+.idea
+.zed/
+.vscode/

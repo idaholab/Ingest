@@ -10,6 +10,7 @@ defmodule Ingest.Destinations.Destination do
   alias Ingest.Destinations.TemporaryConfig
   alias Ingest.Destinations.AzureConfig
   alias Ingest.Destinations.S3Config
+  alias Ingest.Destinations.DeepLynxConfig
   alias Ingest.Accounts.User
   use Ecto.Schema
   import Ecto.Changeset
@@ -18,7 +19,7 @@ defmodule Ingest.Destinations.Destination do
   schema "destinations" do
     field :name, :string
     # internal storage are those methods provided by the Ingest application administrators
-    field :type, Ecto.Enum, values: [:s3, :azure, :temporary, :lakefs], default: :s3
+    field :type, Ecto.Enum, values: [:s3, :azure, :temporary, :lakefs, :deeplynx], default: :s3
 
     field :classifications_allowed, {:array, Ecto.Enum},
       values: Application.compile_env(:ingest, :data_classifications)
@@ -27,6 +28,7 @@ defmodule Ingest.Destinations.Destination do
     embeds_one :s3_config, S3Config, on_replace: :update
     embeds_one :azure_config, AzureConfig, on_replace: :update
     embeds_one :lakefs_config, LakeFSConfig, on_replace: :update
+    embeds_one :deeplynx_config, DeepLynxConfig, on_replace: :update
     embeds_one :temporary_config, TemporaryConfig, on_replace: :update
 
     timestamps()
@@ -44,6 +46,7 @@ defmodule Ingest.Destinations.Destination do
       |> cast_embed(:s3_config, require: false)
       |> cast_embed(:azure_config, require: false)
       |> cast_embed(:lakefs_config, required: false)
+      |> cast_embed(:deeplynx_config, required: false)
       |> cast_embed(:temporary_config, required: false)
       |> validate_required([:name, :type])
     else
@@ -52,6 +55,7 @@ defmodule Ingest.Destinations.Destination do
       |> cast_embed(:s3_config, require: false)
       |> cast_embed(:azure_config, require: false)
       |> cast_embed(:lakefs_config, required: false)
+      |> cast_embed(:deeplynx_config, required: false)
       |> cast_embed(:temporary_config, required: false)
       |> validate_required([:name, :type])
     end
@@ -63,6 +67,7 @@ defmodule Ingest.Destinations.Destination do
     |> cast_embed(:s3_config, require: false)
     |> cast_embed(:azure_config, require: false)
     |> cast_embed(:lakefs_config, required: false)
+    |> cast_embed(:deeplynx_config, required: false)
     |> cast_embed(:temporary_config, required: false)
     |> validate_required([:name, :type])
   end
@@ -183,6 +188,35 @@ defmodule Ingest.Destinations.LakeFSConfig do
       :integrated_metadata
     ])
     |> validate_required([:base_url, :repository])
+  end
+end
+
+defmodule Ingest.Destinations.DeepLynxConfig do
+  @moduledoc """
+  DeepLynx storage configuration
+  """
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  embedded_schema do
+    field :base_url, Ingest.Encrypted.JSONBinary
+    field :access_key_id, Ingest.Encrypted.JSONBinary
+    field :secret_access_key, Ingest.Encrypted.JSONBinary
+    field :container, :integer
+    field :datasource, :integer
+  end
+
+  @doc false
+  def changeset(config, attrs) do
+    config
+    |> cast(attrs, [
+      :base_url,
+      :access_key_id,
+      :secret_access_key,
+      :container,
+      :datasource
+    ])
+    |> validate_required([:base_url, :container, :datasource])
   end
 end
 

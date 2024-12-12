@@ -10,6 +10,7 @@ defmodule Ingest.Workers.Metadata do
   alias Ingest.Uploaders.Azure
   alias Ingest.Uploaders.S3
   alias Ingest.Uploaders.Lakefs
+  alias Ingest.Uploaders.DeepLynx
 
   use Oban.Worker, queue: :metadata
   @impl Oban.Worker
@@ -119,6 +120,13 @@ defmodule Ingest.Workers.Metadata do
               filename,
               metadata
             )
+        end
+
+      :deeplynx ->
+        if destination.deeplynx_config.integrated_metadata do
+          # todo: got lost in the files to edit, forgot to get this in
+        else
+          # todo: and this
         end
 
       _ ->

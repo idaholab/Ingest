@@ -65,6 +65,8 @@ defmodule Ingest.MixProject do
       {:azure_storage, path: "../azure_storage"},
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
+      {:elixir_uuid, "~> 1.2"},
+      {:shortuuid, "~> 3.0"},
       {:sweet_xml, "~> 0.7.4"},
       {:oban, "~> 2.17"},
       {:backpex, "~> 0.6.0"},

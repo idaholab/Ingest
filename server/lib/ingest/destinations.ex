@@ -168,6 +168,16 @@ defmodule Ingest.Destinations do
             }
         }
 
+      :deeplynx ->
+        %{
+          destination
+          | deeplynx_config: %{
+              destination.deeplynx_config
+              | access_key_id: nil,
+                secret_access_key: nil
+            }
+        }
+
       _ ->
         destination
     end
@@ -200,6 +210,16 @@ defmodule Ingest.Destinations do
           destination
           | lakefs_config: %{
               destination.lakefs_config
+              | access_key_id: nil,
+                secret_access_key: nil
+            }
+        }
+
+      :deeplynx ->
+        %{
+          destination
+          | deeplynx_config: %{
+              destination.deeplynx_config
               | access_key_id: nil,
                 secret_access_key: nil
             }
