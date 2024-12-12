@@ -9,7 +9,7 @@ config :argon2_elixir, t_cost: 1, m_cost: 8
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :ingest, Ingest.Repo,
-  database: "./databases/ingest_test",
+  database: Path.join(__DIR__, "databases/ingest"),
   journal_mode: :wal,
   auto_vacuum: :incremental,
   datetime_type: :iso8601,
