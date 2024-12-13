@@ -39,6 +39,35 @@ defmodule Ingest.LakeFS do
     {:ok, resp}
   end
 
+  def check_or_create_repo(client, repo_name) do
+    url = "#{client.base_url}/api/v1/repositories/#{repo_name}"
+
+    # Check if the repository exists
+    case Req.get(url, auth: {:basic, "#{client.access_key}:#{client.secret_access_key}"}) do
+      %{status: 200} ->
+        {:ok, "Repository exists"}
+
+      %{status: 404} ->
+        # Create the repository if it does not exist
+        create_repo(url, client, repo_name)
+
+      error ->
+        {:error, error}
+    end
+  end
+
+  defp create_repo(url, client, repo_name) do
+    body = %{name: repo_name, storage_namespace: "#{client.base_url}/#{repo_name}"}
+
+    case Req.post(url, json: body, auth: {:basic, "#{client.access_key}:#{client.secret_access_key}"}) do
+      %{status: 201} ->
+        {:ok, "Repository created successfully"}
+
+      error ->
+        {:error, error}
+    end
+  end
+
   # this function pulls the metadata out of the object storage itself, as we are no longer storing
   # it as .m.json files but intead on the objects themselves
   def download_metadata(repo, ref, path) do

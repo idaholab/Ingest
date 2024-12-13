@@ -4,6 +4,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   """
   alias Ingest.Destinations
   use IngestWeb, :live_component
+  require Logger
 
   @impl true
   def render(assigns) do
@@ -240,6 +241,15 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     Whether or not to use this destination's type native method for storing metadata.
                   </p>
 
+                  <.label for="repo-per-project">
+                    Repo per Project
+                  </.label>
+                  <.input
+                    type="checkbox"
+                    field={@destination_form[:repo_per_project]}
+                    label="Repo per project"
+                  />
+
                   <.button
                     class="rounded-md bg-indigo-600 px-3 py-2 mt-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     phx-disable-with="Saving..."
@@ -381,10 +391,10 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   end
 
   def handle_event(
-        "save",
-        %{"save" => save_type, "destination" => destination_params} = _params,
-        socket
-      ) do
+    "save",
+    %{"save" => save_type, "destination" => destination_params} = _params,
+    socket
+  ) do
     case save_type do
       "save" ->
         save_destination(socket, socket.assigns.live_action, destination_params)
@@ -428,9 +438,20 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
         {:ok, repos} = Ingest.Destinations.Lakefs.list_repos(client)
 
+        socket =
+          if destination_params["repo_per_project"] == "true" do
+            repo_name = destination_params["destination_form"]["name"]
+            {:ok, response} = Ingest.LakeFS.check_or_create_repo(client, repo_name)
+            Logger.info("LakeFS response: #{inspect(response)}")
+            socket |> assign(:lakefs_response, response)
+          else
+            socket
+          end
+
         {:noreply,
-         socket
-         |> assign(:lakefs_repos, repos)}
+          socket
+          |> assign(:lakefs_repos, repos)
+        }
     end
   end
 
