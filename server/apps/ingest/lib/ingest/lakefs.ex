@@ -3,92 +3,122 @@ defmodule Ingest.LakeFS do
   All functions pertaining to communicating with LakeFS.
   """
 
-  # note: do not use this function for massive files as it does not treat the response
-  # as a stream - if you need a stream, you'll need to write it in as this is typically
-  # used for getting the m.json files and those are going to be held in memory anyways
-  def download_file(repo, ref, path) do
-    config = Application.get_env(:ingest, :lakefs)
-    url = config[:url]
-    key = config[:access_key]
-    secret = config[:secret_access_key]
+  alias Req
+  require Logger
 
-    with %{status: 200, body: body} <-
-           Req.get!("#{url}/api/v1/repositories/#{repo}/refs/#{ref}/objects",
-             params: [path: path],
-             auth: {:basic, "#{key}:#{secret}"}
-           ) do
-      {:ok, body}
-    else
-      err -> {:error, err}
+  @default_lakefs_url "http://localhost:8000"
+
+  # Fetches LakeFS configuration once and caches the values
+  defp lakefs_config do
+    %{
+      url: url,
+      access_key: access_key,
+      secret_access_key: secret_access_key
+    } = Application.fetch_env!(:ingest, :lakefs)
+
+    {url || @default_lakefs_url, access_key, secret_access_key}
+  end
+
+  # Helper function to construct the URL for LakeFS API endpoints
+  defp lakefs_url(path, repo \\ nil, ref \\ nil) do
+    {base_url, _, _} = lakefs_config()
+    base_path = "#{base_url}/api/v1"
+
+    case {repo, ref} do
+      {nil, nil} -> "#{base_path}/#{path}"
+      {repo, nil} -> "#{base_path}/repositories/#{repo}/#{path}"
+      {repo, ref} -> "#{base_path}/repositories/#{repo}/refs/#{ref}/#{path}"
     end
   end
 
-  def presigned_download_url(url, repo, ref, path) do
-    config = Application.get_env(:ingest, :lakefs)
-    key = config[:access_key]
-    secret = config[:secret_access_key]
+  # Wrapper for sending LakeFS requests to avoid repeated boilerplate
+  defp lakefs_request(method, path, params \\ [], opts \\ []) do
+    {_, access_key, secret_access_key} = lakefs_config()
+    url = lakefs_url(path)
 
-    resp =
-      Req.get!("#{url}/api/v1/repositories/#{repo}/refs/#{ref}/objects",
-        params: [path: path, presign: true],
-        auth: {:basic, "#{key}:#{secret}"},
-        redirect: false
-      )
-
-    # we return the raw response struct here for ease of use
-    {:ok, resp}
+    Req.request(
+      method: method,
+      url: url,
+      auth: {:basic, "#{access_key}:#{secret_access_key}"},
+      params: params,
+      opts: opts
+    )
   end
 
-  def check_or_create_repo(client, repo_name) do
-    url = "#{client.base_url}/api/v1/repositories/#{repo_name}"
+  # Download a file from LakeFS
+  def download_file(repo, ref, path) do
+    lakefs_request(:get, "repositories/#{repo}/refs/#{ref}/objects", [path: path])
+  end
 
-    # Check if the repository exists
-    case Req.get(url, auth: {:basic, "#{client.access_key}:#{client.secret_access_key}"}) do
-      %{status: 200} ->
+  # Download metadata directly from the object storage
+  def download_metadata(repo, ref, path) do
+    lakefs_request(:get, "repositories/#{repo}/refs/#{ref}/objects/stat", [path: path])
+  end
+
+  # Get a presigned URL for downloading files
+  def presigned_download_url(repo, ref, path) do
+    lakefs_request(:get, "repositories/#{repo}/refs/#{ref}/objects",
+      [path: path, presign: true],
+      [redirect: false]
+    )
+  end
+
+  # Check if the repository exists or create it if it doesn't
+  def check_or_create_repo(client, repo_name) do
+    url = lakefs_url("repositories/#{repo_name}")
+
+    case Req.get(url, auth: client.auth) do
+      {:ok, %{status: 200}} ->
         {:ok, "Repository exists"}
 
-      %{status: 404} ->
-        # Create the repository if it does not exist
-        create_repo(url, client, repo_name)
+      {:ok, %{status: 404}} ->
+        create_repo(client, repo_name)
 
-      error ->
+      {:error, error} ->
         {:error, error}
     end
   end
 
-  defp create_repo(url, client, repo_name) do
-    body = %{name: repo_name, storage_namespace: "#{client.base_url}/#{repo_name}"}
+  # Create a repository in LakeFS
+  defp create_repo(client, repo_name) do
+    url = lakefs_url("repositories")
 
-    case Req.post(url, json: body, auth: {:basic, "#{client.access_key}:#{client.secret_access_key}"}) do
-      %{status: 201} ->
+    Logger.debug("Starting repository creation process for: #{repo_name} at URL: #{url}")
+
+    response = Req.post(
+      url,
+      auth: client.auth,
+      json: %{
+        name: repo_name,
+        storage_namespace: "#{client.endpoint}/#{repo_name}",
+        default_branch: "main",
+        sample_data: true,
+        read_only: false
+      }
+    )
+
+    Logger.debug("LakeFS create repository request payload: %{
+      url: #{url},
+      repository_name: #{repo_name},
+      storage_namespace: #{client.endpoint}/#{repo_name}
+    }")
+
+    case response do
+      {:ok, %{status: 201, body: body}} ->
+        Logger.info("Repository '#{repo_name}' created successfully. Response: #{inspect(body)}")
         {:ok, "Repository created successfully"}
 
-      error ->
+      {:ok, %{status: status, body: body}} ->
+        Logger.error("Failed to create repository '#{repo_name}'. Unexpected status: #{status}. Response: #{inspect(body)}")
+        {:error, {:unexpected_status, status, body}}
+
+      {:error, error} ->
+        Logger.error("Error occurred while creating repository '#{repo_name}': #{inspect(error)}")
         {:error, error}
     end
   end
 
-  # this function pulls the metadata out of the object storage itself, as we are no longer storing
-  # it as .m.json files but intead on the objects themselves
-  def download_metadata(repo, ref, path) do
-    config = Application.get_env(:ingest, :lakefs)
-    url = config[:url]
-    key = config[:access_key]
-    secret = config[:secret_access_key]
-
-    with %{status: 200, body: body} <-
-           Req.get!("#{url}/api/v1/repositories/#{repo}/refs/#{ref}/objects/stat",
-             params: [path: path],
-             auth: {:basic, "#{key}:#{secret}"}
-           ) do
-      {:ok, body}
-    else
-      err -> {:error, err}
-    end
-  end
-
-  # the diff merge function takes 3 functions, to be executed depending on whether or not
-  # a file in the merge has been changed, removed, or created
+  # Perform a diff merge with callbacks for added, changed, and removed files
   def diff_merge(
         %{
           "event_type" => "pre-merge",
@@ -100,35 +130,29 @@ defmodule Ingest.LakeFS do
         on_update,
         on_create
       ) do
-    config = Application.get_env(:ingest, :lakefs)
-    url = config[:url]
-    key = config[:access_key]
-    secret = config[:secret_access_key]
+    url = lakefs_url("repositories/#{repo}/refs/main/diff/#{source_ref}")
 
-    with %{status: 200, body: %{"results" => results} = _body} <-
-           Req.get!("#{url}/api/v1/repositories/#{repo}/refs/main/diff/#{source_ref}",
-             auth: {:basic, "#{key}:#{secret}"}
-           ) do
-      # Example of a result:
-      # {"path" => "data01.csv", "path_type" => "object", "size_bytes" => 11, "type" => "changed"}
+    with {:ok, %{status: 200, body: %{"results" => results}}} <- lakefs_request(:get, url) do
       {statuses, messages} =
-        results
-        |> Enum.map(fn result ->
-          case result["type"] do
-            "added" -> on_create.(repo, source_ref, result)
-            "changed" -> on_update.(repo, source_ref, result)
-            "removed" -> on_delete.(repo, source_ref, result)
-          end
-        end)
-        |> Enum.unzip()
+        Enum.reduce(results, {[], []}, fn result, {status_acc, msg_acc} ->
+          {status, message} =
+            case result["type"] do
+              "added" -> on_create.(repo, source_ref, result)
+              "changed" -> on_update.(repo, source_ref, result)
+              "removed" -> on_delete.(repo, source_ref, result)
+            end
 
-      if statuses |> Enum.member?(:error) do
+          {[status | status_acc], [message | msg_acc]}
+        end)
+
+      if :error in statuses do
         {:error, messages}
       else
         {:ok, messages}
       end
     else
-      err -> {:error, err}
+      error ->
+        {:error, error}
     end
   end
 end

@@ -3,6 +3,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   Destination Form is the form for creating/editing Destinations
   """
   alias Ingest.Destinations
+  alias Ingest.Destinations.LakefsClient
   use IngestWeb, :live_component
   require Logger
 
@@ -386,8 +387,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
       |> Ingest.Destinations.change_destination(destination_params)
       |> Map.put(:action, :validate)
 
-    {:noreply,
-     assign_form(socket |> assign(:type, Map.get(destination_params, "type")), changeset)}
+    {:noreply, assign_form(socket |> assign(:type, Map.get(destination_params, "type")), changeset)}
   end
 
   def handle_event(
@@ -399,59 +399,39 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
       "save" ->
         save_destination(socket, socket.assigns.live_action, destination_params)
 
-      # currently this only applies to the LakeFS destination, and will populate the repositories and remove the disabled tag
       "test_connection" ->
-        base_url =
-          if destination_params["lakefs_config"]["ssl"] == "true" do
-            "https://#{destination_params["lakefs_config"]["base_url"]}"
-          else
-            "http://#{destination_params["lakefs_config"]["base_url"]}"
-          end
+        base_url = build_base_url(destination_params["lakefs_config"])
 
-        destination =
-          if socket.assigns.destination_id do
-            Destinations.get_destination(socket.assigns.destination_id)
-          else
-            nil
-          end
+        case LakefsClient.new(base_url,
+               access_key: destination_params["lakefs_config"]["access_key_id"],
+               secret_key: destination_params["lakefs_config"]["secret_access_key"]) do
 
-        client =
-          if destination && destination.type == :lakefs do
-            Ingest.Destinations.Lakefs.new_client(
-              base_url,
-              {
-                destination.lakefs_config.access_key_id,
-                destination.lakefs_config.secret_access_key
-              },
-              port: destination.lakefs_config.port
-            )
-          else
-            Ingest.Destinations.Lakefs.new_client(
-              base_url,
-              {
-                destination_params["lakefs_config"]["access_key_id"],
-                destination_params["lakefs_config"]["secret_access_key"]
-              },
-              port: destination_params["lakefs_config"]["port"]
-            )
-          end
+          {:ok, client} ->
+            Logger.debug("Starting LakeFS client connection with base_url: #{base_url}")
 
-        {:ok, repos} = Ingest.Destinations.Lakefs.list_repos(client)
+            case LakefsClient.create_branch(client, destination_params["name"], "main") do
+              {:ok, message} ->
+                Logger.debug("LakeFS Repository response: #{message}")
 
-        socket =
-          if destination_params["repo_per_project"] == "true" do
-            repo_name = destination_params["destination_form"]["name"]
-            {:ok, response} = Ingest.LakeFS.check_or_create_repo(client, repo_name)
-            Logger.info("LakeFS response: #{inspect(response)}")
-            socket |> assign(:lakefs_response, response)
-          else
-            socket
-          end
+                case LakefsClient.list_repos(client) do
+                  {:ok, repos} ->
+                    Logger.debug("Successfully fetched LakeFS repositories: #{inspect(repos)}")
+                    {:noreply, assign(socket, :lakefs_repos, repos)}
 
-        {:noreply,
-          socket
-          |> assign(:lakefs_repos, repos)
-        }
+                  {:error, reason} ->
+                    Logger.error("Failed to list LakeFS repos. Reason: #{inspect(reason)}")
+                    {:noreply, put_flash(socket, :error, "Could not list LakeFS repositories. Please check your credentials and URL.")}
+                end
+
+              {:error, reason} ->
+                Logger.error("Failed to create LakeFS repo. Reason: #{inspect(reason)}")
+                {:noreply, put_flash(socket, :error, "Could not create LakeFS repository. Please check your credentials and URL.")}
+            end
+
+          {:error, reason} ->
+            Logger.error("Failed to initialize LakeFS client. Reason: #{inspect(reason)}")
+            {:noreply, put_flash(socket, :error, "Could not connect to LakeFS. Please check your credentials and URL.")}
+        end
     end
   end
 
@@ -464,12 +444,12 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
       )
 
     with :ok <-
-           Bodyguard.permit(
-             Ingest.Destinations.Destination,
-             :update_destination,
-             socket.assigns.current_user,
-             socket.assigns.destination
-           ),
+            Bodyguard.permit(
+              Ingest.Destinations.Destination,
+              :update_destination,
+              socket.assigns.current_user,
+              socket.assigns.destination
+            ),
          {:ok, destination} <-
            Ingest.Destinations.update_destination(socket.assigns.destination, destination_params) do
       notify_parent({:saved, destination})
@@ -519,8 +499,13 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
         cui: form["cui"],
         uur: form["uur"]
       })
-
     Map.keys(elems)
+  end
+
+  defp build_base_url(%{"base_url" => base_url, "port" => port, "ssl" => ssl}) do
+    scheme = if ssl == "true", do: "https", else: "http"
+    port_part = if port != "", do: ":#{port}", else: ""
+    "#{scheme}://#{base_url}#{port_part}"
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
