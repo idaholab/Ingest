@@ -19,18 +19,6 @@ defmodule Ingest.LakeFS do
     {url || @default_lakefs_url, access_key, secret_access_key}
   end
 
-  # Helper function to construct the URL for LakeFS API endpoints
-  defp lakefs_url(path, repo \\ nil, ref \\ nil) do
-    {base_url, _, _} = lakefs_config()
-    base_path = "#{base_url}/api/v1"
-
-    case {repo, ref} do
-      {nil, nil} -> "#{base_path}/#{path}"
-      {repo, nil} -> "#{base_path}/repositories/#{repo}/#{path}"
-      {repo, ref} -> "#{base_path}/repositories/#{repo}/refs/#{ref}/#{path}"
-    end
-  end
-
   # Wrapper for sending LakeFS requests to avoid repeated boilerplate
   defp lakefs_request(method, path, params \\ [], opts \\ []) do
     {_, access_key, secret_access_key} = lakefs_config()
@@ -65,16 +53,24 @@ defmodule Ingest.LakeFS do
 
   # Check if the repository exists or create it if it doesn't
   def check_or_create_repo(client, repo_name) do
+    # Build the full URL properly
     url = lakefs_url("repositories/#{repo_name}")
 
-    case Req.get(url, auth: client.auth) do
+    Logger.debug("Checking if repository '#{repo_name}' exists at URL: #{url}")
+
+    response = Req.get(url, auth: client.auth)
+
+    case response do
       {:ok, %{status: 200}} ->
+        Logger.info("Repository '#{repo_name}' exists.")
         {:ok, "Repository exists"}
 
       {:ok, %{status: 404}} ->
+        Logger.info("Repository '#{repo_name}' does not exist. Attempting to create it.")
         create_repo(client, repo_name)
 
       {:error, error} ->
+        Logger.error("Error checking if repository exists. Error: #{inspect(error)}")
         {:error, error}
     end
   end
@@ -83,7 +79,7 @@ defmodule Ingest.LakeFS do
   defp create_repo(client, repo_name) do
     url = lakefs_url("repositories")
 
-    Logger.debug("Starting repository creation process for: #{repo_name} at URL: #{url}")
+    Logger.debug("Starting repository creation process for '#{repo_name}' at URL: #{url}")
 
     response = Req.post(
       url,
@@ -116,6 +112,22 @@ defmodule Ingest.LakeFS do
         Logger.error("Error occurred while creating repository '#{repo_name}': #{inspect(error)}")
         {:error, error}
     end
+  end
+
+  # Helper function to construct the URL for LakeFS API endpoints
+  defp lakefs_url(path, repo \\ nil, ref \\ nil) do
+    {base_url, _, _} = lakefs_config()
+    base_path = "#{base_url}/api/v1"
+
+    url =
+      cond do
+        repo && ref -> "#{base_path}/repositories/#{repo}/refs/#{ref}/#{path}"
+        repo -> "#{base_path}/repositories/#{repo}/#{path}"
+        true -> "#{base_path}/#{path}"
+      end
+
+    Logger.debug("Constructed LakeFS URL: #{url}")
+    url
   end
 
   # Perform a diff merge with callbacks for added, changed, and removed files
