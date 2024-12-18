@@ -31,7 +31,7 @@ defmodule IngestWeb.Router do
   end
 
   scope "/", IngestWeb do
-    pipe_through :browser
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
 
     get "/", PageController, :home
     get "/users/log_in/one_id", OidcController, :oneid

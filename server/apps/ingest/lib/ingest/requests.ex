@@ -377,7 +377,9 @@ defmodule Ingest.Requests do
           on: p.id == r.project_id,
           join: ps in ProjectSearch,
           on: ps.id == p.id,
-          where: fragment("projects_search MATCH ?", ^search_term) and r.status == :published,
+          where:
+            fragment("projects_search MATCH ?", ^search_term) and r.status == :published and
+              r.visibility == :public,
           select: r
 
       Repo.all(query)

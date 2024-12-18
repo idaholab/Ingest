@@ -22,10 +22,10 @@ defmodule IngestWeb.UploadsLive do
               rows={@requests}
               row_click={fn request -> JS.navigate(~p"/dashboard/uploads/#{request}") end}
             >
-              <:col :let={request} label="Project"><%= request.project.name %></:col>
-              <:col :let={request} label="Name"><%= request.name %></:col>
-              <:col :let={request} label="Description">
-                <%= request.description %>
+              <:col :let={request} label="Project Name">{request.project.name}</:col>
+              <:col :let={request} label="Request Name">{request.name}</:col>
+              <:col :let={request} label="Request Description">
+                {request.description}
               </:col>
 
               <:action :let={request}>
@@ -46,7 +46,7 @@ defmodule IngestWeb.UploadsLive do
         <div class="text-center">
           <.icon name="hero-arrow-up-on-square-stack" class="mx-auto h-12 w-12 text-gray-400" />
 
-          <h2 class="mt-2 text-base font-semibold leading-6 text-gray-900">Upload Data to Request</h2>
+          <h2 class="mt-2 text-base font-semibold leading-6 text-gray-900">Upload Data to Project</h2>
           <p class="mt-1 text-sm text-gray-500">
             Search or select a data request by project from the list below to begin uploading data.
           </p>
@@ -79,10 +79,10 @@ defmodule IngestWeb.UploadsLive do
               <div class="flex min-w-0 flex-1 items-center space-x-3">
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-sm font-medium text-gray-900">
-                    <%= request.project.name %>
+                    {request.project.name}
                   </p>
                   <p class="truncate text-sm font-medium text-gray-500">
-                    <%= request.name %>
+                    {request.name}
                   </p>
                 </div>
               </div>

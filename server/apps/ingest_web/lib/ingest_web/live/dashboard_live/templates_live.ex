@@ -8,23 +8,23 @@ defmodule IngestWeb.TemplatesLive do
     <div>
       <div :if={!@templates || Enum.empty?(@templates)} class="text-center">
         <.icon name="hero-folder-plus" class="mx-auto h-12 w-12 text-gray-400" />
-        <h3 class="mt-2 text-sm font-semibold text-gray-900">No templates</h3>
-        <p class="mt-1 text-sm text-gray-500">Get started by creating a new template.</p>
+        <h3 class="mt-2 text-sm font-semibold text-gray-900">No forms</h3>
+        <p class="mt-1 text-sm text-gray-500">Get started by creating a new form.</p>
         <.link
           patch={~p"/dashboard/templates/new"}
           type="button"
           class="mt-5 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          <.icon name="hero-plus" /> New Template
+          <.icon name="hero-plus" /> New Metadata Collection Form
         </.link>
       </div>
 
       <div :if={@templates && !Enum.empty?(@templates)} class="px-4 sm:px-6 lg:px-8">
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
-            <h1 class="text-base font-semibold leading-6 text-gray-900">Metadata Templates</h1>
+            <h1 class="text-base font-semibold leading-6 text-gray-900">Metadata Collection Forms</h1>
             <p class="mt-2 text-sm text-gray-700">
-              A list of all the templates you own or are a part of. Metadata Templates are forms that enforce metadata collection at time of file upload.
+              A list of all the forms you own or are a part of. Metadata Collection Forms are forms that enforce metadata collection at time of file upload.
             </p>
           </div>
           <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -34,7 +34,7 @@ defmodule IngestWeb.TemplatesLive do
                   type="button"
                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  <.icon name="hero-plus" /> New Template
+                  <.icon name="hero-plus" /> New Form
                 </button>
               </.link>
             </div>
@@ -50,9 +50,9 @@ defmodule IngestWeb.TemplatesLive do
                   fn {_id, template} -> JS.navigate(~p"/dashboard/templates/#{template}") end
                 }
               >
-                <:col :let={{_id, template}} label="Name"><%= template.name %></:col>
+                <:col :let={{_id, template}} label="Name">{template.name}</:col>
                 <:col :let={{_id, template}} label="Description">
-                  <%= template.description %>
+                  {template.description}
                 </:col>
 
                 <:action :let={{_id, template}}>
