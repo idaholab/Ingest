@@ -2,7 +2,6 @@ defmodule IngestWeb.OidcController do
   use IngestWeb, :controller
 
   alias Ingest.Requests
-  alias Ingest.Projects
   alias Ingest.Accounts
   alias IngestWeb.UserAuth
 

@@ -21,7 +21,6 @@ defmodule IngestWeb.ApiController do
 
     case resp do
       {:ok, _created} -> send_resp(conn, 200, "Metadata event processed successfully")
-      {:error, message} -> send_resp(conn, 500, Jason.encode!(message.body))
       _ -> send_resp(conn, 500, "Unable to process metadata event")
     end
   end

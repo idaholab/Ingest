@@ -8,8 +8,8 @@ defmodule IngestWeb.MembersProjectShowLive do
   def render(assigns) do
     ~H"""
     <div>
-      <h1 class="text-2xl"><%= @project.name %></h1>
-      <p><%= @project.description %></p>
+      <h1 class="text-2xl">{@project.name}</h1>
+      <p>{@project.description}</p>
 
       <div class="pr-5">
         <div class="relative mt-10">
@@ -24,8 +24,8 @@ defmodule IngestWeb.MembersProjectShowLive do
         </div>
 
         <.table id="requests" rows={@project.requests}>
-          <:col :let={request} label="Name"><%= request.name %></:col>
-          <:col :let={request} label="Uploads"><%= get_upload_count(request) %></:col>
+          <:col :let={request} label="Name">{request.name}</:col>
+          <:col :let={request} label="Uploads">{get_upload_count(request)}</:col>
         </.table>
       </div>
     </div>

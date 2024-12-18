@@ -5,7 +5,7 @@ defmodule Ingest.Requests.TemplateMembers do
   @primary_key false
   @foreign_key_type :binary_id
   schema "template_members" do
-    field :role, Ecto.Enum, values: [:editor, :member]
+    field :role, Ecto.Enum, values: [:manager, :member]
     field :email, :string
     belongs_to :template, Ingest.Requests.Template, foreign_key: :template_id, type: :binary_id
     belongs_to :user, Ingest.Accounts.User, foreign_key: :user_id, type: :binary_id

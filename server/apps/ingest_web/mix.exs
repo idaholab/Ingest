@@ -42,7 +42,7 @@ defmodule IngestWeb.MixProject do
       {:phoenix_ecto, "~> 4.6.3"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 1.0.0-rc.7", override: true},
+      {:phoenix_live_view, "~> 1.0.0", override: true},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.0"},
       {:esbuild, "~> 0.8.2", runtime: Mix.env() == :dev},
@@ -70,6 +70,7 @@ defmodule IngestWeb.MixProject do
       {:ecto_sqlite3_extras, "~> 1.2.2"},
       {:ingest, in_umbrella: true},
       {:credo, "~> 1.7.9", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]
   end

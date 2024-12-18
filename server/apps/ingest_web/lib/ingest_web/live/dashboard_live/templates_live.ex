@@ -139,7 +139,7 @@ defmodule IngestWeb.TemplatesLive do
   def handle_event("delete", %{"id" => id}, socket) do
     with :ok <-
            Bodyguard.permit(
-             Ingest.Requests.template(),
+             Ingest.Requests.Template,
              :delete_template,
              socket.assigns.current_user,
              socket.assigns.request

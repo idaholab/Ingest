@@ -36,7 +36,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
               <div class="flex min-w-0 gap-x-4">
                 <div class="min-w-0 flex-auto">
                   <p class="text-sm font-semibold leading-6 text-gray-900">
-                    <%= result.name %>
+                    {result.name}
                   </p>
                 </div>
               </div>
