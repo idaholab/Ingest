@@ -7,6 +7,9 @@ defmodule Ingest.Uploaders.Lakefs do
   alias Ingest.Requests.Request
   alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.Destination
+  alias Ingest.Destinations.LakefsClient
+
+  require Logger
 
   def init(%Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)
@@ -58,13 +61,13 @@ defmodule Ingest.Uploaders.Lakefs do
   end
 
   def upload_full_object(
-        %Destination{} = destination,
-        %Request{} = request,
-        %User{} = user,
-        filename,
-        data
+      %Destination{} = destination,
+      %Request{} = request,
+      %User{} = user,
+      filename,
+      data
       ) do
-    # we need validate/create if not exists a branch for the request & user email
+      # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination.lakefs_config, request, user)
 
     with s3_op <-
@@ -82,12 +85,12 @@ defmodule Ingest.Uploaders.Lakefs do
   end
 
   def update_metadata(
-        %Destination{} = destination,
-        %Request{} = request,
-        %User{} = user,
-        filename,
-        data
-      ) do
+    %Destination{} = destination,
+    %Request{} = request,
+    %User{} = user,
+    filename,
+    data
+    ) do
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination.lakefs_config, request, user)
 
@@ -159,31 +162,33 @@ defmodule Ingest.Uploaders.Lakefs do
       end
 
     with client <-
-           Ingest.Destinations.Lakefs.new_client(
-             base_url,
-             {config.access_key_id, config.secret_access_key},
-             port: config.port
+           LakefsClient.new(base_url,
+             access_key: config.access_key_id,
+             secret_key: config.secret_access_key
            ),
-         {:ok, branches} <- Ingest.Destinations.Lakefs.list_branches(client, config.repository) do
-      branch =
-        Enum.find(branches, fn b -> b["id"] == branch_name end)
+         {:ok, branches} <- LakefsClient.list_branches(client, config.repository) do
+      branch = Enum.find(branches, fn b -> b["id"] == branch_name end)
 
       if !branch do
         {:ok, _res} =
-          Ingest.Destinations.Lakefs.new_client(
+          LakefsClient.new(
             base_url,
-            {config.access_key_id, config.secret_access_key},
-            port: config.port
+            access_key: config.access_key_id,
+            secret_key: config.secret_access_key
           )
-          |> Ingest.Destinations.Lakefs.create_branch(
-            config.repository,
-            branch_name
-          )
+          |> LakefsClient.create_branch(config.repository, branch_name)
       end
 
       branch_name
     else
-      {:error, _err} -> nil
+      {:error, :unexpected_status_code, %{"message" => "repository not found"}} ->
+        Logger.error("LakeFS repository not found for URL: #{base_url}")
+        nil
+
+      {:error, reason} ->
+        Logger.error("Error while calling LakeFS for upserting branch. Reason: #{inspect(reason)}")
+        nil
     end
   end
+
 end

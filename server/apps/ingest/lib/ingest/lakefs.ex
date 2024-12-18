@@ -16,7 +16,9 @@ defmodule Ingest.LakeFS do
       secret_access_key: secret_access_key
     } = Application.fetch_env!(:ingest, :lakefs)
 
-    {url || @default_lakefs_url, access_key, secret_access_key}
+    url_value = if url, do: url, else: @default_lakefs_url
+
+    {url_value, access_key, secret_access_key}
   end
 
   # Wrapper for sending LakeFS requests to avoid repeated boilerplate
@@ -51,83 +53,70 @@ defmodule Ingest.LakeFS do
     )
   end
 
-  # Check if the repository exists or create it if it doesn't
   def check_or_create_repo(client, repo_name) do
-    # Build the full URL properly
-    url = lakefs_url("repositories/#{repo_name}")
+    if repo_name in [nil, ""] do
+      Logger.error("Repository name is missing or empty.")
+      {:error, "Repository name cannot be empty"}
+    else
+      url = lakefs_url("repositories/#{repo_name}")
 
-    Logger.debug("Checking if repository '#{repo_name}' exists at URL: #{url}")
-
-    response = Req.get(url, auth: client.auth)
-
-    case response do
-      {:ok, %{status: 200}} ->
+      with {:ok, %{status: 200}} <- Req.get(url, auth: client.auth) do
         Logger.info("Repository '#{repo_name}' exists.")
         {:ok, "Repository exists"}
+      else
+        {:ok, %{status: 404}} ->
+          Logger.info("Repository not found. Attempting to create it.")
+          create_repo(client, repo_name)
 
-      {:ok, %{status: 404}} ->
-        Logger.info("Repository '#{repo_name}' does not exist. Attempting to create it.")
-        create_repo(client, repo_name)
+        {:ok, %Req.Response{status: status, body: body}} ->
+          Logger.error("Failed with status #{status}: #{inspect(body)}")
+          {:error, {:unexpected_status, status, body}}
 
-      {:error, error} ->
-        Logger.error("Error checking if repository exists. Error: #{inspect(error)}")
-        {:error, error}
+        {:error, error} ->
+          Logger.error("Error checking if repository exists for '#{repo_name}'. Error: #{inspect(error)}")
+          {:error, error}
+      end
     end
   end
 
-  # Create a repository in LakeFS
-  defp create_repo(client, repo_name) do
-    url = lakefs_url("repositories")
-
-    Logger.debug("Starting repository creation process for '#{repo_name}' at URL: #{url}")
-
-    response = Req.post(
-      url,
-      auth: client.auth,
-      json: %{
-        name: repo_name,
-        storage_namespace: "#{client.endpoint}/#{repo_name}",
-        default_branch: "main",
-        sample_data: true,
-        read_only: false
-      }
-    )
-
-    Logger.debug("LakeFS create repository request payload: %{
-      url: #{url},
-      repository_name: #{repo_name},
-      storage_namespace: #{client.endpoint}/#{repo_name}
-    }")
-
-    case response do
-      {:ok, %{status: 201, body: body}} ->
-        Logger.info("Repository '#{repo_name}' created successfully. Response: #{inspect(body)}")
-        {:ok, "Repository created successfully"}
-
-      {:ok, %{status: status, body: body}} ->
-        Logger.error("Failed to create repository '#{repo_name}'. Unexpected status: #{status}. Response: #{inspect(body)}")
-        {:error, {:unexpected_status, status, body}}
-
-      {:error, error} ->
-        Logger.error("Error occurred while creating repository '#{repo_name}': #{inspect(error)}")
-        {:error, error}
-    end
-  end
-
-  # Helper function to construct the URL for LakeFS API endpoints
-  defp lakefs_url(path, repo \\ nil, ref \\ nil) do
-    {base_url, _, _} = lakefs_config()
-    base_path = "#{base_url}/api/v1"
-
-    url =
+  def create_repo(client, repo_name) do
+    storage_namespace =
       cond do
-        repo && ref -> "#{base_path}/repositories/#{repo}/refs/#{ref}/#{path}"
-        repo -> "#{base_path}/repositories/#{repo}/#{path}"
-        true -> "#{base_path}/#{path}"
+        to_string(client.endpoint) =~ "localhost" or to_string(client.endpoint) =~ "127.0.0.1" ->
+          "local://#{repo_name}"
+        to_string(client.endpoint) =~ ~r/^https?:\/\// ->
+          "#{client.endpoint}/#{repo_name}"
+        true ->
+          "s3://#{client.endpoint}/#{repo_name}"
       end
 
-    Logger.debug("Constructed LakeFS URL: #{url}")
-    url
+    url = lakefs_url("repositories")
+
+    payload = %{
+      name: repo_name,
+      storage_namespace: storage_namespace,
+      default_branch: "main",
+      read_only: false
+    }
+
+    case Req.post(url, auth: client.auth, json: payload) do
+      {:ok, %{status: 201, body: body}} ->
+        Logger.info("Repository '#{repo_name}' created successfully with storage namespace: #{storage_namespace}.")
+        {:ok, body}
+
+      {:ok, %{status: status, body: body}} ->
+        Logger.error("Failed to create repository. Status: #{status}, Body: #{inspect(body)}")
+        {:error, {:unexpected_status, status, body}}
+
+      {:error, reason} ->
+        Logger.error("Error creating repository. Reason: #{inspect(reason)}")
+        {:error, reason}
+    end
+  end
+
+  defp lakefs_url(path) do
+    base_url = "http://localhost:8000/api/v1"
+    "#{base_url}/#{path}"
   end
 
   # Perform a diff merge with callbacks for added, changed, and removed files
