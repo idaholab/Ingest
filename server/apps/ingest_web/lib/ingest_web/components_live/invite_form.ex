@@ -38,7 +38,11 @@ defmodule IngestWeb.LiveComponents.InviteForm do
 
   @impl true
   def handle_event("save", %{"email" => email}, socket) do
-    case Ingest.Requests.RequestNotifier.notify_data_request_invite(email, socket.assigns.request) do
+    case Ingest.Requests.RequestNotifier.notify_data_request_invite(
+           email,
+           socket.assigns.request,
+           IngestWeb.Endpoint.url()
+         ) do
       {:ok, _n} ->
         case Ingest.Requests.invite_user_by_email(socket.assigns.request, email) do
           {:ok, _n} ->

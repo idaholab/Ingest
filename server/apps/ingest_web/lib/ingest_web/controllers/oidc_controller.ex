@@ -34,7 +34,6 @@ defmodule IngestWeb.OidcController do
                      %{email: claims["email"], roles: :manager, identity_provider: :oidc},
                      :oidcc
                    ) do
-              Projects.queue_project_invite_notifications(user)
               Requests.backfill_shared_templates(user)
               UserAuth.log_in_user(conn, user, %{})
             else

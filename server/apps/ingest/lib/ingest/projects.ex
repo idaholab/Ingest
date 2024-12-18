@@ -322,17 +322,6 @@ defmodule Ingest.Projects do
     ProjectInvites.changeset(project_invites, attrs)
   end
 
-  def queue_project_invite_notifications(%User{} = user) do
-    invites =
-      Repo.all(from i in ProjectInvites, where: i.email == ^user.email) |> Repo.preload(:project)
-
-    if invites != [] do
-      Enum.map(invites, fn i ->
-        IngestWeb.Notifications.notify(:project_invite, user, i.project)
-      end)
-    end
-  end
-
   def get_template!(id), do: Repo.get!(Template, id)
 
   def update_project_templates(%Project{} = request, templates) do

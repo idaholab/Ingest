@@ -37,3 +37,4 @@ server/apps/ingest/priv/sqlite_extensions/uuid.dylib
 server/apps/ingest/priv/sqlite_extensions/vec0.dylib
 server/apps/ingest/priv/sqlite_extensions/vsv.dylib
 server/apps/ingest/databases
+server/config/databases
