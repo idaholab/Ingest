@@ -27,7 +27,7 @@ if config_env() == :prod do
       System.user_home() |> Path.join(".ingest") |> Path.join("ingest")
     )
 
-  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+  _maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
   config :ingest, Ingest.Repo,
     database: database_path,
