@@ -1,13 +1,18 @@
 defmodule Ingest.Uploaders.Lakefs do
   @moduledoc """
   Used for uploading to LakeFS repositories. Typically a request will open a branch
-  specifically for the user doing the upload, can be traced all the way back.
+  specifically for the user doing the upload, which can be traced back.
   """
+
   alias Ingest.Accounts.User
   alias Ingest.Requests.Request
   alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.Destination
+  alias Ingest.Destinations.LakefsClient
 
+  require Logger
+
+  @doc "Initializes the upload process for a given destination."
   def init(%Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)
     # we need validate/create if not exists a branch for the request & user email
@@ -25,7 +30,7 @@ defmodule Ingest.Uploaders.Lakefs do
            {:ok, %{headers: _headers}} <- ExAws.request(s3_op, s3_config) do
         "#{filename} - COPY #{DateTime.now!("UTC") |> DateTime.to_naive()}"
       else
-        # assumption is that the error is a 404 not found, so we can keep the filename
+          # assumption is that the error is a 404 not found, so we can keep the filename
         _ -> filename
       end
 
@@ -57,14 +62,15 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
+  @doc "Uploads a full object to LakeFS."
   def upload_full_object(
-        %Destination{} = destination,
-        %Request{} = request,
-        %User{} = user,
-        filename,
-        data
+      %Destination{} = destination,
+      %Request{} = request,
+      %User{} = user,
+      filename,
+      data
       ) do
-    # we need validate/create if not exists a branch for the request & user email
+      # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination.lakefs_config, request, user)
 
     with s3_op <-
@@ -81,13 +87,14 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
+  @doc "Updates the metadata for an object in LakeFS."
   def update_metadata(
-        %Destination{} = destination,
-        %Request{} = request,
-        %User{} = user,
-        filename,
-        data
-      ) do
+    %Destination{} = destination,
+    %Request{} = request,
+    %User{} = user,
+    filename,
+    data
+    ) do
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination.lakefs_config, request, user)
 
@@ -107,6 +114,7 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
+  @doc "Uploads a chunk to LakeFS."
   def upload_chunk(%Destination{} = destination, _filename, state, data, _opts \\ []) do
     part = ExAws.S3.Upload.upload_chunk({data, state.chunk}, state.op, state.config)
 
@@ -116,6 +124,7 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
+  @doc "Commits the upload to LakeFS."
   def commit(%Destination{} = destination, _filename, state, _opts \\ []) do
     result = ExAws.S3.Upload.complete(state.parts, state.op, state.config)
 
@@ -128,6 +137,7 @@ defmodule Ingest.Uploaders.Lakefs do
     end
   end
 
+  # Builds the ExAws S3 configuration for a given LakeFS config
   defp build_config(%LakeFSConfig{} = config) do
     ExAws.Config.new(:s3, %{
       host: Map.get(config, :base_url, nil),
@@ -148,6 +158,7 @@ defmodule Ingest.Uploaders.Lakefs do
     })
   end
 
+  # Ensures a branch exists or creates it if not present
   defp upsert_branch(%LakeFSConfig{} = config, %Request{} = request, %User{} = user) do
     branch_name = Regex.replace(~r/\W+/, "#{request.name}-by-#{user.name}", "-")
 
@@ -159,31 +170,25 @@ defmodule Ingest.Uploaders.Lakefs do
       end
 
     with client <-
-           Ingest.Destinations.Lakefs.new_client(
-             base_url,
-             {config.access_key_id, config.secret_access_key},
-             port: config.port
-           ),
-         {:ok, branches} <- Ingest.Destinations.Lakefs.list_branches(client, config.repository) do
-      branch =
-        Enum.find(branches, fn b -> b["id"] == branch_name end)
+            LakefsClient.new(base_url,
+              access_key: config.access_key_id,
+              secret_key: config.secret_access_key
+            ),
+         {:ok, branches} <- LakefsClient.list_branches(client, config.repository) do
+      branch = Enum.find(branches, fn b -> b["id"] == branch_name end)
 
       if !branch do
         {:ok, _res} =
-          Ingest.Destinations.Lakefs.new_client(
-            base_url,
-            {config.access_key_id, config.secret_access_key},
-            port: config.port
-          )
-          |> Ingest.Destinations.Lakefs.create_branch(
+          LakefsClient.create_branch(
+            client,
             config.repository,
             branch_name
           )
       end
-
       branch_name
     else
-      {:error, _err} -> nil
+      {:error, :unexpected_status_code, %{"message" => "repository not found"}} -> nil
+      {:error, _reason} -> nil
     end
   end
 end

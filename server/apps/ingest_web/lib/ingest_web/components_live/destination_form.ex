@@ -2,8 +2,9 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   @moduledoc """
   Destination Form is the form for creating/editing Destinations
   """
-  alias Ingest.Destinations
+  alias Ingest.Destinations.LakefsClient
   use IngestWeb, :live_component
+  require Logger
 
   @impl true
   def render(assigns) do
@@ -240,29 +241,36 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     Whether or not to use this destination's type native method for storing metadata.
                   </p>
 
+                  <.label for="repo-per-project">
+                    Repo per Project
+                  </.label>
+                  <.input
+                    type="checkbox"
+                    field={@destination_form[:repo_per_project]}
+                    label="Repo per project"
+                  />
                   <.button
                     class="rounded-md bg-indigo-600 px-3 py-2 mt-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    phx-submit="save"
                     phx-disable-with="Saving..."
-                    name="save"
+                    name="action"
                     value="test_connection"
                   >
                     Test Connection
                   </.button>
-
                   <.label for="status-select">
                     Repositories
                   </.label>
                   <.input
-                    :if={@lakefs_repos != [] || config[:repository]}
+                    :if={@lakefs_repos != [] or config[:repository]}
                     type="select"
                     options={
-                      if @destination.lakefs_config do
-                        [
-                          @destination.lakefs_config.repository
-                          | @lakefs_repos |> Enum.map(fn r -> r["id"] end)
-                        ]
-                      else
-                        @lakefs_repos |> Enum.map(fn r -> r["id"] end)
+                      case @lakefs_repos do
+                        %{"results" => results} when is_list(results) ->
+                          results
+                          |> Enum.map(fn %{"id" => id} -> id end)
+                        _ ->
+                          []
                       end
                     }
                     field={config[:repository]}
@@ -342,14 +350,15 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
         </div>
 
         <div class="mt-6 flex items-center justify-end gap-x-6">
-          <.button
-            class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            phx-disable-with="Saving..."
-            name="save"
-            value="save"
-          >
-            Save
-          </.button>
+        <.button
+          class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          phx-disable-with="Saving..."
+          phx-submit="save"
+          name="action"
+          value="save"
+        >
+          Save
+        </.button>
         </div>
       </.simple_form>
     </div>
@@ -357,138 +366,145 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   end
 
   @impl true
-  def update(%{destination: destination} = assigns, socket) do
+  @doc "Updates the component with the latest assigns."
+  def update(assigns, socket) do
+    destination = assigns[:destination] || %Ingest.Destinations.Destination{}
     changeset = Ingest.Destinations.change_destination(destination)
 
+    lakefs_repos =
+      if socket.assigns[:lakefs_repos] do
+        socket.assigns.lakefs_repos
+      else
+        load_lakefs_repos(assigns)
+      end
+
     {:ok,
-     socket
-     |> assign(:type, Atom.to_string(destination.type))
-     |> assign(assigns)
-     |> assign(:lakefs_repos, [])
-     |> assign(:destination_id, destination.id)
-     |> assign_form(changeset)}
+      socket
+        |> assign(:type, Atom.to_string(destination.type))
+        |> assign(assigns)
+        |> assign(:lakefs_repos, lakefs_repos)
+        |> assign(:destination, destination)
+        |> assign(:repo_created, false)
+        |> assign_form(changeset)}
   end
 
+  # Loads LakeFS repositories.
+  defp load_lakefs_repos(_assigns), do: []
+
   @impl true
+  @doc "Handles form validation, save, and test connection events."
   def handle_event("validate", %{"destination" => destination_params}, socket) do
     changeset =
       socket.assigns.destination
       |> Ingest.Destinations.change_destination(destination_params)
       |> Map.put(:action, :validate)
 
-    {:noreply,
-     assign_form(socket |> assign(:type, Map.get(destination_params, "type")), changeset)}
+    socket =
+      socket
+      |> assign(:type, Map.get(destination_params, "type"))
+      |> assign(:lakefs_repos, Map.get(destination_params, "lakefs_repos", socket.assigns.lakefs_repos))
+
+    {:noreply, assign_form(socket, changeset)}
   end
 
-  def handle_event(
-        "save",
-        %{"save" => save_type, "destination" => destination_params} = _params,
-        socket
-      ) do
-    case save_type do
-      "save" ->
-        save_destination(socket, socket.assigns.live_action, destination_params)
+  @impl true
+  def handle_event("save", %{"action" => "test_connection", "destination" => destination_params}, socket) do
+    handle_test_connection(socket, destination_params)
+  end
 
-      # currently this only applies to the LakeFS destination, and will populate the repositories and remove the disabled tag
-      "test_connection" ->
-        base_url =
-          if destination_params["lakefs_config"]["ssl"] == "true" do
-            "https://#{destination_params["lakefs_config"]["base_url"]}"
-          else
-            "http://#{destination_params["lakefs_config"]["base_url"]}"
-          end
+  @impl true
+  def handle_event("save", %{"action" => "save", "destination" => destination_params}, socket) do
+    save_destination(socket, socket.assigns.live_action, destination_params)
+  end
 
-        destination =
-          if socket.assigns.destination_id do
-            Destinations.get_destination(socket.assigns.destination_id)
-          else
-            nil
-          end
+  @impl true
+  def handle_event("save", %{"action" => unknown_action}, socket) do
+    Logger.error("Unknown action received: #{inspect(unknown_action)}")
+    {:noreply, put_flash(socket, :error, "Invalid action: #{unknown_action}")}
+  end
 
-        client =
-          if destination && destination.type == :lakefs do
-            Ingest.Destinations.Lakefs.new_client(
-              base_url,
-              {
-                destination.lakefs_config.access_key_id,
-                destination.lakefs_config.secret_access_key
-              },
-              port: destination.lakefs_config.port
-            )
-          else
-            Ingest.Destinations.Lakefs.new_client(
-              base_url,
-              {
-                destination_params["lakefs_config"]["access_key_id"],
-                destination_params["lakefs_config"]["secret_access_key"]
-              },
-              port: destination_params["lakefs_config"]["port"]
-            )
-          end
+  # Handles test connection event for LakeFS.
+  defp handle_test_connection(socket, destination_params) do
+    destination_name = Map.get(destination_params, "name", "default-repo-name")
+    lakefs_config = Map.get(destination_params, "lakefs_config", %{})
+    base_url = build_base_url(lakefs_config)
+    access_key_id = Map.get(lakefs_config, "access_key_id", "")
+    secret_key = Map.get(lakefs_config, "secret_access_key", "")
 
-        {:ok, repos} = Ingest.Destinations.Lakefs.list_repos(client)
+    with {:ok, client} <- LakefsClient.new(base_url, access_key: access_key_id, secret_key: secret_key),
+         {:ok, repos} <- LakefsClient.list_repos(client) do
 
+      if Enum.any?(repos["results"], fn %{"id" => id} -> id == destination_name end) do
         {:noreply,
          socket
-         |> assign(:lakefs_repos, repos)}
-    end
-  end
+         |> assign(:lakefs_repos, repos)
+         |> assign(:repo_created, false)
+         |> put_flash(:info, "Repository '#{destination_name}' already exists.")}
+      else
+        with {:ok, _response} <- Ingest.LakeFS.check_or_create_repo(client, destination_name),
+             {:ok, updated_repos} <- LakefsClient.list_repos(client) do
 
-  defp save_destination(socket, :edit, destination_params) do
-    destination_params =
-      Map.put(
-        destination_params,
-        "classifications_allowed",
-        collect_classifications(destination_params)
-      )
-
-    with :ok <-
-           Bodyguard.permit(
-             Ingest.Destinations.Destination,
-             :update_destination,
-             socket.assigns.current_user,
-             socket.assigns.destination
-           ),
-         {:ok, destination} <-
-           Ingest.Destinations.update_destination(socket.assigns.destination, destination_params) do
-      notify_parent({:saved, destination})
-
-      {:noreply,
-       socket
-       |> put_flash(:info, "Destination updated successfully")
-       |> push_patch(to: socket.assigns.patch)}
+          {:noreply,
+           socket
+           |> assign(:lakefs_repos, updated_repos)
+           |> assign(:repo_created, true)
+           |> put_flash(:info, "Repository '#{destination_name}' was successfully created!")}
+        else
+          _ ->
+            {:noreply,
+             socket
+             |> put_flash(:error, "Failed to create or reload repository.")
+             |> assign(:repo_created, false)}
+        end
+      end
     else
-      _ -> {:noreply, assign_form(socket, socket.assigns.destination)}
+      {:error, _reason} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed to connect to LakeFS.")
+         |> assign(:repo_created, false)}
     end
   end
 
+  # Saves the destination data for new entry.
   defp save_destination(socket, :new, destination_params) do
     destination_params =
-      Map.put(
-        destination_params,
-        "classifications_allowed",
-        collect_classifications(destination_params)
-      )
+      Map.put(destination_params, "classifications_allowed", collect_classifications(destination_params))
 
     case Map.put(destination_params, "inserted_by", socket.assigns.current_user.id)
          |> Ingest.Destinations.create_destination() do
       {:ok, destination} ->
         notify_parent({:saved, destination})
-
-        {:noreply,
-         socket
-         |> put_flash(:info, "Destination created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+        {:noreply, socket |> put_flash(:info, "Destination created successfully") |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
     end
   end
 
-  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :destination_form, to_form(changeset))
+  # Saves the destination data for edit entry.
+  defp save_destination(socket, :edit, destination_params) do
+    destination_params =
+      Map.put(destination_params, "classifications_allowed", collect_classifications(destination_params))
+      |> Map.put("updated_by", socket.assigns.current_user.id)
+
+    case Ingest.Destinations.update_destination(socket.assigns.destination, destination_params) do
+      {:ok, destination} ->
+        notify_parent({:saved, destination})
+        {:noreply, socket |> put_flash(:info, "Destination updated successfully") |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign_form(socket, changeset)}
+    end
   end
 
+  # Assigns the form changeset.
+  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
+    form = to_form(changeset)
+    assign(socket, :destination_form, form)
+  end
+
+  # Collects classifications from the form data.
   defp collect_classifications(form) do
     elems =
       :maps.filter(fn _k, v -> v == "true" end, %{
@@ -498,9 +514,16 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
         cui: form["cui"],
         uur: form["uur"]
       })
-
     Map.keys(elems)
   end
 
+  # Builds the base URL for LakeFS
+  defp build_base_url(%{"base_url" => base_url, "port" => port, "ssl" => ssl}) do
+    scheme = if ssl == "true", do: "https", else: "http"
+    port = port || "8000"
+    "#{scheme}://#{base_url}:#{port}"
+  end
+
+  # Sends notification to parent process.
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end
