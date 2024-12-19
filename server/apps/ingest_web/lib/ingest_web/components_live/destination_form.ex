@@ -249,23 +249,15 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     field={@destination_form[:repo_per_project]}
                     label="Repo per project"
                   />
-                  <div class="flex items-center space-x-2 relative">
-                    <.button
-                      class="rounded-md bg-indigo-600 px-3 py-2 mt-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                      phx-submit="save"
-                      phx-disable-with="Saving..."
-                      name="action"
-                      value="test_connection"
-                    >
-                      Test Connection
-                    </.button>
-
-                    <%= if @repo_created do %>
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 animate-bounce absolute left-40" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L9 11.586 5.707 8.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l7-7a1 1 0 000-1.414z" clip-rule="evenodd" />
-                      </svg>
-                    <% end %>
-                  </div>
+                  <.button
+                    class="rounded-md bg-indigo-600 px-3 py-2 mt-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    phx-submit="save"
+                    phx-disable-with="Saving..."
+                    name="action"
+                    value="test_connection"
+                  >
+                    Test Connection
+                  </.button>
                   <.label for="status-select">
                     Repositories
                   </.label>
@@ -388,12 +380,12 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
     {:ok,
       socket
-      |> assign(:type, Atom.to_string(destination.type))
-      |> assign(assigns)
-      |> assign(:lakefs_repos, lakefs_repos)
-      |> assign(:destination, destination)
-      |> assign(:repo_created, false)
-      |> assign_form(changeset)}
+        |> assign(:type, Atom.to_string(destination.type))
+        |> assign(assigns)
+        |> assign(:lakefs_repos, lakefs_repos)
+        |> assign(:destination, destination)
+        |> assign(:repo_created, false)
+        |> assign_form(changeset)}
   end
 
   # Loads LakeFS repositories.
