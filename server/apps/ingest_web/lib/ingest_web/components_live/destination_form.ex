@@ -143,12 +143,20 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.label for="status-select">
                     Access Key ID
                   </.label>
-                  <.input type="password" field={config[:access_key_id]} />
+                  <.input
+                    type="password"
+                    placeholder="secret not shown"
+                    field={config[:access_key_id]}
+                  />
 
                   <.label for="status-select">
                     Secret Access Key
                   </.label>
-                  <.input type="password" field={config[:secret_access_key]} />
+                  <.input
+                    type="password"
+                    placeholder="secret not shown"
+                    field={config[:secret_access_key]}
+                  />
 
                   <.label for="status-select">
                     URL
@@ -201,12 +209,20 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.label for="status-select">
                     Access Key ID
                   </.label>
-                  <.input type="password" field={config[:access_key_id]} />
+                  <.input
+                    type="password"
+                    placeholder="secret not shown"
+                    field={config[:access_key_id]}
+                  />
 
                   <.label for="status-select">
                     Secret Access Key
                   </.label>
-                  <.input type="password" field={config[:secret_access_key]} />
+                  <.input
+                    type="password"
+                    placeholder="secret not shown"
+                    field={config[:secret_access_key]}
+                  />
 
                   <.label for="status-select">
                     URL
@@ -294,7 +310,11 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.label for="status-select">
                     Account Name
                   </.label>
-                  <.input type="text" field={config[:account_name]} />
+                  <.input
+                    type="password"
+                    placeholder="secret not shown"
+                    field={config[:account_name]}
+                  />
                   <p class="text-xs">
                     This field is stored in an encrypted state and will not be made available to other users of the destination
                   </p>
@@ -302,7 +322,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.label for="status-select">
                     Account Key
                   </.label>
-                  <.input type="password" field={config[:account_key]} />
+                  <.input type="password" placeholder="secret not shown" field={config[:account_key]} />
                   <p class="text-xs">
                     This field is stored in an encrypted state and will not be made available to other users of the destination
                   </p>

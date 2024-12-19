@@ -35,7 +35,7 @@ defmodule Ingest.Umbrella.MixProject do
     [
       # Required to run "mix format" on ~H/.heex files from the umbrella root
       # TODO bump on release to {:phoenix_live_view, ">= 0.0.0"},
-      {:phoenix_live_view, "~> 1.0.0-rc.7", override: true}
+      {:phoenix_live_view, "~> 1.0.0", override: true}
     ]
   end
 

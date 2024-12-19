@@ -12,6 +12,11 @@ defmodule IngestWeb.ProjectsLive do
           <h1 class="text-base font-semibold leading-6 text-gray-900">Projects</h1>
           <p class="mt-2 text-sm text-gray-700">
             A list of all the projects you own or are a part of. Projects typically reflect a logical separation between groups of data requests.
+            <p class="mt-2 text-sm text-gray-700">
+              <b>
+                Note: You do not need to be part of a project in order to upload data to it. Project membership is used to help with project management.
+              </b>
+            </p>
           </p>
         </div>
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -21,7 +26,7 @@ defmodule IngestWeb.ProjectsLive do
                 type="button"
                 class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                <.icon name="hero-plus" /> New Project
+                <.icon name="hero-plus" /> Register Project
               </button>
             </.link>
           </div>
@@ -37,17 +42,17 @@ defmodule IngestWeb.ProjectsLive do
                 fn {_id, {project, _count}} -> JS.navigate(~p"/dashboard/projects/#{project}") end
               }
             >
-              <:col :let={{_id, {project, _count}}} label="Name"><%= project.name %></:col>
+              <:col :let={{_id, {project, _count}}} label="Name">{project.name}</:col>
               <:col :let={{_id, {project, _count}}} label="Description">
-                <%= project.description %>
+                {project.description}
               </:col>
-              <:col :let={{_id, {_project, count}}} label="Request Count"><%= count %></:col>
+              <:col :let={{_id, {_project, count}}} label="Request Count">{count}</:col>
               <:col :let={{_id, {project, _count}}} label="Role">
-                <%= if project.inserted_by == @current_user.id do
+                {if project.inserted_by == @current_user.id do
                   "Owner"
                 else
                   "Member"
-                end %>
+                end}
               </:col>
               <:action :let={{_id, {project, _count}}}>
                 <div class="sr-only">
@@ -67,6 +72,14 @@ defmodule IngestWeb.ProjectsLive do
               </:action>
               <:action :let={{id, {project, count}}}>
                 <.link
+                  :if={
+                    Bodyguard.permit?(
+                      Ingest.Projects.Project,
+                      :delete_project,
+                      @current_user,
+                      project
+                    )
+                  }
                   class="text-red-600 hover:text-red-900"
                   phx-click={
                     JS.push("delete", value: %{id: project.id, count: count}) |> hide("##{id}")

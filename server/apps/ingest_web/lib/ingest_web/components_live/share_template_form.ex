@@ -9,24 +9,39 @@ defmodule IngestWeb.LiveComponents.ShareTemplateForm do
   def render(assigns) do
     ~H"""
     <div>
-      <ul role="list" class="divide-y divide-gray-100">
+      <dul role="list" class="divide-y divide-gray-100">
         <%= for member <- @template.template_members do %>
           <li class="flex items-center justify-between gap-x-6 py-5">
             <div class="flex min-w-0 gap-x-4">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
                 <span class="font-medium leading-none text-white">
-                  <%= if member.name do
+                  {if member.name do
                     String.slice(member.name, 0..1) |> String.upcase()
-                  end %>
+                  end}
                 </span>
               </span>
               <div class="min-w-0 flex-auto">
-                <p class="text-sm font-semibold leading-6 text-gray-900"><%= member.name %></p>
+                <p class="text-sm font-semibold leading-6 text-gray-900">{member.name}</p>
                 <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                  <%= member.email %>
+                  {member.email}
                 </p>
               </div>
             </div>
+            <.form
+              for={}
+              phx-change="update_role"
+              phx-target={@myself}
+              phx-value-member={member.id}
+              phx-value-email={member.email}
+            >
+              <.input
+                name="role"
+                type="select"
+                value={member.roles}
+                prompt="Select one"
+                options={[:member, :manager]}
+              />
+            </.form>
             <div>
               <span
                 :if={
@@ -48,7 +63,7 @@ defmodule IngestWeb.LiveComponents.ShareTemplateForm do
             </div>
           </li>
         <% end %>
-      </ul>
+      </dul>
       <.simple_form for={@invite_form} phx-submit="save" phx-target={@myself}>
         <.input
           field={@invite_form[:email]}
@@ -90,6 +105,33 @@ defmodule IngestWeb.LiveComponents.ShareTemplateForm do
          socket
          |> put_flash(:error, "Failed To Invite User!")
          |> push_patch(to: ~p"/dashboard/templates/#{socket.assigns.template.id}")}
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "update_role",
+        %{"role" => role, "member" => member_id} = _params,
+        socket
+      ) do
+    case socket.assigns.template
+         |> Ingest.Requests.update_template_members(
+           Enum.find(socket.assigns.template.template_members, fn member ->
+             member.id == member_id
+           end),
+           String.to_existing_atom(role)
+         ) do
+      {1, _n} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Succesfully Changed Role!")
+         |> push_patch(to: ~p"/dashboard/templates/#{socket.assigns.template.id}/share")}
+
+      {:error, _e} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed To Save Role!")
+         |> push_patch(to: ~p"/dashboard/templates/#{socket.assigns.template.id}/share")}
     end
   end
 end

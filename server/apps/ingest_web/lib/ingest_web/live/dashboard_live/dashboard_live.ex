@@ -16,11 +16,11 @@ defmodule IngestWeb.DashboardLive do
             <a href="/dashboard/projects" class="focus:outline-none">
               <!-- Extend touch target to entire panel -->
               <span class="absolute inset-0" aria-hidden="true"></span>
-              Find or Create a Project
+              Find or Register a Project
             </a>
           </h3>
           <p class="mt-2 text-sm text-gray-500">
-            Projects are the root of all data requests. Find or create a project to begin working with data.
+            Projects are the root of all data requests. Find or register a project to begin working with data.
           </p>
         </div>
         <span

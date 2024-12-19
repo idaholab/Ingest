@@ -3,6 +3,7 @@ defmodule IngestWeb.UserSettingsLive do
 
   alias Ingest.Accounts
 
+  @impl true
   def render(assigns) do
     ~H"""
     <.header class="text-center">
@@ -98,9 +99,9 @@ defmodule IngestWeb.UserSettingsLive do
           <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <.table id="personal_keys" rows={@streams.keys}>
-                <:col :let={{_id, key}} label="Key"><%= key.access_key %></:col>
+                <:col :let={{_id, key}} label="Key">{key.access_key}</:col>
                 <:col :let={{_id, key}} label="Expiration">
-                  <%= "#{key.expires.day}-#{key.expires.month}-#{key.expires.year}" %>
+                  {"#{key.expires.day}-#{key.expires.month}-#{key.expires.year}"}
                 </:col>
 
                 <:action :let={{id, key}}>
@@ -139,6 +140,7 @@ defmodule IngestWeb.UserSettingsLive do
     """
   end
 
+  @impl true
   def mount(%{"token" => token}, _session, socket) do
     socket =
       case Accounts.update_user_email(socket.assigns.current_user, token) do
@@ -152,6 +154,7 @@ defmodule IngestWeb.UserSettingsLive do
     {:ok, push_navigate(socket, to: ~p"/users/settings")}
   end
 
+  @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
     email_changeset = Accounts.change_user_email(user)
@@ -180,6 +183,7 @@ defmodule IngestWeb.UserSettingsLive do
      |> stream(:keys, keys)}
   end
 
+  @impl true
   def handle_event("validate_email", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
 
@@ -192,6 +196,7 @@ defmodule IngestWeb.UserSettingsLive do
     {:noreply, assign(socket, email_form: email_form, email_form_current_password: password)}
   end
 
+  @impl true
   def handle_event("update_email", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
     user = socket.assigns.current_user
@@ -212,6 +217,7 @@ defmodule IngestWeb.UserSettingsLive do
     end
   end
 
+  @impl true
   def handle_event("validate_password", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
 
@@ -224,6 +230,7 @@ defmodule IngestWeb.UserSettingsLive do
     {:noreply, assign(socket, password_form: password_form, current_password: password)}
   end
 
+  @impl true
   def handle_event("update_password", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
     user = socket.assigns.current_user

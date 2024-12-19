@@ -13,16 +13,16 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
       <div class="space-y-10 divide-y divide-gray-900/10">
         <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3">
           <div :if={@metadata.submitted} class="px-4 sm:px-0">
-            <h2 class="text-base font-semibold leading-7 text-gray-500"><%= @title %></h2>
+            <h2 class="text-base font-semibold leading-7 text-gray-500">{@title}</h2>
             <p class="mt-1 text-sm leading-6 text-gray-400">
-              <%= @description %>
+              {@description}
             </p>
           </div>
 
           <div :if={!@metadata.submitted} class="px-4 sm:px-0">
-            <h2 class="text-base font-semibold leading-7 text-gray-900"><%= @title %></h2>
+            <h2 class="text-base font-semibold leading-7 text-gray-900">{@title}</h2>
             <p class="mt-1 text-sm leading-6 text-gray-600">
-              <%= @description %>
+              {@description}
             </p>
           </div>
 
@@ -78,11 +78,11 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
               />
               <div :if={@errors != nil}>
                 <.error :for={{key, msg} <- @errors} :if={key == field.label}>
-                  <%= msg %>
+                  {msg}
                 </.error>
               </div>
               <p :if={field.help_text} class="text-xs">
-                <%= raw(Earmark.as_html!(field.help_text)) %>
+                {raw(Earmark.as_html!(field.help_text))}
               </p>
               <p :if={field.required} class="text-xs text-red-400">*Required</p>
 
@@ -112,11 +112,11 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
                   />
                   <div :if={@errors != nil}>
                     <.error :for={{key, msg} <- @errors} :if={key == branch_field.label}>
-                      <%= msg %>
+                      {msg}
                     </.error>
                   </div>
                   <p :if={branch_field.help_text} class="text-xs">
-                    <%= raw(Earmark.as_html!(branch_field.help_text)) %>
+                    {raw(Earmark.as_html!(branch_field.help_text))}
                   </p>
                   <p :if={branch_field.required} class="text-xs text-red-400">*Required</p>
                 </div>

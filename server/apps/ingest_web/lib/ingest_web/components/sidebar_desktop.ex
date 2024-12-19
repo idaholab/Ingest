@@ -4,7 +4,6 @@ defmodule Sidebar do
   def desktop(assigns) do
     ~H"""
     <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-      <!-- Sidebar component, swap this element with another sidebar if you like -->
       <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
         <div class="flex h-16 shrink-0 items-center mt-10 ">
           <img class="h-13 w-auto " src="/images/logo.png" alt="Your Company" />
@@ -14,7 +13,6 @@ defmodule Sidebar do
             <li>
               <ul role="list" class="-mx-2 space-y-1">
                 <li>
-                  <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
                   <a href={~p"/dashboard"} class={active("dashboard", @section)}>
                     <svg
                       class="h-6 w-6 shrink-0"
@@ -35,7 +33,8 @@ defmodule Sidebar do
                 </li>
                 <li>
                   <a href={~p"/dashboard/uploads"} class={active("uploads", @section)}>
-                    <.icon name="hero-arrow-up-on-square-stack" class="h-6 w-6 shrink-0" /> Upload
+                    <.icon name="hero-arrow-up-on-square-stack" class="h-6 w-6 shrink-0" />
+                    Upload Data
                   </a>
                 </li>
                 <li>
@@ -52,7 +51,7 @@ defmodule Sidebar do
                       <svg class="h-1.5 w-1.5 fill-blue-500" viewBox="0 0 6 6" aria-hidden="true">
                         <circle cx="3" cy="3" r="3" />
                       </svg>
-                      <%= count %>
+                      {count}
                     </span>
                   </a>
                 </li>
@@ -61,7 +60,7 @@ defmodule Sidebar do
                     <div class="text-xs font-semibold leading-6 text-gray-400">Management</div>
                     <a href={~p"/dashboard/requests"} class={active("requests", @section)}>
                       <.icon name="hero-clipboard-document-check" class="h-6 w-6 shrink-0" />
-                      My Data Requests
+                      Data Requests
                     </a>
                   </li>
                   <li>
@@ -80,12 +79,12 @@ defmodule Sidebar do
                           d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
                         />
                       </svg>
-                      Metadata Templates
+                      Metadata Collection Forms
                     </a>
                   </li>
                   <li>
                     <a href={~p"/dashboard/destinations"} class={active("destinations", @section)}>
-                      <.icon name="hero-circle-stack" class="h-6 w-6 shrink-0" /> Destinations
+                      <.icon name="hero-circle-stack" class="h-6 w-6 shrink-0" /> Data Destinations
                     </a>
                   </li>
                 </div>
@@ -103,9 +102,9 @@ defmodule Sidebar do
                         class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                       >
                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                          <%= String.at(project.name, 0) %>
+                          {String.at(project.name, 0)}
                         </span>
-                        <span class="truncate"><%= project.name %></span>
+                        <span class="truncate">{project.name}</span>
                       </a>
                     </li>
                   <% else %>
@@ -116,9 +115,9 @@ defmodule Sidebar do
                         class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                       >
                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                          <%= String.at(project.name, 0) %>
+                          {String.at(project.name, 0)}
                         </span>
-                        <span class="truncate"><%= project.name %></span>
+                        <span class="truncate">{project.name}</span>
                       </a>
                     </li>
                   <% end %>
@@ -140,7 +139,7 @@ defmodule Sidebar do
                       class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
                       <.icon name="hero-plus" />
-                      <span class="truncate">More Projects</span>
+                      <span class="truncate">Find Projects</span>
                     </a>
                   </li>
                 <% end %>
@@ -194,7 +193,6 @@ defmodule Sidebar do
           <li>
             <ul role="list" class="-mx-2 space-y-1">
               <li>
-                <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
                 <a href={~p"/dashboard"} class={active("dashboard", @section)}>
                   <svg
                     class="h-6 w-6 shrink-0"
@@ -215,7 +213,7 @@ defmodule Sidebar do
               </li>
               <li>
                 <a href={~p"/dashboard/uploads"} class={active("uploads", @section)}>
-                  <.icon name="hero-arrow-up-on-square-stack" class="h-6 w-6 shrink-0" /> Upload
+                  <.icon name="hero-arrow-up-on-square-stack" class="h-6 w-6 shrink-0" /> Upload Data
                 </a>
               </li>
 
@@ -229,7 +227,7 @@ defmodule Sidebar do
                 <div class="text-xs font-semibold leading-6 text-gray-400">Management</div>
                 <a href={~p"/dashboard/requests"} class={active("requests", @section)}>
                   <.icon name="hero-clipboard-document-check" class="h-6 w-6 shrink-0" />
-                  My Data Requests
+                  Data Requests
                 </a>
               </li>
               <li>
@@ -248,13 +246,13 @@ defmodule Sidebar do
                       d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
                     />
                   </svg>
-                  Metadata Templates
+                  Metadata Collection Forms
                 </a>
               </li>
               <li>
                 <a href={~p"/dashboard/destinations"} class={active("destinations", @section)}>
                   <.icon name="hero-circle-stack" class="h-6 w-6 shrink-0" /> Destinations
-                  Destinations
+                  Data Destinations
                 </a>
               </li>
             </ul>
@@ -264,15 +262,14 @@ defmodule Sidebar do
             <ul role="list" class="-mx-2 mt-2 space-y-1">
               <%= for {project, _count} <- projects_list(@current_user) do %>
                 <li>
-                  <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
                   <a
                     href={~p"/dashboard/projects/#{project.id}"}
                     class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                   >
                     <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                      <%= String.at(project.name, 0) %>
+                      {String.at(project.name, 0)}
                     </span>
-                    <span class="truncate"><%= project.name %></span>
+                    <span class="truncate">{project.name}</span>
                   </a>
                 </li>
               <% end %>
@@ -283,7 +280,7 @@ defmodule Sidebar do
                   class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                 >
                   <.icon name="hero-plus" />
-                  <span class="truncate">More Projects</span>
+                  <span class="truncate">Find Projects</span>
                 </a>
               </li>
             </ul>

@@ -41,8 +41,8 @@ config :ingest_web, IngestWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "z5aeLcCGuJYv2pb7ZISYCWmEB3eirkBhYuLH2ylEwfF4zgBiYxD/lBUezCJsZIvi",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:ingest_web, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:ingest_web, ~w(--watch)]}
   ]
 
 # ## SSL Support

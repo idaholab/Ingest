@@ -43,8 +43,8 @@ defmodule IngestWeb.LiveComponents.AccessKeyForm do
               <p>
                 Save your secret access key in a safe place, as this will be the only time you will see it.
               </p>
-              <p class="mt-2"><b>ACCESS KEY: </b><%= @key.access_key %></p>
-              <p class="mt-2"><b>SECRET ACCESS KEY: </b><%= @key.secret_key %></p>
+              <p class="mt-2"><b>ACCESS KEY: </b>{@key.access_key}</p>
+              <p class="mt-2"><b>SECRET ACCESS KEY: </b>{@key.secret_key}</p>
             </div>
           </div>
         </div>

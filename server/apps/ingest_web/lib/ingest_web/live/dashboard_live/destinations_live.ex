@@ -56,8 +56,8 @@ defmodule IngestWeb.DestinationsLive do
                   fn {_id, destination} -> JS.navigate(~p"/dashboard/destinations/#{destination}") end
                 }
               >
-                <:col :let={{_id, destination}} label="Name"><%= destination.name %></:col>
-                <:col :let={{_id, destination}} label="Type"><%= destination.type %></:col>
+                <:col :let={{_id, destination}} label="Name">{destination.name}</:col>
+                <:col :let={{_id, destination}} label="Type">{destination.type}</:col>
 
                 <:action :let={{_id, destination}}>
                   <.link
@@ -65,15 +65,6 @@ defmodule IngestWeb.DestinationsLive do
                     class="text-indigo-600 hover:text-indigo-900"
                   >
                     Edit
-                  </.link>
-                </:action>
-                <:action :let={{_id, destination}}>
-                  <.link
-                    :if={destination.type == :lakefs || destination.type == :s3}
-                    patch={~p"/dashboard/destinations/#{destination}/explore"}
-                    class="text-indigo-600 hover:text-indigo-900"
-                  >
-                    Explore
                   </.link>
                 </:action>
                 <:action :let={{id, destination}}>

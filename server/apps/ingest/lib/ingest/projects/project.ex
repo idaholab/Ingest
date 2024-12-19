@@ -66,6 +66,22 @@ defmodule Ingest.Projects.Project do
     end
   end
 
+  # Users can view their own projects or ones they are members of
+  def authorize(
+        action,
+        %{id: user_id} = _user,
+        %{id: project_id, inserted_by: owner} = _project
+      )
+      when action in [:view_project] do
+    member = Ingest.Projects.get_member_project(user_id, project_id)
+
+    if member do
+      true
+    else
+      user_id == owner
+    end
+  end
+
   # Otherwise, denied
   def authorize(_, _, _), do: :error
 end

@@ -120,17 +120,21 @@ defmodule Ingest.Destinations.S3Config do
   @doc false
   def changeset(config, attrs) do
     config
-    |> cast(attrs, [
-      :access_key_id,
-      :secret_access_key,
-      :bucket,
-      :region,
-      :base_url,
-      :path,
-      :final_path,
-      :ssl,
-      :integrated_metadata
-    ])
+    |> cast(
+      attrs,
+      [
+        :access_key_id,
+        :secret_access_key,
+        :bucket,
+        :region,
+        :base_url,
+        :path,
+        :final_path,
+        :ssl,
+        :integrated_metadata
+      ],
+      empty_values: [""]
+    )
     |> validate_required([:bucket, :path])
   end
 end
@@ -154,14 +158,18 @@ defmodule Ingest.Destinations.AzureConfig do
   @doc false
   def changeset(config, attrs) do
     config
-    |> cast(attrs, [
-      :account_name,
-      :account_key,
-      :base_url,
-      :container,
-      :ssl,
-      :integrated_metadata
-    ])
+    |> cast(
+      attrs,
+      [
+        :account_name,
+        :account_key,
+        :base_url,
+        :container,
+        :ssl,
+        :integrated_metadata
+      ],
+      empty_values: [""]
+    )
     |> validate_required([:container])
   end
 end
@@ -187,16 +195,20 @@ defmodule Ingest.Destinations.LakeFSConfig do
   @doc false
   def changeset(config, attrs) do
     config
-    |> cast(attrs, [
-      :access_key_id,
-      :secret_access_key,
-      :repository,
-      :base_url,
-      :port,
-      :ssl,
-      :region,
-      :integrated_metadata
-    ])
+    |> cast(
+      attrs,
+      [
+        :access_key_id,
+        :secret_access_key,
+        :repository,
+        :base_url,
+        :port,
+        :ssl,
+        :region,
+        :integrated_metadata
+      ],
+      empty_values: [""]
+    )
     |> validate_required([:base_url, :repository])
   end
 end
