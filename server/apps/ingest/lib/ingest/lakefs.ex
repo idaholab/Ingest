@@ -4,11 +4,10 @@ defmodule Ingest.LakeFS do
   """
 
   alias Req
-  require Logger
 
   @default_lakefs_url "http://localhost:8000"
 
-  # Fetches LakeFS configuration once and caches the values
+  # Fetches LakeFS configuration once and caches the values.
   defp lakefs_config do
     %{
       url: url,
@@ -35,17 +34,17 @@ defmodule Ingest.LakeFS do
     )
   end
 
-  # Download a file from LakeFS
+  @doc "Downloads a file from LakeFS."
   def download_file(repo, ref, path) do
     lakefs_request(:get, "repositories/#{repo}/refs/#{ref}/objects", [path: path])
   end
 
-  # Download metadata directly from the object storage
+  @doc "Downloads metadata for an object from LakeFS."
   def download_metadata(repo, ref, path) do
     lakefs_request(:get, "repositories/#{repo}/refs/#{ref}/objects/stat", [path: path])
   end
 
-  # Get a presigned URL for downloading files
+  @doc "Generates a presigned URL for downloading an object from LakeFS."
   def presigned_download_url(repo, ref, path) do
     lakefs_request(:get, "repositories/#{repo}/refs/#{ref}/objects",
       [path: path, presign: true],
@@ -53,32 +52,29 @@ defmodule Ingest.LakeFS do
     )
   end
 
+  @doc "Checks if a repository exists, creates it if not."
   def check_or_create_repo(client, repo_name) do
     if repo_name in [nil, ""] do
-      Logger.error("Repository name is missing or empty.")
       {:error, "Repository name cannot be empty"}
     else
       url = lakefs_url("repositories/#{repo_name}")
 
       with {:ok, %{status: 200}} <- Req.get(url, auth: client.auth) do
-        Logger.info("Repository '#{repo_name}' exists.")
         {:ok, "Repository exists"}
       else
         {:ok, %{status: 404}} ->
-          Logger.info("Repository not found. Attempting to create it.")
           create_repo(client, repo_name)
 
         {:ok, %Req.Response{status: status, body: body}} ->
-          Logger.error("Failed with status #{status}: #{inspect(body)}")
           {:error, {:unexpected_status, status, body}}
 
         {:error, error} ->
-          Logger.error("Error checking if repository exists for '#{repo_name}'. Error: #{inspect(error)}")
           {:error, error}
       end
     end
   end
 
+  @doc "Creates a new repository in LakeFS."
   def create_repo(client, repo_name) do
     storage_namespace =
       cond do
@@ -101,25 +97,23 @@ defmodule Ingest.LakeFS do
 
     case Req.post(url, auth: client.auth, json: payload) do
       {:ok, %{status: 201, body: body}} ->
-        Logger.info("Repository '#{repo_name}' created successfully with storage namespace: #{storage_namespace}.")
         {:ok, body}
 
       {:ok, %{status: status, body: body}} ->
-        Logger.error("Failed to create repository. Status: #{status}, Body: #{inspect(body)}")
         {:error, {:unexpected_status, status, body}}
 
       {:error, reason} ->
-        Logger.error("Error creating repository. Reason: #{inspect(reason)}")
         {:error, reason}
     end
   end
 
+  # Constructs the LakeFS API URL.
   defp lakefs_url(path) do
     base_url = "http://localhost:8000/api/v1"
     "#{base_url}/#{path}"
   end
 
-  # Perform a diff merge with callbacks for added, changed, and removed files
+  # Performs a diff merge with callbacks for file changes.
   def diff_merge(
         %{
           "event_type" => "pre-merge",

@@ -6,14 +6,7 @@ defmodule Ingest.Destinations.LakefsClient do
   @enforce_keys [:endpoint]
   defstruct [:endpoint, :auth, plug: nil]
 
-  @doc """
-  Initializes a new LakeFS Client with an endpoint and optional options.
-
-  ## Examples
-
-      iex> Ingest.Destinations.LakefsClient.new("http://localhost:8000", access_key: "my_key", secret_key: "my_secret")
-      {:ok, %Ingest.Destinations.LakefsClient{}}
-  """
+  @doc "Initializes a new LakeFS Client with an endpoint and optional options."
   def new(endpoint, opts \\ []) do
     case URI.new(endpoint) do
       {:ok, uri} ->
@@ -30,14 +23,13 @@ defmodule Ingest.Destinations.LakefsClient do
     end
   end
 
+  @doc "Initializes a new LakeFS Client with an endpoint and optional options."
   def new!(endpoint, opts \\ []) do
     {:ok, client} = new(endpoint, opts)
     client
   end
 
-  @doc """
-  Lists all repositories on the LakeFS server.
-  """
+  @doc "Lists all repositories on the LakeFS server."
   def list_repos(%__MODULE__{} = client) do
     Req.get(
       "#{client.endpoint}/api/v1/repositories",
@@ -47,9 +39,7 @@ defmodule Ingest.Destinations.LakefsClient do
     |> format_response()
   end
 
-  @doc """
-  Lists all branches in a given repository.
-  """
+  @doc "Lists all branches in a given repository."
   def list_branches(%__MODULE__{} = client, repository) do
     Req.get(
       "#{client.endpoint}/api/v1/repositories/#{URI.encode(repository)}/branches",
@@ -59,9 +49,7 @@ defmodule Ingest.Destinations.LakefsClient do
     |> format_response()
   end
 
-  @doc """
-  Creates a new branch in a given repository.
-  """
+  @doc "Creates a new branch in a given repository."
   def create_branch(%__MODULE__{} = client, repository, name, source \\ "main") do
     Req.post(
       "#{client.endpoint}/api/v1/repositories/#{URI.encode(repository)}/branches",

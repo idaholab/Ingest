@@ -1,5 +1,3 @@
-#:public_key.cacerts_load("/Users/venethongkha1/cspca.llnl.gov.pem")
-
 defmodule Ingest.MixProject do
   use Mix.Project
 
