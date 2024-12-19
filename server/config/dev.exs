@@ -101,7 +101,7 @@ config :ingest, :openid_connect_oneid,
   redirect_uri: "http://localhost:4000/users/log_in/one_id",
   response_type: "code",
   scope: "openid email profile",
-  ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
+  ca_cert: "/Users/Shared/CAINLROOT_B64.crt"
 
 config :ingest, :openid_connect_okta,
   issuer: "https://identity-preview.inl.gov",
@@ -110,9 +110,9 @@ config :ingest, :openid_connect_okta,
   redirect_uri: "http://localhost:4000/users/log_in/okta",
   response_type: "code",
   scope: "openid email profile",
-  ca_cert: "/etc/ssl/certs/CAINLROOT.cer"
+  ca_cert: "/Users/Shared/CAINLROOT_B64.crt"
 
-config :ingest, :ca_certfile_path, "/etc/ssl/certs/CAINLROOT.cer"
+config :ingest, :ca_certfile_path, "/Users/Shared/CAINLROOT_B64.crt"
 config :ingest, :environment, :dev
 # display the classification of data warning banner
 config :ingest, :show_classifications, true
