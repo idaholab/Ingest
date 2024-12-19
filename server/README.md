@@ -14,9 +14,8 @@ Ingest is desisgned to be the upload point for various data management solutions
 0. **optional** Navigate to the root of the project and run `asdf install` - this will install all the toolchain and language dependencies needed locally. (In order for VSCode's Elixir plugin to work you must also set the global erlang and elixir versions via `asdf global {erlang/elixir} {latest/version in .tool-versions}`)
 1. Run `mix deps.get` & `mix deps.compile`
 2. Install the `phx_new` generator - `mix archive.install hex phx_new`
-3. Modify the configuration file in `config/dev.exs` - you will at least need to modify the database configuration to point to your local Postgres server.
-4. Run `mix ecto.reset && mix ecto.migrate` - this will run all the required migrations to setup your database.
-6. Run `mix phx.gen.secret` and copy the output to line 27 in your `config/dev.exs` file - under `secret_key_base`
+3. `mix setup`
+4. Run `mix phx.gen.secret` and copy the output to line 27 in your `config/dev.exs` file - under `secret_key_base`
 5. If you're on VSCode you can use the default run configuration to run your application from the editor, or you may start your server by running `mix phx.server` in either your terminal or an iEX instance
 
 
