@@ -57,10 +57,10 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
               </span>
               <div class="flex items-center gap-x-3">
                 <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
-                  <%= notification.subject %>
+                  {notification.subject}
                 </h3>
                 <time datetime="2023-01-23T11:00" class="flex-none text-xs text-gray-500">
-                  <%= Timex.format!(notification.inserted_at, "{UNIX}") %>
+                  {Timex.format!(notification.inserted_at, "{UNIX}")}
                 </time>
 
                 <.link
@@ -75,7 +75,7 @@ defmodule IngestWeb.ComponentsLive.NotificationsBarLive do
                 </.link>
               </div>
               <p class="mt-3 truncate text-sm text-gray-500 truncate">
-                <%= notification.body %>
+                {notification.body}
               </p>
             </li>
           </ul>

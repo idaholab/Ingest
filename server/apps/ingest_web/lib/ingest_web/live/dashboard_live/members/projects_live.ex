@@ -22,20 +22,22 @@ defmodule IngestWeb.MembersProjectsLive do
               id="projects"
               rows={@streams.projects}
               row_click={
-                fn {_id, {project, _count}} -> JS.navigate(~p"/dashboard/member/projects/#{project}") end
+                fn {_id, {project, _count}} ->
+                  JS.navigate(~p"/dashboard/member/projects/#{project}")
+                end
               }
             >
-              <:col :let={{_id, {project, _count}}} label="Name"><%= project.name %></:col>
+              <:col :let={{_id, {project, _count}}} label="Name">{project.name}</:col>
               <:col :let={{_id, {project, _count}}} label="Description">
-                <%= project.description %>
+                {project.description}
               </:col>
-              <:col :let={{_id, {_project, count}}} label="Request Count"><%= count %></:col>
+              <:col :let={{_id, {_project, count}}} label="Request Count">{count}</:col>
               <:col :let={{_id, {project, _count}}} label="Role">
-                <%= if project.inserted_by == @current_user.id do
+                {if project.inserted_by == @current_user.id do
                   "Owner"
                 else
                   "Member"
-                end %>
+                end}
               </:col>
               <:action :let={{_id, {project, _count}}}>
                 <div class="sr-only">

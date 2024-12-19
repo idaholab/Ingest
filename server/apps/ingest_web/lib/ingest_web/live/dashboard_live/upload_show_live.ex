@@ -10,9 +10,9 @@ defmodule IngestWeb.UploadShowLive do
     <div>
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
-          <h1 class="text-base font-semibold leading-6 text-gray-900"><%= @request.name %></h1>
+          <h1 class="text-base font-semibold leading-6 text-gray-900">{@request.name}</h1>
           <p class="mt-2 text-sm text-gray-700">
-            <%= @request.description %>
+            {@request.description}
           </p>
         </div>
       </div>
@@ -32,7 +32,7 @@ defmodule IngestWeb.UploadShowLive do
               :for={classification <- @classifications_allowed}
               class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 mx-2"
             >
-              <%= Atom.to_string(classification) |> String.upcase() %>
+              {Atom.to_string(classification) |> String.upcase()}
             </span>
           </div>
         </div>
@@ -71,10 +71,10 @@ defmodule IngestWeb.UploadShowLive do
                 <div class="flex-1 truncate">
                   <div class="flex items-center space-x-3">
                     <h3 class="truncate text-sm font-medium text-gray-900">
-                      <%= entry.client_name %>
+                      {entry.client_name}
                     </h3>
                   </div>
-                  <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
+                  <progress value={entry.progress} max="100">{entry.progress}%</progress>
                 </div>
                 <.live_img_preview
                   entry={entry}
@@ -105,12 +105,12 @@ defmodule IngestWeb.UploadShowLive do
                   fn {_id, upload} -> JS.navigate(~p"/dashboard/uploads/#{@request}/#{upload}") end
                 }
               >
-                <:col :let={{_id, upload}} label="File Name"><%= upload.filename %></:col>
+                <:col :let={{_id, upload}} label="File Name">{upload.filename}</:col>
                 <:col :let={{_id, upload}} label="Upload Date">
-                  <%= "#{upload.inserted_at.month}-#{upload.inserted_at.day}-#{upload.inserted_at.year}" %>
+                  {"#{upload.inserted_at.month}-#{upload.inserted_at.day}-#{upload.inserted_at.year}"}
                 </:col>
-                <:col :let={{_id, upload}} label="Size"><%= mb(upload.size) %>mb</:col>
-                <:col :let={{_id, upload}} label="Extension"><%= upload.ext %></:col>
+                <:col :let={{_id, upload}} label="Size">{mb(upload.size)}mb</:col>
+                <:col :let={{_id, upload}} label="Extension">{upload.ext}</:col>
 
                 <:action :let={{_id, upload}}>
                   <div :if={!Ecto.assoc_loaded?(upload.metadatas) || upload.metadatas == []}>

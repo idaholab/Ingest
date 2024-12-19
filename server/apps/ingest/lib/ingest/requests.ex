@@ -47,7 +47,7 @@ defmodule Ingest.Requests do
       ** (Ecto.NoResultsError)
 
   """
-  def get_template!(id), do: Repo.get!(Template, id)
+  def get_template!(id), do: Repo.get!(Template, id) |> Repo.preload(:template_members)
 
   @doc """
   Creates a template.
@@ -377,7 +377,9 @@ defmodule Ingest.Requests do
           on: p.id == r.project_id,
           join: ps in ProjectSearch,
           on: ps.id == p.id,
-          where: fragment("projects_search MATCH ?", ^search_term) and r.status == :published,
+          where:
+            fragment("projects_search MATCH ?", ^search_term) and r.status == :published and
+              r.visibility == :public,
           select: r
 
       Repo.all(query)
@@ -408,6 +410,7 @@ defmodule Ingest.Requests do
         where: (tm.user_id == ^user.id or tm.email == ^user.email) and tm.template_id == ^id,
         select: tm
     )
+    |> Repo.preload(:template_members)
   end
 
   def list_owned_templates(%User{} = user) do
@@ -418,6 +421,7 @@ defmodule Ingest.Requests do
         group_by: t.id,
         select: t
     )
+    |> Repo.preload(:template_members)
   end
 
   def add_user_to_template(%Template{} = template, %User{} = user, role \\ :member) do
@@ -513,10 +517,13 @@ defmodule Ingest.Requests do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_template_members(%TemplateMembers{} = template_members, attrs) do
-    template_members
-    |> TemplateMembers.changeset(attrs)
-    |> Repo.update()
+  def update_template_members(%Template{} = template, %User{} = user, role) do
+    from(tm in TemplateMembers,
+      where:
+        tm.user_id ==
+          ^user.id and tm.template_id == ^template.id
+    )
+    |> Repo.update_all(set: [role: role])
   end
 
   @doc """

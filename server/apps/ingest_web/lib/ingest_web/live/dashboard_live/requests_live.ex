@@ -49,14 +49,14 @@ defmodule IngestWeb.RequestsLive do
                 rows={@streams.requests}
                 row_click={fn {_id, request} -> JS.navigate(~p"/dashboard/requests/#{request}") end}
               >
-                <:col :let={{_id, request}} label="Name"><%= request.name %></:col>
-                <:col :let={{_id, request}} label="Project"><%= request.project.name %></:col>
+                <:col :let={{_id, request}} label="Name">{request.name}</:col>
+                <:col :let={{_id, request}} label="Project">{request.project.name}</:col>
                 <:col :let={{_id, request}} label="Description">
-                  <%= request.description %>
+                  {request.description}
                 </:col>
 
-                <:col :let={{_id, request}} label="Uploads"><%= get_upload_count(request) %></:col>
-                <:col :let={{_id, request}} label="Status"><%= request.status %></:col>
+                <:col :let={{_id, request}} label="Uploads">{get_upload_count(request)}</:col>
+                <:col :let={{_id, request}} label="Status">{request.status}</:col>
 
                 <:action :let={{_id, request}}>
                   <.link

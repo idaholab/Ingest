@@ -19,9 +19,9 @@ defmodule IngestWeb.LiveComponents.ProjectForm do
         <div class="space-y-12">
           <div class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
             <div>
-              <h2 class="text-base font-semibold leading-7 text-gray-900">New Project</h2>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Register Project</h2>
               <p class="mt-1 text-sm leading-6 text-gray-600">
-                Create a new Project. A Project is a logical grouping of data requests and will be represented in how the data is sent to the configured data destination.
+                Register a new Project. A Project is a logical grouping of data requests and will be represented in how the data is sent to the configured data destination.
               </p>
             </div>
 
@@ -52,7 +52,7 @@ defmodule IngestWeb.LiveComponents.ProjectForm do
             class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             phx-disable-with="Saving..."
           >
-            Save
+            Submit
           </.button>
         </div>
       </.simple_form>

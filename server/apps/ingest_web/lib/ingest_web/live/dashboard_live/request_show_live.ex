@@ -62,7 +62,7 @@ defmodule IngestWeb.RequestShowLive do
                       </span>
                     </span>
                     <span class="ml-4 mt-0.5 flex min-w-0 flex-col">
-                      <span class="text-sm font-medium">Add Templates</span>
+                      <span class="text-sm font-medium">Add Metadata Collection Forms</span>
                       <span class="text-sm font-medium text-gray-500">
                         Determine what data should be collected.
                       </span>
@@ -204,14 +204,13 @@ defmodule IngestWeb.RequestShowLive do
         <div>
           <span>
             <h1 class="text-2xl">
-              <%= @request.name %> for <%= @request.project.name %>
+              {@request.name} for {@request.project.name}
               <span class="text-sm">
                 <sup><a href={~p"/dashboard/requests/#{@request.id}/edit"}>Edit</a></sup>
               </span>
             </h1>
           </span>
-          <p><%= @request.description %></p>
-          <!-- PUBLIC/PRIVATE -->
+          <p>{@request.description}</p>
           <div
             :if={Bodyguard.permit?(Ingest.Requests.Request, :update_request, @current_user, @request)}
             class="mt-20"
@@ -245,15 +244,12 @@ defmodule IngestWeb.RequestShowLive do
                     class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
                   />
                   <span class="ml-3 flex flex-col">
-                    <!-- Checked: "text-indigo-900", Not Checked: "text-gray-900" -->
                     <span class="block text-sm font-medium">Draft</span>
-                    <!-- Checked: "text-indigo-700", Not Checked: "text-gray-500" -->
                     <span class="block text-sm">
                       Disable uploads and searching for this request.
                     </span>
                   </span>
                 </label>
-                <!-- Checked: "z-10 border-indigo-200 bg-indigo-50", Not Checked: "border-gray-200" -->
                 <label
                   :if={@request.status != :published}
                   class={"relative flex #{ if (@request.templates != [] || @project_templates != []) &&
@@ -315,7 +311,7 @@ defmodule IngestWeb.RequestShowLive do
             </div>
             <div class="relative flex justify-center">
               <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
-                Applied Data Templates
+                Applied Metadata Collection Forms
               </span>
             </div>
           </div>
@@ -335,7 +331,7 @@ defmodule IngestWeb.RequestShowLive do
                 <tr :for={template <- @project_templates}>
                   <td class="p-0 pb-4 pr-6">
                     <div class="py-4 pr-6 text-sm font-semibold leading-6 text-gray-900">
-                      <%= template.name %>
+                      {template.name}
                     </div>
                   </td>
                   <td class="relative w-14 p-0">
@@ -349,7 +345,7 @@ defmodule IngestWeb.RequestShowLive do
                 <tr :for={template <- @request_templates}>
                   <td class="p-0 pb-4 pr-6">
                     <div class="py-4 pr-6 text-sm font-semibold leading-6 text-gray-900">
-                      <%= template.name %>
+                      {template.name}
                     </div>
                   </td>
                   <td class="relative w-14 p-0">
@@ -387,7 +383,7 @@ defmodule IngestWeb.RequestShowLive do
                 type="button"
                 class="inline-flex items-center rounded-md bg-gray-600 hover:text-white text-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                <.icon name="hero-plus" /> Add Template
+                <.icon name="hero-plus" /> Add Metadata Collection Form
               </button>
             </.link>
           </div>
@@ -433,7 +429,7 @@ defmodule IngestWeb.RequestShowLive do
                   <div class="flex min-w-0 gap-x-4">
                     <div class="min-w-0 flex-auto">
                       <p class="text-sm font-semibold leading-6 text-gray-900">
-                        <%= member.email %>
+                        {member.email}
                       </p>
                     </div>
                   </div>
@@ -635,7 +631,7 @@ defmodule IngestWeb.RequestShowLive do
             </div>
             <div class="relative flex justify-center">
               <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
-                Destinations
+                Data Destinations
               </span>
             </div>
           </div>
@@ -665,10 +661,10 @@ defmodule IngestWeb.RequestShowLive do
                         </span>
                         <div class="min-w-0 flex-auto">
                           <p class="text-sm font-semibold leading-6 text-gray-900">
-                            <%= destination.name %>
+                            {destination.name}
                           </p>
                           <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                            <%= destination.type %>
+                            {destination.type}
                           </p>
                         </div>
                       </div>
@@ -696,10 +692,10 @@ defmodule IngestWeb.RequestShowLive do
                         </span>
                         <div class="min-w-0 flex-auto">
                           <p class="text-sm font-semibold leading-6 text-gray-900">
-                            <%= destination.name %>
+                            {destination.name}
                           </p>
                           <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                            <%= destination.type %>
+                            {destination.type}
                           </p>
                         </div>
                       </div>
@@ -747,7 +743,7 @@ defmodule IngestWeb.RequestShowLive do
                   type="button"
                   class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm text-black hover:text-white font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  <.icon name="hero-plus" /> Add Destination
+                  <.icon name="hero-plus" /> Add Data Destination
                 </button>
               </.link>
             </div>
@@ -857,10 +853,10 @@ defmodule IngestWeb.RequestShowLive do
                           name="sort_select"
                           class="mt-2 block mx-2 w-64 rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm"
                         >
-                          <%= Phoenix.HTML.Form.options_for_select(
+                          {Phoenix.HTML.Form.options_for_select(
                             [{"Date", :date}, {"Name", :name}, {"Status", :status}],
                             @filter_form[:sort].value
-                          ) %>
+                          )}
                         </select>
 
                         <div class="mx-3 my-2">
@@ -898,7 +894,7 @@ defmodule IngestWeb.RequestShowLive do
                   <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
                       <p class="text-sm font-semibold leading-6 text-gray-900">
-                        <%= upload.filename %>
+                        {upload.filename}
                       </p>
                       <p
                         :if={
@@ -923,13 +919,13 @@ defmodule IngestWeb.RequestShowLive do
                       <p class="whitespace-nowrap">
                         Uploaded on
                         <time datetime={upload.inserted_at}>
-                          <%= NaiveDateTime.to_date(upload.inserted_at) %>
+                          {NaiveDateTime.to_date(upload.inserted_at)}
                         </time>
                       </p>
                       <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 fill-current">
                         <circle cx="1" cy="1" r="1" />
                       </svg>
-                      <p class="truncate">Uploaded by <%= upload.user.name %></p>
+                      <p class="truncate">Uploaded by {upload.user.name}</p>
                     </div>
                   </div>
                   <div class="flex flex-none items-center gap-x-4">

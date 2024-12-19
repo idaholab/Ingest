@@ -9,8 +9,8 @@ defmodule IngestWeb.ProjectShowLive do
   def render(assigns) do
     ~H"""
     <div>
-      <h1 class="text-2xl"><%= @project.name %></h1>
-      <p><%= @project.description %></p>
+      <h1 class="text-2xl">{@project.name}</h1>
+      <p>{@project.description}</p>
       <div class="grid grid-cols-2">
         <div class="pr-5 border-r-2">
           <div class="relative mt-10">
@@ -19,14 +19,14 @@ defmodule IngestWeb.ProjectShowLive do
             </div>
             <div class="relative flex justify-center">
               <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
-                Requests
+                Active Data Requests
               </span>
             </div>
           </div>
 
           <.table id="requests" rows={@project.requests}>
-            <:col :let={request} label="Name"><%= request.name %></:col>
-            <:col :let={request} label="Uploads"><%= get_upload_count(request) %></:col>
+            <:col :let={request} label="Name">{request.name}</:col>
+            <:col :let={request} label="Uploads">{get_upload_count(request)}</:col>
 
             <:action :let={request}>
               <.link
@@ -64,19 +64,19 @@ defmodule IngestWeb.ProjectShowLive do
               </.link>
             </:action>
           </.table>
-          <div class="relative mt-10">
+          <div class="relative mt-20">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-gray-300"></div>
             </div>
             <div class="relative flex justify-center">
               <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
-                Default Data Templates
+                Default Metadata Collection Forms
               </span>
             </div>
           </div>
 
           <.table id="templates" rows={@streams.templates}>
-            <:col :let={{_id, template}} label="Name"><%= template.name %></:col>
+            <:col :let={{_id, template}} label="Name">{template.name}</:col>
 
             <:action :let={{_id, template}}>
               <.link
@@ -107,17 +107,17 @@ defmodule IngestWeb.ProjectShowLive do
                 type="button"
                 class="inline-flex items-center rounded-md bg-gray-600 hover:text-white text-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                <.icon name="hero-plus" /> Add Default Template
+                <.icon name="hero-plus" /> Find Metadata Collection Form
               </button>
             </.link>
           </div>
-          <div class="relative mt-10">
+          <div class="relative mt-20">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-gray-300"></div>
             </div>
             <div class="relative flex justify-center">
               <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
-                Default Destination
+                Default Data Destination
               </span>
             </div>
           </div>
@@ -136,10 +136,10 @@ defmodule IngestWeb.ProjectShowLive do
                     </span>
                     <div class="min-w-0 flex-auto">
                       <p class="text-sm font-semibold leading-6 text-gray-900">
-                        <%= destination.name %>
+                        {destination.name}
                       </p>
                       <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                        <%= destination.type %>
+                        {destination.type}
                       </p>
                     </div>
                   </div>
@@ -184,7 +184,7 @@ defmodule IngestWeb.ProjectShowLive do
                   type="button"
                   class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm text-black hover:text-white font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  <.icon name="hero-plus" /> Add Default Destination
+                  <.icon name="hero-plus" /> Find Data Destination
                 </button>
               </.link>
             </div>
@@ -212,17 +212,17 @@ defmodule IngestWeb.ProjectShowLive do
                 <div class="flex min-w-0 gap-x-4">
                   <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
                     <span class="font-medium leading-none text-white">
-                      <%= if @project.user.name do
+                      {if @project.user.name do
                         String.slice(@project.user.name, 0..1) |> String.upcase()
-                      end %>
+                      end}
                     </span>
                   </span>
                   <div class="min-w-0 flex-auto">
                     <p class="text-sm font-semibold leading-6 text-gray-900">
-                      <%= @project.user.name %>
+                      {@project.user.name}
                     </p>
                     <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                      <%= @project.user.email %>
+                      {@project.user.email}
                     </p>
                   </div>
                 </div>
@@ -238,26 +238,26 @@ defmodule IngestWeb.ProjectShowLive do
                   <div class="flex min-w-0 gap-x-4">
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
                       <span class="font-medium leading-none text-white">
-                        <%= if member.name do
+                        {if member.name do
                           String.slice(member.name, 0..1) |> String.upcase()
-                        end %>
+                        end}
                       </span>
                     </span>
                     <div class="min-w-0 flex-auto">
-                      <p class="text-sm font-semibold leading-6 text-gray-900"><%= member.name %></p>
+                      <p class="text-sm font-semibold leading-6 text-gray-900">{member.name}</p>
                       <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                        <%= member.email %>
+                        {member.email}
                       </p>
                     </div>
                   </div>
                   <div>
                     <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                      <%= Atom.to_string(
+                      {Atom.to_string(
                         Enum.find(member.project_roles, fn project_roles ->
                           project_roles.project_id == @project.id
                         end).role
                       )
-                      |> String.capitalize() %>
+                      |> String.capitalize()}
                     </span>
 
                     <span
@@ -282,7 +282,60 @@ defmodule IngestWeb.ProjectShowLive do
               <% end %>
             </ul>
 
-            <div :if={@current_user.id == @project.inserted_by} class="mx-auto max-w-lg mt-44">
+            <div
+              :if={
+                Bodyguard.permit?(
+                  Ingest.Projects.Project,
+                  :update_project,
+                  @current_user,
+                  @project
+                )
+              }
+              class="pr-5 border-r-2 pt-10"
+            >
+              <div class="relative mt-10">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center">
+                  <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+                    Outstanding Invites
+                  </span>
+                </div>
+              </div>
+
+              <.table id="invites" rows={@project.invites}>
+                <:col :let={invite} label="Email">
+                  {if Ecto.assoc_loaded?(invite.invited_user) && invite.invited_user do
+                    invite.invited_user.email
+                  else
+                    invite.email
+                  end}
+                </:col>
+
+                <:action :let={invite}>
+                  <.link
+                    phx-click="delete_invite"
+                    phx-value-id={invite.id}
+                    data-confirm="Are you sure?"
+                    class="text-red-600 hover:text-red-900"
+                  >
+                    Revoke
+                  </.link>
+                </:action>
+              </.table>
+            </div>
+            <div
+              :if={
+                Bodyguard.permit?(
+                  Ingest.Projects.Project,
+                  :update_project,
+                  @current_user,
+                  @project
+                )
+              }
+              class="mx-auto max-w-lg mt-44"
+            >
               <div>
                 <div class="text-center">
                   <svg
@@ -326,40 +379,6 @@ defmodule IngestWeb.ProjectShowLive do
                   </.simple_form>
                 </div>
               </div>
-            </div>
-
-            <div :if={@current_user.id == @project.inserted_by} class="pr-5 border-r-2">
-              <div class="relative mt-10">
-                <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div class="w-full border-t border-gray-300"></div>
-                </div>
-                <div class="relative flex justify-center">
-                  <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
-                    Outstanding Invites
-                  </span>
-                </div>
-              </div>
-
-              <.table id="invites" rows={@project.invites}>
-                <:col :let={invite} label="Email">
-                  <%= if Ecto.assoc_loaded?(invite.invited_user) && invite.invited_user do
-                    invite.invited_user.email
-                  else
-                    invite.email
-                  end %>
-                </:col>
-
-                <:action :let={invite}>
-                  <.link
-                    phx-click="delete_invite"
-                    phx-value-id={invite.id}
-                    data-confirm="Are you sure?"
-                    class="text-red-600 hover:text-red-900"
-                  >
-                    Revoke
-                  </.link>
-                </:action>
-              </.table>
             </div>
           </div>
         </div>

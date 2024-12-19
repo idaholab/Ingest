@@ -9,7 +9,7 @@ defmodule IngestWeb.LiveComponents.ProjectInvitation do
       <h3 class="text-base font-semibold leading-6 text-gray-900">Project Invitation</h3>
       <div class="mt-2 max-w-xl text-sm text-gray-500">
         <p>
-          You've been invited to join <%= @project.name %> as a member. Please accept or ignore the invitation by clicking the buttons below.
+          You've been invited to join {@project.name} as a member. Please accept or ignore the invitation by clicking the buttons below.
         </p>
       </div>
       <div class="mt-5">

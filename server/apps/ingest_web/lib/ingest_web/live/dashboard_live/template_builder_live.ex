@@ -9,9 +9,9 @@ defmodule IngestWeb.TemplateBuilderLive do
     <div>
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
-          <h1 class="text-base font-semibold leading-6 text-gray-900"><%= @template.name %></h1>
+          <h1 class="text-base font-semibold leading-6 text-gray-900">{@template.name}</h1>
           <p class="mt-2 text-sm text-gray-700">
-            <%= @template.description %>
+            {@template.description}
           </p>
         </div>
         <.link
@@ -54,9 +54,9 @@ defmodule IngestWeb.TemplateBuilderLive do
             <div>
               <div class="min-w-0 px-2 flex flex-row drag-ghost:opacity-0 ">
                 <div class="items-start gap-x-3 basis-2/3 pr-10 ">
-                  <p class="text-sm font-semibold leading-6 text-gray-900"><%= field.label %></p>
+                  <p class="text-sm font-semibold leading-6 text-gray-900">{field.label}</p>
                   <p class="whitespace-nowrap text-sm col-span-2">
-                    <%= friendly_field(field.type) %>
+                    {friendly_field(field.type)}
                   </p>
                 </div>
                 <div>
@@ -88,7 +88,7 @@ defmodule IngestWeb.TemplateBuilderLive do
                   :for={type <- field.file_extensions}
                   class="inline-flex items-center rounded-md bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700 mr-1"
                 >
-                  <%= type %>
+                  {type}
                 </span>
               </div>
               <div class="items-center tooltip tooltip-bottom" data-tip="Drag to Order">
@@ -179,7 +179,7 @@ defmodule IngestWeb.TemplateBuilderLive do
                       <div class="flex items-center gap-x-3">
                         <h2 class="min-w-0 text-sm font-semibold leading-6 text-white">
                           <a href="#" class="flex gap-x-2">
-                            <span class="truncate"><%= option %></span>
+                            <span class="truncate">{option}</span>
                           </a>
                         </h2>
                       </div>
@@ -219,9 +219,9 @@ defmodule IngestWeb.TemplateBuilderLive do
                       <div class="flex items-center gap-x-3">
                         <h2 class="min-w-0 text-sm font-semibold leading-6 text-white">
                           <a href="#" class="flex gap-x-2">
-                            <span class="truncate"><%= name %> --></span>
+                            <span class="truncate">{name} --></span>
                             <span class="truncate">
-                              <%= Ingest.Requests.get_template!(template).name %>
+                              {Ingest.Requests.get_template!(template).name}
                             </span>
                           </a>
                         </h2>

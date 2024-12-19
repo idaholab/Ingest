@@ -133,7 +133,7 @@
                   class="ml-4 text-sm font-semibold leading-6 text-gray-900"
                   aria-hidden="true"
                 >
-                  <%= @current_user.name %>
+                  {@current_user.name}
                 </span>
                 <svg
                   class="ml-2 h-5 w-5 text-gray-400"
@@ -188,7 +188,7 @@
     <main class="py-10">
       <div class="px-4 sm:px-6 lg:px-8">
         <.flash_group flash={@flash} />
-        <%= @inner_content %>
+        {@inner_content}
       </div>
     </main>
     <footer aria-labelledby="footer-heading" class="relative">

@@ -37,12 +37,12 @@ defmodule IngestWeb.TasksLive do
                   end
                 }
               >
-                <:col :let={{_id, upload}} label="File Name"><%= upload.filename %></:col>
+                <:col :let={{_id, upload}} label="File Name">{upload.filename}</:col>
                 <:col :let={{_id, upload}} label="Date">
-                  <%= "#{upload.inserted_at.day}-#{upload.inserted_at.month}-#{upload.inserted_at.year}" %>
+                  {"#{upload.inserted_at.day}-#{upload.inserted_at.month}-#{upload.inserted_at.year}"}
                 </:col>
-                <:col :let={{_id, upload}} label="Size"><%= mb(upload.size) %>mb</:col>
-                <:col :let={{_id, upload}} label="Extension"><%= upload.ext %></:col>
+                <:col :let={{_id, upload}} label="Size">{mb(upload.size)}mb</:col>
+                <:col :let={{_id, upload}} label="Extension">{upload.ext}</:col>
 
                 <:action :let={{_id, upload}}>
                   <.link

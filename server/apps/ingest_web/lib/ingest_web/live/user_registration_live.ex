@@ -1,5 +1,4 @@
 defmodule IngestWeb.UserRegistrationLive do
-  alias Ingest.Projects
   use IngestWeb, :live_view
 
   alias Ingest.Accounts
@@ -93,7 +92,6 @@ defmodule IngestWeb.UserRegistrationLive do
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
-        Projects.queue_project_invite_notifications(user)
         Ingest.Requests.backfill_shared_templates(user)
 
         {:ok, _} =

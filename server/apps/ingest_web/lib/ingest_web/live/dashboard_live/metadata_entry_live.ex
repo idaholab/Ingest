@@ -115,7 +115,7 @@ defmodule IngestWeb.MetadataEntryLive do
                   :for={classification <- @classifications_allowed}
                   class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 mx-2"
                 >
-                  <%= Atom.to_string(classification) |> String.upcase() %>
+                  {Atom.to_string(classification) |> String.upcase()}
                 </span>
               </div>
             </div>
@@ -165,10 +165,10 @@ defmodule IngestWeb.MetadataEntryLive do
                   <div class="flex-1 truncate">
                     <div class="flex items-center space-x-3">
                       <h3 class="truncate text-sm font-medium text-gray-900">
-                        <%= entry.client_name %>
+                        {entry.client_name}
                       </h3>
                     </div>
-                    <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
+                    <progress value={entry.progress} max="100">{entry.progress}%</progress>
                   </div>
                   <.live_img_preview
                     entry={entry}
