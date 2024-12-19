@@ -380,12 +380,12 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
     {:ok,
       socket
-        |> assign(:type, Atom.to_string(destination.type))
-        |> assign(assigns)
-        |> assign(:lakefs_repos, lakefs_repos)
-        |> assign(:destination, destination)
-        |> assign(:repo_created, false)
-        |> assign_form(changeset)}
+      |> assign(:type, Atom.to_string(destination.type))
+      |> assign(assigns)
+      |> assign(:lakefs_repos, lakefs_repos)
+      |> assign(:destination, destination)
+      |> assign(:repo_created, false)
+      |> assign_form(changeset)}
   end
 
   # Loads LakeFS repositories.
