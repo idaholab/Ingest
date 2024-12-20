@@ -178,7 +178,7 @@ alias Ingest.Uploads
     ]
   })
 
-{:ok, _destination} =
+{:ok, destination} =
   Destinations.create_destination_for_user(user, %{
     name: "Azure Storage Emulation",
     type: :azure,
@@ -227,12 +227,72 @@ alias Ingest.Uploads
     }
   })
 
+{:ok, destination4} =
+  Destinations.create_destination_for_user(second_user, %{
+    name: "Accepted User Owned Storage",
+    type: :lakefs,
+    lakefs_config: %{
+      # DON'T PANIC - this is a well known development key published by LakeFS
+      access_key_id: "AKIAIOSFOLQUICKSTART",
+      # DON'T PANIC - this is a well known development key published by LakeFS
+      secret_access_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+      base_url: "127.0.0.1",
+      port: 8000,
+      repository: "sapphire",
+      visibility: :public,
+      ssl: false,
+      classifications_allowed: [:ouo, :pii]
+    }
+  })
+
+{:ok, destination5} =
+  Destinations.create_destination_for_user(second_user, %{
+    name: "Public User Owned Storage",
+    type: :lakefs,
+    visibility: :public,
+    lakefs_config: %{
+      # DON'T PANIC - this is a well known development key published by LakeFS
+      access_key_id: "AKIAIOSFOLQUICKSTART",
+      # DON'T PANIC - this is a well known development key published by LakeFS
+      secret_access_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+      base_url: "127.0.0.1",
+      port: 8000,
+      repository: "sapphire",
+      ssl: false,
+      classifications_allowed: [:ouo, :pii]
+    }
+  })
+
+{:ok, _member} =
+  Destinations.create_destination_members(%{
+    user_id: second_user.id,
+    destination_id: destination.id,
+    role: :uploader,
+    status: :accepted
+  })
+
+{:ok, _member} =
+  Destinations.create_destination_members(%{
+    user_id: second_user.id,
+    destination_id: destination2.id,
+    role: :uploader,
+    status: :pending
+  })
+
 {:ok, _member} =
   Destinations.create_destination_members(%{
     user_id: user.id,
     destination_id: destination3.id,
     role: :uploader,
-    pending: false
+    status: :pending
+  })
+
+{:ok, _member} =
+  Destinations.create_destination_members(%{
+    user_id: user.id,
+    destination_id: destination4.id,
+    role: :uploader,
+    status: :accepted
   })
 
 {:ok, request} =

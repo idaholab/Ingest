@@ -8,7 +8,14 @@ defmodule Ingest.Repo.Migrations.DestinationVisibility do
 
     create table(:destination_members, primary_key: false) do
       add :role, :string, null: true
-      add :pending, :boolean, default: true
+      add :email, :string, null: true
+      add :status, :string, default: nil
+
+      add :project_id,
+          references(:projects, on_delete: :delete_all, on_update: :update_all, type: :binary_id)
+
+      add :request_id,
+          references(:requests, on_delete: :delete_all, on_update: :update_all, type: :binary_id)
 
       add :destination_id,
           references(:destinations,

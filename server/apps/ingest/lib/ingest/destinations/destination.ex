@@ -21,6 +21,11 @@ defmodule Ingest.Destinations.Destination do
     field :type, Ecto.Enum, values: [:s3, :azure, :temporary, :lakefs], default: :s3
     field :visibility, Ecto.Enum, values: [:public, :private], default: :private
 
+    field :status, Ecto.Enum,
+      values: [:accepted, :rejected, :pending, :not_requested],
+      virtual: true,
+      default: :not_requested
+
     field :classifications_allowed, {:array, Ecto.Enum},
       values: Application.compile_env(:ingest, :data_classifications)
 
@@ -86,11 +91,21 @@ defmodule Ingest.Destinations.Destination do
         %{id: destination_id, inserted_by: owner} = _destination
       )
       when action in [:use_destination] do
-    user_id == owner ||
-      Enum.member?(
-        [:manager, :uploader],
-        Ingest.Destinations.check_owned_destination!(user, destination_id).role
-      )
+    d = Ingest.Destinations.check_owned_destination!(user, destination_id)
+
+    cond do
+      user_id == owner ->
+        true
+
+      d ->
+        Enum.member?(
+          [:manager, :uploader],
+          d.role
+        ) && d.status == :accepted
+
+      true ->
+        false
+    end
   end
 
   # Users can manage their own destinations
@@ -100,13 +115,21 @@ defmodule Ingest.Destinations.Destination do
         %{inserted_by: owner, id: destination_id} = _destination
       )
       when action in [:update_destination, :delete_destination] do
-    dbg(Ingest.Destinations.check_owned_destination!(user, destination_id))
+    d = Ingest.Destinations.check_owned_destination!(user, destination_id)
 
-    user_id == owner ||
-      Enum.member?(
-        [:manager],
-        Ingest.Destinations.check_owned_destination!(user, destination_id).role
-      )
+    cond do
+      user_id == owner ->
+        true
+
+      d ->
+        Enum.member?(
+          [:manager],
+          d.role
+        ) && d.status == :accepted
+
+      true ->
+        false
+    end
   end
 
   # Otherwise, denied
