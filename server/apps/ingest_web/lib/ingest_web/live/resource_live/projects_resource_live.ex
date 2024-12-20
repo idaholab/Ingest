@@ -1,13 +1,18 @@
 defmodule IngestWeb.ProjectsResourceLive do
   use Backpex.LiveResource,
+    adapter: Backpex.Adapters.Ecto,
+    adapter_config: [
+      schema: Ingest.Projects.Project,
+      repo: Ingest.Repo,
+      update_changeset: &Ingest.Projects.Project.changeset/3,
+      create_changeset: &Ingest.Projects.Project.changeset/3
+    ],
     layout: {IngestWeb.Layouts, :admin},
-    schema: Ingest.Projects.Project,
-    repo: Ingest.Repo,
-    update_changeset: &Ingest.Projects.Project.changeset/3,
-    create_changeset: &Ingest.Projects.Project.changeset/3,
-    pubsub: Ingest.PubSub,
-    topic: "projects",
-    event_prefix: "project_"
+    pubsub: [
+      name: Ingest.PubSub,
+      topic: "projects",
+      event_prefix: "project_"
+    ]
 
   @impl Backpex.LiveResource
   def singular_name, do: "Project"

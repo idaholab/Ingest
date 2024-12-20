@@ -51,26 +51,94 @@ defmodule IngestWeb.DestinationsLive do
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <.table
                 id="destinations"
-                rows={@streams.destinations}
+                rows={@destinations}
                 row_click={
-                  fn {_id, destination} -> JS.navigate(~p"/dashboard/destinations/#{destination}") end
+                  fn destination -> JS.navigate(~p"/dashboard/destinations/#{destination}") end
                 }
               >
-                <:col :let={{_id, destination}} label="Name">{destination.name}</:col>
-                <:col :let={{_id, destination}} label="Type">{destination.type}</:col>
+                <:col :let={destination} label="Name">{destination.name}</:col>
+                <:col :let={destination} label="Type">{destination.type}</:col>
 
-                <:action :let={{_id, destination}}>
+                <:action :let={destination} :if={@current_user.roles != :admin}>
+                  <p>
+                    <.link
+                      :if={
+                        !Bodyguard.permit?(
+                          Ingest.Destinations.Destination,
+                          :use_destination,
+                          @current_user,
+                          destination
+                        ) && destination.status != :pending
+                      }
+                      patch={~p"/dashboard/destinations/#{destination}"}
+                      class="text-indigo-600 hover:text-indigo-900"
+                    >
+                      Request Access
+                    </.link>
+                  </p>
+                  <p :if={destination.status == :pending} class="text-orange-600 italic">
+                    Access Pending
+                  </p>
+
+                  <p
+                    :if={
+                      Bodyguard.permit?(
+                        Ingest.Destinations.Destination,
+                        :use_destination,
+                        @current_user,
+                        destination
+                      ) && destination.inserted_by !== @current_user.id
+                    }
+                    class="text-green-600"
+                  >
+                    Access Permitted!
+                  </p>
+                </:action>
+
+                <:action :let={destination}>
                   <.link
+                    :if={
+                      Bodyguard.permit?(
+                        Ingest.Destinations.Destination,
+                        :update_destination,
+                        @current_user,
+                        destination
+                      )
+                    }
                     patch={~p"/dashboard/destinations/#{destination}"}
                     class="text-indigo-600 hover:text-indigo-900"
                   >
                     Edit
                   </.link>
                 </:action>
-                <:action :let={{id, destination}}>
+                <:action :let={destination}>
                   <.link
+                    :if={
+                      Bodyguard.permit?(
+                        Ingest.Destinations.Destination,
+                        :update_destination,
+                        @current_user,
+                        destination
+                      )
+                    }
+                    patch={~p"/dashboard/destinations/#{destination}/sharing"}
+                    class="text-indigo-600 hover:text-indigo-900"
+                  >
+                    Sharing
+                  </.link>
+                </:action>
+                <:action :let={destination}>
+                  <.link
+                    :if={
+                      Bodyguard.permit?(
+                        Ingest.Destinations.Destination,
+                        :update_destination,
+                        @current_user,
+                        destination
+                      )
+                    }
                     class="text-red-600 hover:text-red-900"
-                    phx-click={JS.push("delete", value: %{id: destination.id}) |> hide("##{id}")}
+                    phx-click={JS.push("delete", value: %{id: destination.id})}
                     data-confirm="Are you sure?"
                   >
                     Delete
@@ -92,6 +160,21 @@ defmodule IngestWeb.DestinationsLive do
           destination={@destination}
           module={IngestWeb.LiveComponents.DestinationForm}
           id="destination-modal-component"
+          current_user={@current_user}
+          patch={~p"/dashboard/destinations"}
+        />
+      </.modal>
+
+      <.modal
+        :if={@live_action == :sharing}
+        id="share_destination_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/destinations")}
+      >
+        <.live_component
+          destination={@destination}
+          module={IngestWeb.LiveComponents.DestinationSharing}
+          id="share-destination-modal-component"
           current_user={@current_user}
           patch={~p"/dashboard/destinations"}
         />
@@ -135,11 +218,16 @@ defmodule IngestWeb.DestinationsLive do
        :destinations,
        Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
      )
-     |> stream(
-       :destinations,
-       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
-     )
      |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  defp apply_action(socket, :sharing, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Share Destination")
+    |> assign(
+      :destination,
+      Ingest.Destinations.get_destination!(id)
+    )
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -147,7 +235,7 @@ defmodule IngestWeb.DestinationsLive do
     |> assign(:page_title, "Edit Destination")
     |> assign(
       :destination,
-      Ingest.Destinations.get_own_destination!(socket.assigns.current_user, id)
+      Ingest.Destinations.get_destination!(id)
     )
   end
 
@@ -178,7 +266,7 @@ defmodule IngestWeb.DestinationsLive do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    destination = Ingest.Destinations.get_own_destination!(socket.assigns.current_user, id)
+    destination = Ingest.Destinations.get_destination!(!id)
 
     with :ok <-
            Bodyguard.permit(

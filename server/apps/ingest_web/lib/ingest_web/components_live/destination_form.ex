@@ -35,6 +35,27 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
               <div class="sm:col-span-4">
                 <.label for="project-type">
+                  Visibility
+                </.label>
+                <p class="text-xs">
+                  Controls whether others can see and request upload access to your destination.
+                </p>
+
+                <.input
+                  type="select"
+                  field={@destination_form[:visibility]}
+                  options={[
+                    {"Private", :private},
+                    {"Public", :public}
+                  ]}
+                />
+                <p class="text-xs">
+                  You will still be able to share your destination with others regardless of visibility
+                </p>
+              </div>
+
+              <div class="sm:col-span-4">
+                <.label for="project-type">
                   Destination Type
                 </.label>
                 <.input
