@@ -29,7 +29,7 @@ module.exports = {
     "./js/**/*.js",
     "../lib/ingest_web.ex",
     "../lib/ingest_web/**/*.*ex",
-    "../../deps/backpex/**/*.*ex",
+    "../../../deps/backpex/**/*.*ex",
   ],
   theme: {
     extend: {

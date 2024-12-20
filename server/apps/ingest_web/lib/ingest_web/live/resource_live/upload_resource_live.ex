@@ -1,13 +1,18 @@
 defmodule IngestWeb.UploadsResourceLive do
   use Backpex.LiveResource,
     layout: {IngestWeb.Layouts, :admin},
-    schema: Ingest.Uploads.Upload,
-    repo: Ingest.Repo,
-    update_changeset: &Ingest.Uploads.Upload.changeset/3,
-    create_changeset: &Ingest.Uploads.Upload.changeset/3,
-    pubsub: Ingest.PubSub,
-    topic: "uploads",
-    event_prefix: "upload_"
+    adapter: Backpex.Adapters.Ecto,
+    adapter_config: [
+      schema: Ingest.Uploads.Upload,
+      repo: Ingest.Repo,
+      update_changeset: &Ingest.Uploads.Upload.changeset/3,
+      create_changeset: &Ingest.Uploads.Upload.changeset/3
+    ],
+    pubsub: [
+      name: Ingest.PubSub,
+      topic: "uploads",
+      event_prefix: "upload_"
+    ]
 
   @impl Backpex.LiveResource
   def singular_name, do: "Upload"

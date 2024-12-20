@@ -5,6 +5,7 @@ defmodule Ingest.Destinations do
 
   import Ecto.Query, warn: false
   alias Ingest.Destinations.DestinationSearch
+  alias Ingest.Destinations.DestinationMembers
   alias Ingest.Destinations.AzureConfig
   alias Ingest.Destinations.S3Config
   alias Ingest.Repo
@@ -126,7 +127,15 @@ defmodule Ingest.Destinations do
   end
 
   def list_own_destinations(%User{} = user) do
-    Repo.all(from d in Destination, where: d.inserted_by == ^user.id)
+    Repo.all(
+      from d in Destination,
+        left_join: dm in DestinationMembers,
+        on: dm.destination_id == d.id,
+        where: d.inserted_by == ^user.id or dm.user_id == ^user.id or d.visibility == :public,
+        group_by: d.id,
+        select: %{d | status: dm.status}
+    )
+    |> Repo.preload(:destination_members)
   end
 
   @doc """
@@ -144,7 +153,7 @@ defmodule Ingest.Destinations do
 
   """
   def get_destination!(id) do
-    destination = Repo.get!(Destination, id)
+    destination = Repo.get!(Destination, id) |> Repo.preload(:destination_members)
 
     case destination.type do
       :s3 ->
@@ -175,40 +184,7 @@ defmodule Ingest.Destinations do
   end
 
   def get_destination(id) do
-    Repo.get(Destination, id)
-  end
-
-  # like get_destination but validates that it belongs to a user
-  def get_own_destination!(%User{} = user, id) do
-    destination =
-      Repo.one!(from d in Destination, where: d.id == ^id and d.inserted_by == ^user.id)
-
-    case destination.type do
-      :s3 ->
-        %{
-          destination
-          | s3_config: %{destination.s3_config | access_key_id: nil, secret_access_key: nil}
-        }
-
-      :azure ->
-        %{
-          destination
-          | azure_config: %{destination.azure_config | account_name: nil, account_key: nil}
-        }
-
-      :lakefs ->
-        %{
-          destination
-          | lakefs_config: %{
-              destination.lakefs_config
-              | access_key_id: nil,
-                secret_access_key: nil
-            }
-        }
-
-      _ ->
-        destination
-    end
+    Repo.get(Destination, id) |> Repo.preload(:destination_members)
   end
 
   @doc """
@@ -323,12 +299,110 @@ defmodule Ingest.Destinations do
         from ds in DestinationSearch,
           join: d in Destination,
           on: ds.id == d.id,
+          left_join: dm in DestinationMembers,
+          on: dm.destination_id == d.id,
+          group_by: d.id,
           where:
             fragment("destinations_search MATCH ?", ^search_term) and
-              d.id not in ^Enum.map(exclude, fn d -> d.id end) and d.inserted_by == ^user.id,
-          select: d
+              d.id not in ^Enum.map(exclude, fn d -> d.id end) and
+              (d.inserted_by == ^user.id or dm.user_id == ^user.id or
+                 d.visibility == :public),
+          select: %Destination{d | status: dm.status}
 
-      Repo.all(query)
+      Repo.all(query) |> Repo.preload(:user)
     end
+  end
+
+  alias Ingest.Destinations.DestinationMembers
+
+  def check_owned_destination!(%User{} = user, id) do
+    Repo.one(
+      from dm in DestinationMembers,
+        where: dm.user_id == ^user.id and dm.destination_id == ^id,
+        select: dm
+    )
+  end
+
+  def create_destination_members(attrs \\ %{}) do
+    %DestinationMembers{}
+    |> DestinationMembers.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def add_user_to_destination_by_email(%Destination{} = destination, email, role \\ :uploader) do
+    member = Ingest.Accounts.get_user_by_email(email)
+
+    if member do
+      %DestinationMembers{}
+      |> DestinationMembers.changeset(%{
+        email: email,
+        user_id: member.id,
+        destination_id: destination.id,
+        role: role,
+        status: :pending
+      })
+      |> Repo.insert()
+    else
+      %DestinationMembers{}
+      |> DestinationMembers.changeset(%{
+        email: email,
+        destination_id: destination.id,
+        role: role,
+        status: :pending
+      })
+      |> Repo.insert()
+    end
+  end
+
+  def backfill_shared_destinations(%User{} = user) do
+    from(dm in DestinationMembers,
+      where:
+        dm.email ==
+          ^user.email
+    )
+    |> Repo.update_all(set: [user_id: user.id])
+  end
+
+  def get_user_destination(member_id, destination_id) do
+    query =
+      from dm in DestinationMembers,
+        where: dm.member_id == ^member_id and dm.destination_id == ^destination_id
+
+    Repo.one!(query)
+  end
+
+  def list_destination_members(%Destination{} = destination) do
+    Repo.all(
+      from d in DestinationMembers,
+        where: d.destination_id == ^destination.id and not is_nil(d.user_id),
+        select: d
+    )
+    |> Repo.preload(:user)
+  end
+
+  def update_destination_members_role(%Destination{} = destination, %User{} = user, role) do
+    from(dm in DestinationMembers,
+      where:
+        dm.user_id ==
+          ^user.id and dm.destination_id == ^destination.id
+    )
+    |> Repo.update_all(set: [role: role])
+  end
+
+  def update_destination_members_status(%Destination{} = destination, %User{} = user, status) do
+    from(dm in DestinationMembers,
+      where:
+        dm.user_id ==
+          ^user.id and dm.destination_id == ^destination.id
+    )
+    |> Repo.update_all(set: [status: status])
+  end
+
+  def remove_destination_members(%Destination{} = destination, member_id) do
+    query =
+      from d in DestinationMembers,
+        where: d.user_id == ^member_id and d.destination_id == ^destination.id
+
+    Repo.delete_all(query)
   end
 end

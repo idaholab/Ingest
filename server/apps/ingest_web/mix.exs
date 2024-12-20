@@ -69,7 +69,7 @@ defmodule IngestWeb.MixProject do
        compile: false,
        depth: 1},
       {:sweet_xml, "~> 0.7.4"},
-      {:backpex, "~> 0.6.0"},
+      {:backpex, "~> 0.9.1"},
       {:earmark, "~> 1.4"},
       {:bodyguard, "~> 2.4"},
       {:explorer, "~> 0.10.0"},

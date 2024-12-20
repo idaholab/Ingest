@@ -52,7 +52,7 @@ defmodule Ingest.Requests.Template do
     user_id == owner ||
       Enum.member?(
         [:editor, :member],
-        Ingest.Requests.get_owned_template!(user, template_id).role
+        Ingest.Requests.check_owned_template!(user, template_id).role
       )
   end
 
@@ -65,7 +65,7 @@ defmodule Ingest.Requests.Template do
     user_id == owner ||
       Enum.member?(
         [:editor],
-        Ingest.Requests.get_owned_template!(user, template_id).role
+        Ingest.Requests.check_owned_template!(user, template_id).role
       )
   end
 

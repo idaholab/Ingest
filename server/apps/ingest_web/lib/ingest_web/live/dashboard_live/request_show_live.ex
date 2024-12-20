@@ -764,6 +764,7 @@ defmodule IngestWeb.RequestShowLive do
           current_user={@current_user}
           project_templates={@project_templates}
           project_destinations={@project_destinations}
+          patch={"/dashboard/requests/#{@request.id}"}
         />
       </.modal>
 

@@ -396,6 +396,7 @@ defmodule IngestWeb.ProjectShowLive do
         project={@project}
         module={IngestWeb.LiveComponents.ProjectSearchForm}
         id="project-search-modal-component"
+        patch={"/dashboard/projects/#{@project.id}"}
         current_user={@current_user}
       />
     </.modal>

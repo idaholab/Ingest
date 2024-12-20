@@ -42,12 +42,58 @@ defmodule IngestWeb.LiveComponents.SearchForm do
               </div>
               <div>
                 <span
+                  :if={@live_action == :search_templates}
                   phx-click="add"
                   phx-value-id={result.id}
                   phx-target={@myself}
                   class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/10 cursor-pointer"
                 >
                   Add
+                </span>
+                <span
+                  :if={
+                    @live_action == :search_destinations &&
+                      Bodyguard.permit?(
+                        Ingest.Destinations.Destination,
+                        :use_destination,
+                        @current_user,
+                        result
+                      )
+                  }
+                  phx-click="add"
+                  phx-value-id={result.id}
+                  phx-target={@myself}
+                  class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/10 cursor-pointer"
+                >
+                  Add
+                </span>
+
+                <span
+                  :if={
+                    @live_action == :search_destinations &&
+                      !Bodyguard.permit?(
+                        Ingest.Destinations.Destination,
+                        :use_destination,
+                        @current_user,
+                        result
+                      ) && result.status != :pending
+                  }
+                  phx-click="request_access_destination"
+                  phx-value-id={result.id}
+                  phx-target={@myself}
+                  class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/10 cursor-pointer"
+                >
+                  Request Access
+                </span>
+
+                <span
+                  :if={
+                    @live_action == :search_destinations &&
+                      result.status == :pending
+                  }
+                  class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/10 cursor-pointer"
+                >
+                  Pending Access
                 </span>
               </div>
             </li>
@@ -83,6 +129,26 @@ defmodule IngestWeb.LiveComponents.SearchForm do
   @impl true
   def handle_event("add", %{"id" => id}, socket) do
     add(socket, socket.assigns.live_action, id)
+  end
+
+  @impl true
+  def handle_event("request_access_destination", %{"id" => id}, socket) do
+    case Ingest.Destinations.add_user_to_destination_by_email(
+           Ingest.Destinations.get_destination!(id),
+           socket.assigns.current_user.email
+         ) do
+      {:ok, _n} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Succesfully Requested Access!")
+         |> push_patch(to: socket.assigns.patch)}
+
+      {:error, _e} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed To Request Access!")
+         |> push_patch(to: socket.assigns.patch)}
+    end
   end
 
   def add(socket, :search_templates, id) do

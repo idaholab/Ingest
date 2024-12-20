@@ -2,6 +2,7 @@ defmodule IngestWeb.OidcController do
   use IngestWeb, :controller
 
   alias Ingest.Requests
+  alias Ingest.Destinations
   alias Ingest.Accounts
   alias IngestWeb.UserAuth
 
@@ -33,6 +34,7 @@ defmodule IngestWeb.OidcController do
                      %{email: claims["email"], roles: :manager, identity_provider: :oidc},
                      :oidcc
                    ) do
+              Destinations.backfill_shared_destinations(user)
               Requests.backfill_shared_templates(user)
               UserAuth.log_in_user(conn, user, %{})
             else
@@ -85,6 +87,7 @@ defmodule IngestWeb.OidcController do
                      %{email: claims["email"], roles: :manager, identity_provider: :oidc},
                      :oidcc
                    ) do
+              Destinations.backfill_shared_destinations(user)
               Requests.backfill_shared_templates(user)
               UserAuth.log_in_user(conn, user, %{})
             else

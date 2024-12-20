@@ -1,13 +1,18 @@
 defmodule IngestWeb.RequestResourceLive do
   use Backpex.LiveResource,
+    adapter: Backpex.Adapters.Ecto,
+    adapter_config: [
+      schema: Ingest.Requests.Request,
+      repo: Ingest.Repo,
+      update_changeset: &Ingest.Requests.Request.changeset/3,
+      create_changeset: &Ingest.Requests.Request.changeset/3
+    ],
     layout: {IngestWeb.Layouts, :admin},
-    schema: Ingest.Requests.Request,
-    repo: Ingest.Repo,
-    update_changeset: &Ingest.Requests.Request.changeset/3,
-    create_changeset: &Ingest.Requests.Request.changeset/3,
-    pubsub: Ingest.PubSub,
-    topic: "requests",
-    event_prefix: "request_"
+    pubsub: [
+      name: Ingest.PubSub,
+      topic: "requests",
+      event_prefix: "request_"
+    ]
 
   @impl Backpex.LiveResource
   def singular_name, do: "Request"
