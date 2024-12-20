@@ -1,13 +1,18 @@
 defmodule IngestWeb.UsersResourceLive do
   use Backpex.LiveResource,
+    adapter: Backpex.Adapters.Ecto,
+    adapter_config: [
+      schema: Ingest.Accounts.User,
+      repo: Ingest.Repo,
+      update_changeset: &Ingest.Accounts.User.backpex_changeset/3,
+      create_changeset: &Ingest.Accounts.User.backpex_changeset/3
+    ],
     layout: {IngestWeb.Layouts, :admin},
-    schema: Ingest.Accounts.User,
-    repo: Ingest.Repo,
-    update_changeset: &Ingest.Accounts.User.backpex_changeset/3,
-    create_changeset: &Ingest.Accounts.User.backpex_changeset/3,
-    pubsub: Ingest.PubSub,
-    topic: "users",
-    event_prefix: "user_"
+    pubsub: [
+      name: Ingest.PubSub,
+      topic: "users",
+      event_prefix: "user_"
+    ]
 
   @impl Backpex.LiveResource
   def singular_name, do: "User"

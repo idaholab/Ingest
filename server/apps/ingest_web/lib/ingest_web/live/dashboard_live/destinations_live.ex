@@ -61,14 +61,46 @@ defmodule IngestWeb.DestinationsLive do
 
                 <:action :let={{_id, destination}}>
                   <.link
+                    :if={
+                      Bodyguard.permit?(
+                        Ingest.Destinations.Destination,
+                        :update_destination,
+                        @current_user,
+                        destination
+                      )
+                    }
                     patch={~p"/dashboard/destinations/#{destination}"}
                     class="text-indigo-600 hover:text-indigo-900"
                   >
                     Edit
                   </.link>
                 </:action>
+                <:action :let={{_id, destination}}>
+                  <.link
+                    :if={
+                      Bodyguard.permit?(
+                        Ingest.Destinations.Destination,
+                        :update_destination,
+                        @current_user,
+                        destination
+                      )
+                    }
+                    patch={~p"/dashboard/destinations/#{destination}/sharing"}
+                    class="text-indigo-600 hover:text-indigo-900"
+                  >
+                    Sharing
+                  </.link>
+                </:action>
                 <:action :let={{id, destination}}>
                   <.link
+                    :if={
+                      Bodyguard.permit?(
+                        Ingest.Destinations.Destination,
+                        :update_destination,
+                        @current_user,
+                        destination
+                      )
+                    }
                     class="text-red-600 hover:text-red-900"
                     phx-click={JS.push("delete", value: %{id: destination.id}) |> hide("##{id}")}
                     data-confirm="Are you sure?"
@@ -92,6 +124,21 @@ defmodule IngestWeb.DestinationsLive do
           destination={@destination}
           module={IngestWeb.LiveComponents.DestinationForm}
           id="destination-modal-component"
+          current_user={@current_user}
+          patch={~p"/dashboard/destinations"}
+        />
+      </.modal>
+
+      <.modal
+        :if={@live_action == :sharing}
+        id="share_destination_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/destinations")}
+      >
+        <.live_component
+          destination={@destination}
+          module={IngestWeb.LiveComponents.DestinationForm}
+          id="share-destination-modal-component"
           current_user={@current_user}
           patch={~p"/dashboard/destinations"}
         />
@@ -140,6 +187,15 @@ defmodule IngestWeb.DestinationsLive do
        Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
      )
      |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  defp apply_action(socket, :sharing, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Share Destination")
+    |> assign(
+      :destination,
+      Ingest.Destinations.get_own_destination!(socket.assigns.current_user, id)
+    )
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do

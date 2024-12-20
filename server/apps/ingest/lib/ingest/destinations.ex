@@ -5,6 +5,7 @@ defmodule Ingest.Destinations do
 
   import Ecto.Query, warn: false
   alias Ingest.Destinations.DestinationSearch
+  alias Ingest.Destinations.DestinationMembers
   alias Ingest.Destinations.AzureConfig
   alias Ingest.Destinations.S3Config
   alias Ingest.Repo
@@ -126,7 +127,12 @@ defmodule Ingest.Destinations do
   end
 
   def list_own_destinations(%User{} = user) do
-    Repo.all(from d in Destination, where: d.inserted_by == ^user.id)
+    Repo.all(
+      from d in Destination,
+        left_join: dm in DestinationMembers,
+        on: dm.user_id == ^user.id,
+        where: d.inserted_by == ^user.id or (dm.user_id == ^user.id and not dm.pending)
+    )
   end
 
   @doc """
@@ -323,12 +329,31 @@ defmodule Ingest.Destinations do
         from ds in DestinationSearch,
           join: d in Destination,
           on: ds.id == d.id,
+          left_join: dm in DestinationMembers,
+          on: dm.user_id == ^user.id,
           where:
             fragment("destinations_search MATCH ?", ^search_term) and
-              d.id not in ^Enum.map(exclude, fn d -> d.id end) and d.inserted_by == ^user.id,
+              d.id not in ^Enum.map(exclude, fn d -> d.id end) and
+              (d.inserted_by == ^user.id or (dm.user_id == ^user.id and not dm.pending)),
           select: d
 
       Repo.all(query)
     end
+  end
+
+  alias Ingest.Destinations.DestinationMembers
+
+  def check_owned_destination!(%User{} = user, id) do
+    Repo.one(
+      from dm in DestinationMembers,
+        where: dm.user_id == ^user.id and dm.destination_id == ^id,
+        select: dm
+    )
+  end
+
+  def create_destination_members(attrs \\ %{}) do
+    %DestinationMembers{}
+    |> DestinationMembers.changeset(attrs)
+    |> Repo.insert()
   end
 end

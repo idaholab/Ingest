@@ -19,6 +19,7 @@ defmodule Ingest.Destinations.Destination do
     field :name, :string
     # internal storage are those methods provided by the Ingest application administrators
     field :type, Ecto.Enum, values: [:s3, :azure, :temporary, :lakefs], default: :s3
+    field :visibility, Ecto.Enum, values: [:public, :private], default: :private
 
     field :classifications_allowed, {:array, Ecto.Enum},
       values: Application.compile_env(:ingest, :data_classifications)
@@ -29,6 +30,10 @@ defmodule Ingest.Destinations.Destination do
     embeds_one :lakefs_config, LakeFSConfig, on_replace: :update
     embeds_one :temporary_config, TemporaryConfig, on_replace: :update
 
+    many_to_many :destination_members, User,
+      join_through: "destination_members",
+      join_keys: [destination_id: :id, user_id: :id]
+
     timestamps()
   end
 
@@ -36,7 +41,7 @@ defmodule Ingest.Destinations.Destination do
   def display_changeset(destination, attrs) do
     if destination.classifications_allowed do
       destination
-      |> cast(attrs, [:name, :type, :inserted_by, :classifications_allowed])
+      |> cast(attrs, [:name, :type, :inserted_by, :classifications_allowed, :visibility])
       |> cast(
         Enum.map(destination.classifications_allowed, fn c -> {c, true} end) |> Map.new(),
         []
@@ -48,7 +53,7 @@ defmodule Ingest.Destinations.Destination do
       |> validate_required([:name, :type])
     else
       destination
-      |> cast(attrs, [:name, :type, :inserted_by, :classifications_allowed])
+      |> cast(attrs, [:name, :type, :inserted_by, :classifications_allowed, :visibility])
       |> cast_embed(:s3_config, require: false)
       |> cast_embed(:azure_config, require: false)
       |> cast_embed(:lakefs_config, required: false)
@@ -59,7 +64,7 @@ defmodule Ingest.Destinations.Destination do
 
   def changeset(destination, attrs) do
     destination
-    |> cast(attrs, [:name, :type, :inserted_by, :classifications_allowed])
+    |> cast(attrs, [:name, :type, :inserted_by, :classifications_allowed, :visibility])
     |> cast_embed(:s3_config, require: false)
     |> cast_embed(:azure_config, require: false)
     |> cast_embed(:lakefs_config, required: false)
@@ -74,10 +79,35 @@ defmodule Ingest.Destinations.Destination do
       when action in [:update_destination, :delete_destination],
       do: :ok
 
-  # Users can manage their own projects
-  def authorize(action, %{id: user_id} = _user, %{inserted_by: user_id} = _destination)
-      when action in [:update_destination, :delete_destination],
-      do: :ok
+  # who can use a destination - managers, uploaders and owners
+  def authorize(
+        action,
+        %{id: user_id} = user,
+        %{id: destination_id, inserted_by: owner} = _destination
+      )
+      when action in [:use_destination] do
+    user_id == owner ||
+      Enum.member?(
+        [:manager, :uploader],
+        Ingest.Destinations.check_owned_destination!(user, destination_id).role
+      )
+  end
+
+  # Users can manage their own destinations
+  def authorize(
+        action,
+        %{id: user_id} = user,
+        %{inserted_by: owner, id: destination_id} = _destination
+      )
+      when action in [:update_destination, :delete_destination] do
+    dbg(Ingest.Destinations.check_owned_destination!(user, destination_id))
+
+    user_id == owner ||
+      Enum.member?(
+        [:manager],
+        Ingest.Destinations.check_owned_destination!(user, destination_id).role
+      )
+  end
 
   # Otherwise, denied
   def authorize(_, _, _), do: :error

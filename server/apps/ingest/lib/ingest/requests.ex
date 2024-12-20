@@ -30,7 +30,12 @@ defmodule Ingest.Requests do
   end
 
   def list_own_templates(%User{} = user) do
-    Repo.all(from(t in Template, where: t.inserted_by == ^user.id))
+    Repo.all(
+      from(t in Template,
+        left_join: tm in assoc(t, :template_members),
+        where: t.inserted_by == ^user.id or tm.email == ^user.email or tm.id == ^user.id
+      )
+    )
   end
 
   @doc """
@@ -356,9 +361,11 @@ defmodule Ingest.Requests do
         from ts in TemplateSearch,
           join: t in Template,
           on: ts.id == t.id,
+          left_join: tm in assoc(t, :template_members),
           where:
             fragment("templates_search MATCH ?", ^search_term) and
-              t.id not in ^Enum.map(exclude, fn t -> t.id end) and t.inserted_by == ^user.id,
+              t.id not in ^Enum.map(exclude, fn t -> t.id end) and
+              (t.inserted_by == ^user.id or tm.email == ^user.email or tm.id == ^user.id),
           select: t
 
       Repo.all(query)
@@ -404,13 +411,12 @@ defmodule Ingest.Requests do
 
   alias Ingest.Requests.TemplateMembers
 
-  def get_owned_template!(%User{} = user, id) do
+  def check_owned_template!(%User{} = user, id) do
     Repo.one!(
       from tm in TemplateMembers,
         where: (tm.user_id == ^user.id or tm.email == ^user.email) and tm.template_id == ^id,
         select: tm
     )
-    |> Repo.preload(:template_members)
   end
 
   def list_owned_templates(%User{} = user) do
@@ -421,7 +427,6 @@ defmodule Ingest.Requests do
         group_by: t.id,
         select: t
     )
-    |> Repo.preload(:template_members)
   end
 
   def add_user_to_template(%Template{} = template, %User{} = user, role \\ :member) do
