@@ -4,7 +4,7 @@ defmodule IngestWeb.ApiTest do
   @tag :lakefs
   test "handle merge event from lakefs", %{conn: conn} do
     # Create a test connection
-    # TODO: change the event information to match your use case
+    # change the event information to match your use case
     # event does not contain all possible fields, only the ones we need
     conn =
       post(
@@ -27,7 +27,7 @@ defmodule IngestWeb.ApiTest do
   @tag :lakefs
   test "will fail on bad event", %{conn: conn} do
     # Create a test connection
-    # TODO: change the event information to match your use case
+    # change the event information to match your use case
     # event does not contain all possible fields, only the ones we need
     conn =
       post(
@@ -56,7 +56,7 @@ defmodule IngestWeb.ApiTest do
   @tag :lakefs
   test "handles a download link", %{conn: conn} do
     # Create a test connection
-    # TODO: change to an existing URN
+    # change to an existing URN
     conn =
       get(
         conn |> put_req_cookie("PLAY_SESSION", "REPLACE WITH COOKIE"),

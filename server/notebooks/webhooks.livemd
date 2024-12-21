@@ -325,7 +325,7 @@ defmodule DataHubTest do
   end
 
   test "it fetches a download link for a dataset" do
-    # TODO: replace with your URN
+    # replace with your URN
     assert {:ok, link} =
              DataHub.get_download_link(
                "urn:li:dataset:(urn:li:dataPlatform:lakefs,spark-sql2.cmd,DEV)"
@@ -518,7 +518,7 @@ defmodule LakeFSTest do
   alias LakeFS
 
   test "it handles a diff event" do
-    # TODO: change event to reflect a real event in your LakeFS install
+    # change event to reflect a real event in your LakeFS install
     assert {:ok, _results} =
              LakeFS.diff_merge(
                %{
@@ -535,7 +535,7 @@ defmodule LakeFSTest do
   end
 
   test "it can download a file" do
-    # TODO: change to reflect a real file and ref in your LakeFS install
+    # change to reflect a real file and ref in your LakeFS install
     assert {:ok, _body} =
              LakeFS.download_file(
                "data",
@@ -545,7 +545,7 @@ defmodule LakeFSTest do
   end
 
   test "it can generate a presigned url" do
-    # TODO: change to reflect a real file and ref in your LakeFS install
+    # change to reflect a real file and ref in your LakeFS install
     assert {:ok, _body} =
              LakeFS.presigned_download_url(
                System.get_env("LB_LAKEFS_URL"),
@@ -556,7 +556,7 @@ defmodule LakeFSTest do
   end
 
   test "it can download metadata" do
-    # TODO: change to reflect a real file and ref in your LakeFS install
+    # change to reflect a real file and ref in your LakeFS install
     assert {:ok, _data} =
              LakeFS.download_metadata(
                "test",
@@ -626,7 +626,7 @@ defmodule FileProcessor do
       end)
     end
 
-    # TODO: add the CSV and Parquet processing here in just a few minutes
+    # add the CSV and Parquet processing here in just a few minutes
 
     {:ok, :processed}
   end
@@ -806,7 +806,7 @@ defmodule ServerTest do
 
   test "handle merge event from lakefs" do
     # Create a test connection 
-    # TODO: change the event information to match your use case
+    # change the event information to match your use case
     # event does not contain all possible fields, only the ones we need
     conn =
       conn(
@@ -832,7 +832,7 @@ defmodule ServerTest do
 
   test "will fail on bad event" do
     # Create a test connection 
-    # TODO: change the event information to match your use case
+    # change the event information to match your use case
     # event does not contain all possible fields, only the ones we need
     conn =
       conn(
@@ -858,7 +858,7 @@ defmodule ServerTest do
 
   test "handles a download link" do
     # Create a test connection
-    # TODO: change to an existing URN
+    # change to an existing URN
     conn =
       conn(
         :get,

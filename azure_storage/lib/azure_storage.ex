@@ -119,9 +119,9 @@ defmodule AzureStorage do
 
   defp handle_response(%Req.Response{} = resp, state) do
     cond do
-      400 = resp.status -> {:reply, {:error, :bad_request}, state}
-      401 = resp.status -> {:reply, {:error, :unauthorized}, state}
-      404 = resp.status -> {:reply, {:error, :not_found}, state}
+      400 == resp.status -> {:reply, {:error, :bad_request}, state}
+      401 == resp.status -> {:reply, {:error, :unauthorized}, state}
+      404 == resp.status -> {:reply, {:error, :not_found}, state}
       true -> {:reply, {:error, :uknown_error}, state}
     end
   end

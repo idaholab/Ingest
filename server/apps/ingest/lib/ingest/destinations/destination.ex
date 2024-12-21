@@ -159,13 +159,13 @@ defmodule Ingest.Destinations.S3Config do
   import Ecto.Changeset
 
   embedded_schema do
-    field :access_key_id, Ingest.Encrypted.JSONBinary
-    field :secret_access_key, Ingest.Encrypted.JSONBinary
-    field :region, Ingest.Encrypted.JSONBinary
-    field :base_url, Ingest.Encrypted.JSONBinary
-    field :bucket, Ingest.Encrypted.JSONBinary
-    field :path, Ingest.Encrypted.JSONBinary
-    field :final_path, Ingest.Encrypted.JSONBinary
+    field :access_key_id, Ingest.Encrypted.Binary
+    field :secret_access_key, Ingest.Encrypted.Binary
+    field :region, Ingest.Encrypted.Binary
+    field :base_url, Ingest.Encrypted.Binary
+    field :bucket, Ingest.Encrypted.Binary
+    field :path, Ingest.Encrypted.Binary
+    field :final_path, Ingest.Encrypted.Binary
     field :ssl, :boolean, default: true
     field :integrated_metadata, :boolean, default: false
   end
@@ -200,11 +200,11 @@ defmodule Ingest.Destinations.AzureConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :account_name, Ingest.Encrypted.JSONBinary
-    field :account_key, Ingest.Encrypted.JSONBinary
-    field :base_url, Ingest.Encrypted.JSONBinary
+    field :account_name, Ingest.Encrypted.Binary
+    field :account_key, Ingest.Encrypted.Binary
+    field :base_url, Ingest.Encrypted.Binary
     field :ssl, :boolean, default: true
-    field :container, Ingest.Encrypted.JSONBinary
+    field :container, Ingest.Encrypted.Binary
     field :integrated_metadata, :boolean, default: false
   end
 
@@ -235,11 +235,11 @@ defmodule Ingest.Destinations.LakeFSConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :access_key_id, Ingest.Encrypted.JSONBinary
-    field :secret_access_key, Ingest.Encrypted.JSONBinary
-    field :region, Ingest.Encrypted.JSONBinary
-    field :base_url, Ingest.Encrypted.JSONBinary
-    field :repository, Ingest.Encrypted.JSONBinary
+    field :access_key_id, Ingest.Encrypted.Binary
+    field :secret_access_key, Ingest.Encrypted.Binary
+    field :region, Ingest.Encrypted.Binary
+    field :base_url, Ingest.Encrypted.Binary
+    field :repository, Ingest.Encrypted.Binary
     field :port, :integer, default: nil
     field :ssl, :boolean, default: true
     field :integrated_metadata, :boolean, default: false

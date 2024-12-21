@@ -7,7 +7,7 @@ defmodule Ingest.LakeFSTest do
 
   @tag :lakefs
   test "it handles a diff event" do
-    # TODO: change event to reflect a real event in your LakeFS install
+    # change event to reflect a real event in your LakeFS install
     assert {:ok, _results} =
              LakeFS.diff_merge(
                %{
@@ -25,7 +25,7 @@ defmodule Ingest.LakeFSTest do
 
   @tag :lakefs
   test "it can download a file" do
-    # TODO: change to reflect a real file and ref in your LakeFS install
+    # change to reflect a real file and ref in your LakeFS install
     assert {:ok, _body} =
              LakeFS.download_file(
                "data",
@@ -36,7 +36,7 @@ defmodule Ingest.LakeFSTest do
 
   @tag :lakefs
   test "it can generate a presigned url" do
-    # TODO: change to reflect a real file and ref in your LakeFS install
+    # change to reflect a real file and ref in your LakeFS install
     assert {:ok, _body} =
              LakeFS.presigned_download_url(
                System.get_env("LB_LAKEFS_URL"),
@@ -48,7 +48,7 @@ defmodule Ingest.LakeFSTest do
 
   @tag :lakefs
   test "it can download metadata" do
-    # TODO: change to reflect a real file and ref in your LakeFS install
+    # change to reflect a real file and ref in your LakeFS install
     assert {:ok, _data} =
              LakeFS.download_metadata(
                "test",

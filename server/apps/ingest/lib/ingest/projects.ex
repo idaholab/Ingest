@@ -26,6 +26,21 @@ defmodule Ingest.Projects do
     |> Repo.preload([:project_members, :requests])
   end
 
+  # we want the raw object for the additional encoded data
+  def list_project_members(%Project{} = project) do
+    Repo.all(from pm in ProjectMembers, where: pm.project_id == ^project.id)
+    |> Repo.preload(:user)
+  end
+
+  def update_project_members(%Project{} = project, %User{} = user, role) do
+    from(pm in ProjectMembers,
+      where:
+        pm.member_id ==
+          ^user.id and pm.project_id == ^project.id
+    )
+    |> Repo.update_all(set: [role: role])
+  end
+
   def list_project_with_count do
     query =
       from p in Project,

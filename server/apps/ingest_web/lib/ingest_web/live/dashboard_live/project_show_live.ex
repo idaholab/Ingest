@@ -191,7 +191,45 @@ defmodule IngestWeb.ProjectShowLive do
           </div>
         </div>
 
-        <div :if={@current_user.roles in [:admin, :manager]} class="pl-5">
+        <div class="pl-5">
+          <div class="relative mt-10">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center">
+              <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+                Owner
+              </span>
+            </div>
+          </div>
+
+          <ul role="list" class="divide-y divide-gray-100">
+            <li class="flex items-center justify-between gap-x-6 py-5">
+              <div class="flex min-w-0 gap-x-4">
+                <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
+                  <span class="font-medium leading-none text-white">
+                    {if @project.user.name do
+                      String.slice(@project.user.name, 0..1) |> String.upcase()
+                    end}
+                  </span>
+                </span>
+                <div class="min-w-0 flex-auto">
+                  <p class="text-sm font-semibold leading-6 text-gray-900">
+                    {@project.user.name}
+                  </p>
+                  <p class="mt-1 truncate text-xs leading-5 text-gray-500">
+                    {@project.user.email}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                  Owner
+                </span>
+              </div>
+            </li>
+          </ul>
+
           <div class="relative mt-10">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-gray-300"></div>
@@ -204,83 +242,40 @@ defmodule IngestWeb.ProjectShowLive do
           </div>
 
           <div>
-            <ul role="list" class="divide-y divide-gray-100">
-              <li
-                :if={@current_user.id != @project.inserted_by}
-                class="flex items-center justify-between gap-x-6 py-5"
-              >
-                <div class="flex min-w-0 gap-x-4">
-                  <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
-                    <span class="font-medium leading-none text-white">
-                      {if @project.user.name do
-                        String.slice(@project.user.name, 0..1) |> String.upcase()
-                      end}
-                    </span>
-                  </span>
-                  <div class="min-w-0 flex-auto">
-                    <p class="text-sm font-semibold leading-6 text-gray-900">
-                      {@project.user.name}
-                    </p>
-                    <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                      {@project.user.email}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                    Owner
-                  </span>
-                </div>
-              </li>
+            <.table id="members" rows={@members}>
+              <:col :let={member} label="Member">{member.user.email}</:col>
+              <:col :let={member} label="Role">
+                <.form for={} phx-change="update_role" phx-value-member={member.user.id}>
+                  <.input
+                    name="role"
+                    type="select"
+                    value={member.role}
+                    prompt="Select one"
+                    options={[Member: :member, Manager: :manager, "Co-Owner": :owner]}
+                  />
+                </.form>
+              </:col>
 
-              <%= for member <- @project.project_members do %>
-                <li class="flex items-center justify-between gap-x-6 py-5">
-                  <div class="flex min-w-0 gap-x-4">
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
-                      <span class="font-medium leading-none text-white">
-                        {if member.name do
-                          String.slice(member.name, 0..1) |> String.upcase()
-                        end}
-                      </span>
-                    </span>
-                    <div class="min-w-0 flex-auto">
-                      <p class="text-sm font-semibold leading-6 text-gray-900">{member.name}</p>
-                      <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                        {member.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                      {Atom.to_string(
-                        Enum.find(member.project_roles, fn project_roles ->
-                          project_roles.project_id == @project.id
-                        end).role
-                      )
-                      |> String.capitalize()}
-                    </span>
-
-                    <span
-                      :if={
-                        Bodyguard.permit?(
-                          Ingest.Projects.Project,
-                          :update_project,
-                          @current_user,
-                          @project
-                        ) || member.id == @current_user.id
-                      }
-                      data-confirm="Are you sure?"
-                      phx-click="remove_member"
-                      phx-value-member={member.id}
-                      phx-value-project={@project.id}
-                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
-                    >
-                      Remove
-                    </span>
-                  </div>
-                </li>
-              <% end %>
-            </ul>
+              <:action :let={member}>
+                <span
+                  :if={
+                    Bodyguard.permit?(
+                      Ingest.Projects.Project,
+                      :update_project,
+                      @current_user,
+                      @project
+                    ) || member.id == @current_user.id
+                  }
+                  data-confirm="Are you sure?"
+                  phx-click="remove_member"
+                  phx-value-member={member.user.id}
+                  phx-value-project={@project.id}
+                  class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
+                >
+                  Remove
+                </span>
+              </:action>
+            </.table>
 
             <div
               :if={
@@ -334,7 +329,7 @@ defmodule IngestWeb.ProjectShowLive do
                   @project
                 )
               }
-              class="mx-auto max-w-lg mt-44"
+              class="mx-auto max-w-lg mt-10"
             >
               <div>
                 <div class="text-center">
@@ -423,6 +418,7 @@ defmodule IngestWeb.ProjectShowLive do
      |> stream(:destinations, project.destinations)
      |> stream(:templates, project.templates)
      |> assign(:project, project)
+     |> assign(:members, Projects.list_project_members(project))
      |> assign(:invites, project.invites)}
   end
 
@@ -466,7 +462,15 @@ defmodule IngestWeb.ProjectShowLive do
     email = Map.get(invite_params, "email")
     user = Accounts.get_user_by_email(email)
 
-    if email && user do
+    if is_nil(email) || is_nil(user) do
+      {:ok, i} = Projects.invite_by_email(socket.assigns.project, email)
+
+      Ingest.Projects.ProjectNotifier.notify_project_invite(
+        i.email,
+        socket.assigns.project,
+        IngestWeb.Endpoint.url()
+      )
+    else
       {:ok, i} = Projects.invite(socket.assigns.project, user)
 
       Ingest.Projects.ProjectNotifier.notify_project_invite(
@@ -476,14 +480,6 @@ defmodule IngestWeb.ProjectShowLive do
       )
 
       IngestWeb.Notifications.notify(:project_invite, user, socket.assigns.project)
-    else
-      {:ok, i} = Projects.invite_by_email(socket.assigns.project, email)
-
-      Ingest.Projects.ProjectNotifier.notify_project_invite(
-        i.email,
-        socket.assigns.project,
-        IngestWeb.Endpoint.url()
-      )
     end
 
     {:noreply,
@@ -517,6 +513,33 @@ defmodule IngestWeb.ProjectShowLive do
       _ ->
         put_flash(socket, :error, "Failed to delete template with id: #{id}")
         {:noreply}
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "update_role",
+        %{"role" => role, "member" => member_id} = _params,
+        socket
+      ) do
+    case socket.assigns.project
+         |> Ingest.Projects.update_project_members(
+           Enum.find(socket.assigns.project.project_members, fn member ->
+             member.id == member_id
+           end),
+           String.to_existing_atom(role)
+         ) do
+      {1, _n} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Succesfully Changed Role!")
+         |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project.id}")}
+
+      {:error, _e} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed To Save Role!")
+         |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project.id}")}
     end
   end
 
