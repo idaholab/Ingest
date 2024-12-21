@@ -10,6 +10,9 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
   def render(assigns) do
     ~H"""
     <div>
+      <p>
+        This page lists all the people, projects, or data requests that have access to this destination, as well as thier permissions. Note that a user may appear multiple times on this page, if they are the owner of the request, or project, that has access to the destination.
+      </p>
       <.table id="sharing" rows={@members}>
         <:col :let={member} label="User">{member.user.email}</:col>
         <:col :let={member} label="Project Name">
@@ -32,7 +35,7 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
               type="select"
               value={member.status}
               prompt="Select one"
-              options={[Accepted: :accepted, Pending: :pending, Rejected: :rejected]}
+              options={[Approved: :accepted, "Pending Approval": :pending, Rejected: :rejected]}
             />
           </.form>
         </:col>
@@ -69,10 +72,11 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
             phx-click={JS.push("revoke_access", value: %{id: member.user.id})}
             data-confirm="Are you sure?"
           >
-            Revoke
+            Delete
           </.link>
         </:action>
       </.table>
+
       <.simple_form for={@invite_form} phx-submit="save" phx-target={@myself}>
         <.input
           field={@invite_form[:email]}
@@ -86,6 +90,9 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
           Send Invite
         </button>
       </.simple_form>
+      <p class="mt-10">
+        Directly invited members are typically co-managers of the destination, and are allowed to make changes to things like its configuration and its access.
+      </p>
     </div>
     """
   end
