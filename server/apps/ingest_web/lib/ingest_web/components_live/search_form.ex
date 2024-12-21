@@ -52,7 +52,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
                 </span>
                 <span
                   :if={
-                    @live_action == :search_destinations &&
+                    @live_action in [:search_destinations, :search_destinations_project] &&
                       Bodyguard.permit?(
                         Ingest.Destinations.Destination,
                         :use_destination,
@@ -70,7 +70,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
 
                 <span
                   :if={
-                    @live_action == :search_destinations &&
+                    @live_action in [:search_destinations, :search_destinations_project] &&
                       !Bodyguard.permit?(
                         Ingest.Destinations.Destination,
                         :use_destination,
@@ -88,7 +88,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
 
                 <span
                   :if={
-                    @live_action == :search_destinations &&
+                    @live_action in [:search_destinations, :search_destinations_project] &&
                       result.status == :pending
                   }
                   class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/10 cursor-pointer"
@@ -135,7 +135,9 @@ defmodule IngestWeb.LiveComponents.SearchForm do
   def handle_event("request_access_destination", %{"id" => id}, socket) do
     case Ingest.Destinations.add_user_to_destination_by_email(
            Ingest.Destinations.get_destination!(id),
-           socket.assigns.current_user.email
+           socket.assigns.current_user.email,
+           project_id: Map.get(socket.assigns, :project_id, nil),
+           request_id: Map.get(socket.assigns, :request_id, nil)
          ) do
       {:ok, _n} ->
         {:noreply,
@@ -197,6 +199,15 @@ defmodule IngestWeb.LiveComponents.SearchForm do
        Ingest.Destinations.search_own(value, socket.assigns.current_user,
          exclude: Enum.flat_map(excludes, fn d -> d end)
        )
+     )}
+  end
+
+  def search(socket, :search_destinations_project, value) do
+    {:noreply,
+     socket
+     |> assign(
+       :results,
+       Ingest.Destinations.search_own(value, socket.assigns.current_user)
      )}
   end
 end

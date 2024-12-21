@@ -381,7 +381,7 @@ defmodule IngestWeb.ProjectShowLive do
     </div>
 
     <.modal
-      :if={@live_action in [:search_destinations, :search_templates]}
+      :if={@live_action in [:search_templates]}
       id="project-search_modal"
       show
       on_cancel={JS.patch(~p"/dashboard/projects/#{@project.id}")}
@@ -393,6 +393,22 @@ defmodule IngestWeb.ProjectShowLive do
         id="project-search-modal-component"
         patch={"/dashboard/projects/#{@project.id}"}
         current_user={@current_user}
+      />
+    </.modal>
+
+    <.modal
+      :if={@live_action in [:search_destinations_project]}
+      id="search_modal"
+      show
+      on_cancel={JS.patch(~p"/dashboard/projects/#{@project.id}")}
+    >
+      <.live_component
+        live_action={@live_action}
+        module={IngestWeb.LiveComponents.SearchForm}
+        id="search-modal-component"
+        project_id={@project.id}
+        current_user={@current_user}
+        patch={"/dashboard/projects/#{@project.id}"}
       />
     </.modal>
     """

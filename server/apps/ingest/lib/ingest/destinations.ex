@@ -131,7 +131,7 @@ defmodule Ingest.Destinations do
       from d in Destination,
         left_join: dm in DestinationMembers,
         on: dm.destination_id == d.id,
-        where: d.inserted_by == ^user.id or dm.user_id == ^user.id or d.visibility == :public,
+        where: d.inserted_by == ^user.id or (dm.user_id == ^user.id and dm.role == :manager),
         group_by: d.id,
         select: %{d | status: dm.status}
     )
@@ -329,8 +329,16 @@ defmodule Ingest.Destinations do
     |> Repo.insert()
   end
 
-  def add_user_to_destination_by_email(%Destination{} = destination, email, role \\ :uploader) do
+  def add_user_to_destination_by_email(
+        %Destination{} = destination,
+        email,
+        opts \\ []
+      ) do
     member = Ingest.Accounts.get_user_by_email(email)
+    role = Keyword.get(opts, :role, :uploader)
+
+    project_id = Keyword.get(opts, :project_id, nil)
+    request_id = Keyword.get(opts, :request_id, nil)
 
     if member do
       %DestinationMembers{}
@@ -339,7 +347,9 @@ defmodule Ingest.Destinations do
         user_id: member.id,
         destination_id: destination.id,
         role: role,
-        status: :pending
+        status: :pending,
+        project_id: project_id,
+        request_id: request_id
       })
       |> Repo.insert()
     else
@@ -348,7 +358,9 @@ defmodule Ingest.Destinations do
         email: email,
         destination_id: destination.id,
         role: role,
-        status: :pending
+        status: :pending,
+        project_id: project_id,
+        request_id: request_id
       })
       |> Repo.insert()
     end
@@ -378,6 +390,8 @@ defmodule Ingest.Destinations do
         select: d
     )
     |> Repo.preload(:user)
+    |> Repo.preload(:project)
+    |> Repo.preload(:request)
   end
 
   def update_destination_members_role(%Destination{} = destination, %User{} = user, role) do
