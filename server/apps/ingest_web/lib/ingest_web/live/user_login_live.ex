@@ -150,7 +150,7 @@ defmodule IngestWeb.UserLoginLive do
       my_url = "#{uri.scheme}://#{uri.host}#{uri.path}?#{encoded_query}"
       my_url
     else
-      {:error, :not_found} -> raw_uri
+      {:error, _error} -> raw_uri
     end
   end
 end

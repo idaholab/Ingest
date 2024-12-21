@@ -93,7 +93,7 @@ defmodule Ingest.DataHubTest do
 
   @tag :datahub
   test "it fetches a download link for a dataset" do
-    # TODO: replace with your URN
+    # replace with your URN
     assert {:ok, link} =
              DataHub.get_download_link(
                "urn:li:dataset:(urn:li:dataPlatform:lakefs,spark-sql2.cmd,DEV)"

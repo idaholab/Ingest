@@ -64,6 +64,14 @@ defmodule IngestWeb.ProjectsLive do
                   </.link>
                 </div>
                 <.link
+                  :if={
+                    Bodyguard.permit?(
+                      Ingest.Projects.Project,
+                      :update_project,
+                      @current_user,
+                      project
+                    )
+                  }
                   patch={~p"/dashboard/projects/#{project}/edit"}
                   class="text-indigo-600 hover:text-indigo-900"
                 >
