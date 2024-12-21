@@ -134,7 +134,10 @@ defmodule IngestWeb.Router do
       live "/dashboard/projects/:id/", ProjectShowLive, :show
       live "/dashboard/projects/:id/edit", ProjectsLive, :edit
       live "/dashboard/projects/:id/search/templates", ProjectShowLive, :search_templates
-      live "/dashboard/projects/:id/search/destinations", ProjectShowLive, :search_destinations
+
+      live "/dashboard/projects/:id/search/destinations",
+           ProjectShowLive,
+           :search_destinations_project
 
       live "/dashboard/uploads", UploadsLive, :index
       live "/dashboard/uploads/:id", UploadShowLive, :index

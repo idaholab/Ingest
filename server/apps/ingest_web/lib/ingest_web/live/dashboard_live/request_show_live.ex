@@ -761,6 +761,7 @@ defmodule IngestWeb.RequestShowLive do
           request={@request}
           module={IngestWeb.LiveComponents.SearchForm}
           id="search-modal-component"
+          request_id={@request.id}
           current_user={@current_user}
           project_templates={@project_templates}
           project_destinations={@project_destinations}

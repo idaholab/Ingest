@@ -32,7 +32,7 @@ defmodule Ingest.Destinations.DestinationMembers do
   @doc false
   def changeset(template_members, attrs) do
     template_members
-    |> cast(attrs, [:role, :destination_id, :user_id, :status, :email])
+    |> cast(attrs, [:role, :destination_id, :user_id, :status, :email, :project_id, :request_id])
     |> validate_required([:role, :destination_id])
   end
 end
