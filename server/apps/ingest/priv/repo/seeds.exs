@@ -276,6 +276,7 @@ alias Ingest.Uploads
     user_id: second_user.id,
     destination_id: destination2.id,
     role: :uploader,
+    project_id: project.id,
     status: :pending
   })
 
@@ -309,6 +310,15 @@ alias Ingest.Uploads
     [destination2],
     user
   )
+
+{:ok, _member} =
+  Destinations.create_destination_members(%{
+    user_id: second_user.id,
+    destination_id: destination.id,
+    role: :uploader,
+    request_id: request.id,
+    status: :pending
+  })
 
 {:ok, _upload} =
   Uploads.create_upload(

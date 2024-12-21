@@ -12,6 +12,13 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
     <div>
       <.table id="sharing" rows={@members}>
         <:col :let={member} label="User">{member.user.email}</:col>
+        <:col :let={member} label="Project Name">
+          {if member.project, do: member.project.name, else: "N/A"}
+        </:col>
+        <:col :let={member} label="Request Name">
+          {if member.request, do: member.request.name, else: "N/A"}
+        </:col>
+
         <:col :let={member} label="Status">
           <.form
             for={}

@@ -59,42 +59,6 @@ defmodule IngestWeb.DestinationsLive do
                 <:col :let={destination} label="Name">{destination.name}</:col>
                 <:col :let={destination} label="Type">{destination.type}</:col>
 
-                <:action :let={destination} :if={@current_user.roles != :admin}>
-                  <p>
-                    <.link
-                      :if={
-                        !Bodyguard.permit?(
-                          Ingest.Destinations.Destination,
-                          :use_destination,
-                          @current_user,
-                          destination
-                        ) && destination.status != :pending
-                      }
-                      patch={~p"/dashboard/destinations/#{destination}"}
-                      class="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Request Access
-                    </.link>
-                  </p>
-                  <p :if={destination.status == :pending} class="text-orange-600 italic">
-                    Access Pending
-                  </p>
-
-                  <p
-                    :if={
-                      Bodyguard.permit?(
-                        Ingest.Destinations.Destination,
-                        :use_destination,
-                        @current_user,
-                        destination
-                      ) && destination.inserted_by !== @current_user.id
-                    }
-                    class="text-green-600"
-                  >
-                    Access Permitted!
-                  </p>
-                </:action>
-
                 <:action :let={destination}>
                   <.link
                     :if={

@@ -89,3 +89,61 @@ defmodule Ingest.Requests.RequestSearch do
     field :rank, :float, virtual: true
   end
 end
+
+defmodule Ingest.Requests.RequestTemplates do
+  @moduledoc """
+  This structure allows us to add more data to the join of templates to
+  their requests if needed.
+  """
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key false
+  @foreign_key_type :binary_id
+  schema "request_templates" do
+    belongs_to :request, Ingest.Requests.Request, foreign_key: :request_id, type: :binary_id
+    belongs_to :template, Ingest.Requests.Template, foreign_key: :template_id, type: :binary_id
+
+    timestamps()
+  end
+
+  @doc false
+  def changeset(request_template, attrs) do
+    request_template
+    |> cast(attrs, [:request_id, :template_id])
+    |> validate_required([:request_id, :template_id])
+  end
+end
+
+defmodule Ingest.Requests.RequestDestination do
+  @moduledoc """
+  This structure allows us to add more data to the join of destinations to
+  their requests if needed.
+  """
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key false
+  @foreign_key_type :binary_id
+  schema "request_templates" do
+    belongs_to :request, Ingest.Requests.Request, foreign_key: :request_id, type: :binary_id
+
+    belongs_to :destination, Ingest.Destinations.Destination,
+      foreign_key: :destination_id,
+      type: :binary_id
+
+    # this field can be any of the additional configurations per type, found
+    # in the destination schema file itself. It relies on the destination type
+    # to know what additional config to choose
+    field :additional_config, :map
+
+    timestamps()
+  end
+
+  @doc false
+  def changeset(request_destination, attrs) do
+    request_destination
+    |> cast(attrs, [:request_id, :destination_id])
+    |> validate_required([:request_id, :destination_id])
+  end
+end
