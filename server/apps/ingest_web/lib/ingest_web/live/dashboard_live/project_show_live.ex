@@ -233,33 +233,47 @@ defmodule IngestWeb.ProjectShowLive do
                 </div>
               </li>
 
-              <%= for member <- @project.project_members do %>
+              <%= for member <- @members do %>
                 <li class="flex items-center justify-between gap-x-6 py-5">
                   <div class="flex min-w-0 gap-x-4">
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
                       <span class="font-medium leading-none text-white">
-                        {if member.name do
-                          String.slice(member.name, 0..1) |> String.upcase()
+                        {if member.user.name do
+                          String.slice(member.user.name, 0..1) |> String.upcase()
+                        else
+                          member.user.email
                         end}
                       </span>
                     </span>
                     <div class="min-w-0 flex-auto">
-                      <p class="text-sm font-semibold leading-6 text-gray-900">{member.name}</p>
+                      <p class="text-sm font-semibold leading-6 text-gray-900">{member.user.name}</p>
                       <p class="mt-1 truncate text-xs leading-5 text-gray-500">
-                        {member.email}
+                        {member.user.email}
                       </p>
                     </div>
+                    <span
+                      :if={
+                        Bodyguard.permit?(
+                          Ingest.Projects.Project,
+                          :update_project,
+                          @current_user,
+                          @project
+                        ) || member.id == @current_user.id
+                      }
+                      class="inline-flex rounded-md text-xs font-medium "
+                    >
+                      <.form for={} phx-change="update_role" phx-value-member={member.user.id}>
+                        <.input
+                          name="role"
+                          type="select"
+                          value={member.role}
+                          prompt="Select one"
+                          options={[Member: :member, Manager: :manager, Owner: :owner]}
+                        />
+                      </.form>
+                    </span>
                   </div>
                   <div>
-                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                      {Atom.to_string(
-                        Enum.find(member.project_roles, fn project_roles ->
-                          project_roles.project_id == @project.id
-                        end).role
-                      )
-                      |> String.capitalize()}
-                    </span>
-
                     <span
                       :if={
                         Bodyguard.permit?(
@@ -271,9 +285,9 @@ defmodule IngestWeb.ProjectShowLive do
                       }
                       data-confirm="Are you sure?"
                       phx-click="remove_member"
-                      phx-value-member={member.id}
+                      phx-value-member={member.user.id}
                       phx-value-project={@project.id}
-                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
+                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
                     >
                       Remove
                     </span>
@@ -423,6 +437,7 @@ defmodule IngestWeb.ProjectShowLive do
      |> stream(:destinations, project.destinations)
      |> stream(:templates, project.templates)
      |> assign(:project, project)
+     |> assign(:members, Projects.list_project_members(project))
      |> assign(:invites, project.invites)}
   end
 
@@ -466,7 +481,15 @@ defmodule IngestWeb.ProjectShowLive do
     email = Map.get(invite_params, "email")
     user = Accounts.get_user_by_email(email)
 
-    if email && user do
+    if is_nil(email) || is_nil(user) do
+      {:ok, i} = Projects.invite_by_email(socket.assigns.project, email)
+
+      Ingest.Projects.ProjectNotifier.notify_project_invite(
+        i.email,
+        socket.assigns.project,
+        IngestWeb.Endpoint.url()
+      )
+    else
       {:ok, i} = Projects.invite(socket.assigns.project, user)
 
       Ingest.Projects.ProjectNotifier.notify_project_invite(
@@ -476,14 +499,6 @@ defmodule IngestWeb.ProjectShowLive do
       )
 
       IngestWeb.Notifications.notify(:project_invite, user, socket.assigns.project)
-    else
-      {:ok, i} = Projects.invite_by_email(socket.assigns.project, email)
-
-      Ingest.Projects.ProjectNotifier.notify_project_invite(
-        i.email,
-        socket.assigns.project,
-        IngestWeb.Endpoint.url()
-      )
     end
 
     {:noreply,
@@ -528,5 +543,32 @@ defmodule IngestWeb.ProjectShowLive do
     if Ingest.Projects.request_count(project) > 0,
       do: "#{flavour} is in use are you sure you want to delete?",
       else: "Are you sure you want to delete?"
+  end
+
+  @impl true
+  def handle_event(
+        "update_role",
+        %{"role" => role, "member" => member_id} = _params,
+        socket
+      ) do
+    case socket.assigns.project
+         |> Ingest.Projects.update_project_members(
+           Enum.find(socket.assigns.project.project_members, fn member ->
+             member.id == member_id
+           end),
+           String.to_existing_atom(role)
+         ) do
+      {1, _n} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Succesfully Changed Role!")
+         |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project.id}")}
+
+      {:error, _e} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed To Save Role!")
+         |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project.id}")}
+    end
   end
 end

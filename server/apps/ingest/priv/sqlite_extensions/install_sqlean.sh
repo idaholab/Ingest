@@ -31,7 +31,6 @@ EOF
 
 current_target() {
   if [ "$OS" = "Windows_NT" ]; then
-    # TODO disambiguate between x86 and arm windows
     target="windows-x86_64"
     return 0
   fi

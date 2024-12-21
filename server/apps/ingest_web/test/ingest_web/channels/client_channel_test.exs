@@ -14,7 +14,7 @@ defmodule IngestWeb.ClientChannelTest do
   end
 
   test "dir_update updates the cached entry", %{socket: socket} do
-    # TODO: update this test with more cases regarding diffing and adding to the dirs vs overwriting
+    # update this test with more cases regarding diffing and adding to the dirs vs overwriting
     ref = push(socket, "dir_update", %{"directories" => [%{"~/" => %{"test.pdf" => "57"}}]})
     assert_reply ref, :ok
 

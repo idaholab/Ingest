@@ -60,7 +60,7 @@ defmodule Ingest.Projects.Project do
     member = Ingest.Projects.get_member_project(user_id, project_id)
 
     if member do
-      Enum.member?([:maintainer, :owner], member.role) || user_id == owner
+      Enum.member?([:manager, :owner], member.role) || user_id == owner
     else
       user_id == owner
     end
