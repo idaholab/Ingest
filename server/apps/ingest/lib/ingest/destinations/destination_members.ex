@@ -5,7 +5,6 @@ defmodule Ingest.Destinations.DestinationMembers do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @primary_key false
   @foreign_key_type :binary_id
   schema "destination_members" do
     field :email, :string
