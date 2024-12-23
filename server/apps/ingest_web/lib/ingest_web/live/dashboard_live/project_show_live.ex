@@ -457,18 +457,6 @@ defmodule IngestWeb.ProjectShowLive do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _uri, socket) do
-    project = Projects.get_owned_project!(socket.assigns.current_user, id)
-
-    {:noreply,
-     socket
-     |> stream(:destinations, project.destinations)
-     |> stream(:templates, project.templates)
-     |> assign(:project, project)
-     |> assign(:members, Projects.list_project_members(project))
-     |> assign(:invites, project.invites)}
-  end
-
   def handle_params(%{"id" => id, "destination_id" => destination}, _uri, socket) do
     destination = Ingest.Destinations.get_destination!(destination)
     project = Projects.get_owned_project!(socket.assigns.current_user, id)
@@ -480,6 +468,19 @@ defmodule IngestWeb.ProjectShowLive do
        destination.destination_members
        |> Enum.find(fn member -> member.project_id == project.id end)
      )
+     |> stream(:destinations, project.destinations)
+     |> stream(:templates, project.templates)
+     |> assign(:project, project)
+     |> assign(:members, Projects.list_project_members(project))
+     |> assign(:invites, project.invites)}
+  end
+
+  @impl true
+  def handle_params(%{"id" => id}, _uri, socket) do
+    project = Projects.get_owned_project!(socket.assigns.current_user, id)
+
+    {:noreply,
+     socket
      |> stream(:destinations, project.destinations)
      |> stream(:templates, project.templates)
      |> assign(:project, project)
