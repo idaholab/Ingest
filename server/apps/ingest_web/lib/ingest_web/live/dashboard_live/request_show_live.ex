@@ -770,6 +770,7 @@ defmodule IngestWeb.RequestShowLive do
         <.live_component
           destination={@destination}
           destination_member={@destination_member}
+          request={@request}
           module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
           id="share-destination-modal-component"
           current_user={@current_user}

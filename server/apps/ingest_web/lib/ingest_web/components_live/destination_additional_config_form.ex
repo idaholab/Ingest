@@ -103,14 +103,20 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
   end
 
   @impl true
-  def update(%{destination: destination, destination_member: member} = assigns, socket) do
+  def update(
+        %{
+          destination: destination,
+          destination_member: member
+        } = assigns,
+        socket
+      ) do
     config =
       cond do
-        member.project_id ->
-          Ingest.Projects.get_project_destination(member.project, destination).additional_config
+        Map.get(assigns, :project, nil) ->
+          Ingest.Projects.get_project_destination(assigns.project, destination).additional_config
 
-        member.request_id ->
-          Ingest.Requests.get_request_destination(member.request, destination).additional_config
+        Map.get(assigns, :request, nil) ->
+          Ingest.Requests.get_request_destination(assigns.request, destination).additional_config
 
         true ->
           %{}

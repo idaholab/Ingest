@@ -401,6 +401,7 @@ defmodule IngestWeb.ProjectShowLive do
     >
       <.live_component
         destination={@destination}
+        project={@project}
         destination_member={@destination_member}
         module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
         id="share-destination-modal-component"
@@ -436,6 +437,7 @@ defmodule IngestWeb.ProjectShowLive do
         module={IngestWeb.LiveComponents.SearchForm}
         id="search-modal-component"
         project_id={@project.id}
+        project={@project}
         current_user={@current_user}
         patch={"/dashboard/projects/#{@project.id}"}
       />
@@ -463,9 +465,10 @@ defmodule IngestWeb.ProjectShowLive do
 
     {:noreply,
      socket
+     |> assign(:destination, destination)
      |> assign(
        :destination_member,
-       destination.destination_members
+       Ingest.Destinations.list_destination_members(destination)
        |> Enum.find(fn member -> member.project_id == project.id end)
      )
      |> stream(:destinations, project.destinations)
