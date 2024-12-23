@@ -107,9 +107,14 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
   def update(%{destination: destination, destination_member: member} = assigns, socket) do
     config =
       cond do
-        member.project_id -> Ingest.Projects.get_project_destination(member.project, destination)
-        member.request_id -> Ingest.Requests.get_request_destination(member.request, destination)
-        true -> %{}
+        member.project_id ->
+          Ingest.Projects.get_project_destination(member.project, destination).additional_config
+
+        member.request_id ->
+          Ingest.Requests.get_request_destination(member.request, destination).additional_config
+
+        true ->
+          %{}
       end
 
     changeset =
