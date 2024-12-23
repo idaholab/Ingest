@@ -145,6 +145,22 @@ defmodule IngestWeb.DestinationsLive do
       </.modal>
 
       <.modal
+        :if={@live_action == :additional_config}
+        id="config_destination_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/destinations/#{@destination}/sharing")}
+      >
+        <.live_component
+          destination={@destination}
+          destination_member={@destination_member}
+          module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
+          id="share-destination-modal-component"
+          current_user={@current_user}
+          patch={~p"/dashboard/destinations/#{@destination}/sharing"}
+        />
+      </.modal>
+
+      <.modal
         :if={@live_action in [:register_client]}
         id="client_modal"
         show
@@ -172,6 +188,21 @@ defmodule IngestWeb.DestinationsLive do
        Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
      )
      |> assign(:section, "destinations"), layout: {IngestWeb.Layouts, :dashboard}}
+  end
+
+  @impl true
+  def handle_params(%{"id" => id, "destination_member" => member} = _params, _uri, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       :destination,
+       Ingest.Destinations.get_destination!(id)
+     )
+     |> assign(:destination_member, Ingest.Destinations.get_destination_member!(member))
+     |> assign(
+       :destinations,
+       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+     )}
   end
 
   @impl true

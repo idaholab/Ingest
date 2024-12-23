@@ -702,9 +702,20 @@ defmodule IngestWeb.RequestShowLive do
                     </td>
                     <td class="relative w-14 p-0">
                       <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                        <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                          Active
-                        </span>
+                        <.link
+                          :if={
+                            Bodyguard.permit?(
+                              Ingest.Destinations.Destination,
+                              :update_destination,
+                              @current_user,
+                              destination
+                            )
+                          }
+                          patch={~p"/dashboard/requests/#{@request}/destination/#{destination}"}
+                          class="text-indigo-600 hover:text-indigo-900 px-5"
+                        >
+                          Configure
+                        </.link>
                         <span
                           :if={
                             Bodyguard.permit?(
@@ -750,6 +761,22 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
       </div>
+      <.modal
+        :if={@live_action == :destination_additional_config}
+        id="config_destination_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/requests/#{@request}")}
+      >
+        <.live_component
+          destination={@destination}
+          destination_member={@destination_member}
+          module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
+          id="share-destination-modal-component"
+          current_user={@current_user}
+          patch={JS.patch(~p"/dashboard/requests/#{@request}")}
+        />
+      </.modal>
+
       <.modal
         :if={@live_action in [:search_projects, :search_destinations, :search_templates]}
         id="search_modal"
@@ -1022,8 +1049,12 @@ defmodule IngestWeb.RequestShowLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:section, "requests") |> stream(:uploads, []),
-     layout: {IngestWeb.Layouts, :dashboard}}
+    {:ok,
+     socket
+     |> assign(:section, "requests")
+     |> stream(:uploads, [])
+     |> assign(:destination, nil)
+     |> assign(:destination_member, nil), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
   @impl true
@@ -1046,6 +1077,49 @@ defmodule IngestWeb.RequestShowLive do
 
     {:noreply,
      socket
+     |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
+     |> assign(:request_templates, request.templates)
+     |> assign(:request_destinations, request.destinations)
+     |> assign(:project_templates, project.templates)
+     |> assign(:project_destinations, project.destinations)
+     |> assign(:members, members)
+     |> assign(:request, request)
+     |> assign(:request_form, to_form(changeset))
+     |> stream(:templates, request.templates)
+     |> assign(page: 1, per_page: 10)
+     |> assign(filter_completed: false, sort: "date")
+     |> paginate_uploads(1)
+     |> stream(:destinations, request.destinations)}
+  end
+
+  @impl true
+  def handle_params(%{"id" => id, "destination_id" => destination}, _uri, socket) do
+    destination = Ingest.Destinations.get_destination!(destination)
+
+    request = Requests.get_request!(id)
+    changeset = Requests.change_request(request)
+
+    project = Projects.get_project!(request.project_id)
+
+    # set back to draft if there are not enough parts - not a catch all, but works most of the time if they remove something
+    if (request.templates == [] && project.templates == []) ||
+         (request.destinations == [] && project.destinations == []) do
+      Requests.update_request(request, %{status: :draft})
+    end
+
+    members =
+      RequestMembers
+      |> where(request_id: ^request.id)
+      |> Repo.all()
+
+    {:noreply,
+     socket
+     |> assign(:destination, destination)
+     |> assign(
+       :destination_member,
+       destination.destination_members
+       |> Enum.find(fn member -> member.request_id == request.id end)
+     )
      |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
      |> assign(:request_templates, request.templates)
      |> assign(:request_destinations, request.destinations)

@@ -8,7 +8,7 @@ defmodule Ingest.Uploaders.Lakefs do
   alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.Destination
 
-  def init(%Destination{} = destination, filename, state, opts \\ []) do
+  def init!(%Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination.lakefs_config, state.request, state.user)
@@ -54,6 +54,7 @@ defmodule Ingest.Uploaders.Lakefs do
         |> Map.put(:parts, [])}}
     else
       err -> {:error, err}
+      _ -> {:error, :unrecognized_error}
     end
   end
 

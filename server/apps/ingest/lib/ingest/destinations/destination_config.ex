@@ -213,7 +213,6 @@ defmodule Ingest.Destinations.LakeFSConfigAdditional do
       ],
       empty_values: [""]
     )
-    |> validate_required([:repository_name])
     |> validate_email()
   end
 

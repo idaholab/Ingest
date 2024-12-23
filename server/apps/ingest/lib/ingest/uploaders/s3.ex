@@ -27,20 +27,23 @@ defmodule Ingest.Uploaders.S3 do
         filename
       end
 
-    with s3_op <- ExAws.S3.initiate_multipart_upload(destination.s3_config.bucket, filename),
-         s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
-         {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
-      {:ok,
-       {destination,
-        state
-        |> Map.put(:chunk, 1)
-        |> Map.put(:config, s3_config)
-        |> Map.put(:op, s3_op)
-        |> Map.put(:upload_id, upload_id)
-        |> Map.put(:parts, [])}}
-    else
-      err -> {:error, err}
-    end
+    return =
+      with s3_op <- ExAws.S3.initiate_multipart_upload(destination.s3_config.bucket, filename),
+           s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
+           {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
+        {:ok,
+         {destination,
+          state
+          |> Map.put(:chunk, 1)
+          |> Map.put(:config, s3_config)
+          |> Map.put(:op, s3_op)
+          |> Map.put(:upload_id, upload_id)
+          |> Map.put(:parts, [])}}
+      else
+        err -> {:error, err}
+      end
+
+    return
   end
 
   def upload_full_object(%Destination{} = destination, filename, data) do

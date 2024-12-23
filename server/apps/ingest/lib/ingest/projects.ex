@@ -4,6 +4,7 @@ defmodule Ingest.Projects do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Projects.ProjectDestination
   alias Ingest.Projects.ProjectSearch
   alias Ingest.Repo
 
@@ -353,6 +354,26 @@ defmodule Ingest.Projects do
     |> Repo.update()
   end
 
+  def update_project_destination_config(
+        %Ingest.Destinations.DestinationMembers{} = member,
+        config
+      ) do
+    from(pd in ProjectDestination,
+      where:
+        pd.project_id == ^member.project_id and
+          pd.destination_id == ^member.destination_id
+    )
+    |> Repo.update_all(set: [additional_config: config])
+  end
+
+  def add_destination(%Project{} = project, destination) do
+    %ProjectDestination{
+      project_id: project.id,
+      destination_id: destination.id
+    }
+    |> Repo.insert(on_conflict: :nothing)
+  end
+
   def remove_destination(%Project{} = project, destination) do
     Repo.delete_all(
       from d in "project_destinations",
@@ -360,6 +381,18 @@ defmodule Ingest.Projects do
           d.project_id == type(^project.id, :binary_id) and
             d.destination_id == type(^destination.id, :binary_id)
     )
+  end
+
+  # this is needed so we can get the additional configuration on the
+  # destination
+  def get_project_destination(%Project{} = project, destination) do
+    # there should only ever be _one_ destination/project combination
+    Repo.one(
+      from pd in ProjectDestination,
+        where: pd.project_id == ^project.id and pd.destination_id == ^destination.id,
+        select: pd
+    )
+    |> Repo.preload(project: [:destinations])
   end
 
   def remove_template(%Project{} = project, template) do

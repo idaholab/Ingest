@@ -125,7 +125,7 @@ defmodule Ingest.Requests.RequestDestination do
 
   @primary_key false
   @foreign_key_type :binary_id
-  schema "request_templates" do
+  schema "request_destinations" do
     belongs_to :request, Ingest.Requests.Request, foreign_key: :request_id, type: :binary_id
 
     belongs_to :destination, Ingest.Destinations.Destination,
@@ -136,8 +136,6 @@ defmodule Ingest.Requests.RequestDestination do
     # in the destination schema file itself. It relies on the destination type
     # to know what additional config to choose
     field :additional_config, :map
-
-    timestamps()
   end
 
   @doc false

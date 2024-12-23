@@ -102,6 +102,11 @@ defmodule IngestWeb.Router do
       live "/dashboard/requests", RequestsLive, :index
       live "/dashboard/requests/new", RequestsLive, :new
       live "/dashboard/requests/:id", RequestShowLive, :index
+
+      live "/dashboard/requests/:id/destination/:destination_id",
+           RequestShowLive,
+           :destination_additional_config
+
       live "/dashboard/requests/:id/edit", RequestShowLive, :edit
       live "/dashboard/requests/:id/search/projects", RequestShowLive, :search_projects
       live "/dashboard/requests/:id/search/templates", RequestShowLive, :search_templates
@@ -123,6 +128,11 @@ defmodule IngestWeb.Router do
       live "/dashboard/destinations/new", DestinationsLive, :new
       live "/dashboard/destinations/:id", DestinationsLive, :edit
       live "/dashboard/destinations/:id/sharing", DestinationsLive, :sharing
+
+      live "/dashboard/destinations/:id/sharing/:destination_member",
+           DestinationsLive,
+           :additional_config
+
       live "/dashboard/destinations/client/register_client", DestinationsLive, :register_client
 
       live "/dashboard/member/projects", MembersProjectsLive, :index
@@ -132,6 +142,11 @@ defmodule IngestWeb.Router do
       live "/dashboard/projects/accept/:id", ProjectsLive, :invite
       live "/dashboard/projects/new", ProjectsLive, :new
       live "/dashboard/projects/:id/", ProjectShowLive, :show
+
+      live "/dashboard/projects/:id/destination/:destination_id",
+           ProjectShowLive,
+           :destination_additional_config
+
       live "/dashboard/projects/:id/edit", ProjectsLive, :edit
       live "/dashboard/projects/:id/search/templates", ProjectShowLive, :search_templates
 

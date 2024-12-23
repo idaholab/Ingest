@@ -20,11 +20,12 @@ defmodule Ingest.AccountsTest do
       {:ok, user} =
         %{
           email: "TestUpper@email.com",
-          password: valid_user_password()
+          password: valid_user_password(),
+          roles: :member
         }
         |> Ingest.Accounts.register_user()
 
-      assert user = Accounts.get_user_by_email("testupper@email.com")
+      assert user == Accounts.get_user_by_email("testupper@email.com")
     end
   end
 
@@ -240,7 +241,7 @@ defmodule Ingest.AccountsTest do
     end
 
     test "does not update email if token expired", %{user: user, token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {_number, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
       assert Accounts.update_user_email(user, token) == :error
       assert Repo.get!(User, user.id).email == user.email
       assert Repo.get_by(UserToken, user_id: user.id)
@@ -359,7 +360,7 @@ defmodule Ingest.AccountsTest do
     end
 
     test "does not return user for expired token", %{token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {_number, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
       refute Accounts.get_user_by_session_token(token)
     end
   end
@@ -419,7 +420,7 @@ defmodule Ingest.AccountsTest do
     end
 
     test "does not confirm email if token expired", %{user: user, token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {_number, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
       assert Accounts.confirm_user(token) == :error
       refute Repo.get!(User, user.id).confirmed_at
       assert Repo.get_by(UserToken, user_id: user.id)
@@ -468,7 +469,7 @@ defmodule Ingest.AccountsTest do
     end
 
     test "does not return the user if token expired", %{user: user, token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {_number, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
       refute Accounts.get_user_by_reset_password_token(token)
       assert Repo.get_by(UserToken, user_id: user.id)
     end
@@ -575,7 +576,7 @@ defmodule Ingest.AccountsTest do
 
     test "list_user_keys/1 returns only a users's user_keys" do
       user = user_fixture()
-      user_keys = user_keys_fixture(user_fixture())
+      _user_keys = user_keys_fixture(user_fixture())
       user_keys_real = user_keys_fixture(user)
       assert Accounts.list_user_keys(user) == [user_keys_real]
     end

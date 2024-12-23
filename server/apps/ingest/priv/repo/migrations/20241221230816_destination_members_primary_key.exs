@@ -23,7 +23,7 @@ defmodule Ingest.Repo.Migrations.DestinationMembersPrimaryKey do
           )
 
       add :user_id,
-          references(:users, on_delete: :delete_all, on_update: :update_all, type: :binary_id)
+          references(:users, on_delete: :nilify_all, on_update: :update_all, type: :binary_id)
 
       timestamps()
     end

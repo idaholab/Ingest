@@ -17,7 +17,7 @@ defmodule Ingest.RequestsTest do
 
     test "get_template!/1 returns the template with given id" do
       template = template_fixture()
-      assert Requests.get_template!(template.id) == template
+      assert Requests.get_template!(template.id).id == template.id
     end
 
     test "create_template/1 with valid data creates a template" do
@@ -59,7 +59,7 @@ defmodule Ingest.RequestsTest do
     test "update_template/2 with invalid data returns error changeset" do
       template = template_fixture()
       assert {:error, %Ecto.Changeset{}} = Requests.update_template(template, @invalid_attrs)
-      assert template == Requests.get_template!(template.id)
+      assert template.id == Requests.get_template!(template.id).id
     end
 
     test "delete_template/1 deletes the template" do

@@ -144,8 +144,21 @@ defmodule IngestWeb.ProjectShowLive do
                     </div>
                   </div>
                   <div>
-                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                      Active
+                    <span class="relative ml-4 font-semibold leading-6 text-zinc-900 hover:text-zinc-700">
+                      <.link
+                        :if={
+                          Bodyguard.permit?(
+                            Ingest.Destinations.Destination,
+                            :update_destination,
+                            @current_user,
+                            destination
+                          )
+                        }
+                        class="text-indigo-600 hover:text-indigo-900 px-5"
+                        patch={~p"/dashboard/projects/#{@project}/destination/#{destination}"}
+                      >
+                        Configure
+                      </.link>
                     </span>
 
                     <span
@@ -381,6 +394,22 @@ defmodule IngestWeb.ProjectShowLive do
     </div>
 
     <.modal
+      :if={@live_action == :destination_additional_config}
+      id="config_destination_modal"
+      show
+      on_cancel={JS.patch(~p"/dashboard/projects/#{@project}")}
+    >
+      <.live_component
+        destination={@destination}
+        destination_member={@destination_member}
+        module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
+        id="share-destination-modal-component"
+        current_user={@current_user}
+        patch={JS.patch(~p"/dashboard/projects/#{@project}")}
+      />
+    </.modal>
+
+    <.modal
       :if={@live_action in [:search_templates]}
       id="project-search_modal"
       show
@@ -418,6 +447,8 @@ defmodule IngestWeb.ProjectShowLive do
   def mount(_params, _session, socket) do
     {:ok,
      socket
+     |> assign(:destination, nil)
+     |> assign(:destination_member, nil)
      |> assign(
        :invite_form,
        to_form(Ingest.Projects.change_project_invites(%ProjectInvites{}))
@@ -431,6 +462,24 @@ defmodule IngestWeb.ProjectShowLive do
 
     {:noreply,
      socket
+     |> stream(:destinations, project.destinations)
+     |> stream(:templates, project.templates)
+     |> assign(:project, project)
+     |> assign(:members, Projects.list_project_members(project))
+     |> assign(:invites, project.invites)}
+  end
+
+  def handle_params(%{"id" => id, "destination_id" => destination}, _uri, socket) do
+    destination = Ingest.Destinations.get_destination!(destination)
+    project = Projects.get_owned_project!(socket.assigns.current_user, id)
+
+    {:noreply,
+     socket
+     |> assign(
+       :destination_member,
+       destination.destination_members
+       |> Enum.find(fn member -> member.project_id == project.id end)
+     )
      |> stream(:destinations, project.destinations)
      |> stream(:templates, project.templates)
      |> assign(:project, project)
@@ -478,7 +527,7 @@ defmodule IngestWeb.ProjectShowLive do
     email = Map.get(invite_params, "email")
     user = Accounts.get_user_by_email(email)
 
-    if is_nil(email) || is_nil(user) do
+    if is_nil(email) && is_nil(user) do
       {:ok, i} = Projects.invite_by_email(socket.assigns.project, email)
 
       Ingest.Projects.ProjectNotifier.notify_project_invite(

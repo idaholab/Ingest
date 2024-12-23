@@ -187,6 +187,10 @@ defmodule Ingest.Destinations do
     Repo.get(Destination, id) |> Repo.preload(:destination_members)
   end
 
+  def get_destination_member!(id) do
+    Repo.get!(DestinationMembers, id) |> Repo.preload([:destination, :user, :project, :request])
+  end
+
   @doc """
   Creates a destination.
 
@@ -394,28 +398,27 @@ defmodule Ingest.Destinations do
     |> Repo.preload(:request)
   end
 
-  def update_destination_members_role(%Destination{} = destination, %User{} = user, role) do
+  def update_destination_members_role(%DestinationMembers{} = destination, role) do
     from(dm in DestinationMembers,
-      where:
-        dm.user_id ==
-          ^user.id and dm.destination_id == ^destination.id
+      where: dm.id == ^destination.id
     )
     |> Repo.update_all(set: [role: role])
   end
 
-  def update_destination_members_status(%Destination{} = destination, %User{} = user, status) do
+  def update_destination_members_status(
+        %DestinationMembers{} = destination,
+        status
+      ) do
     from(dm in DestinationMembers,
-      where:
-        dm.user_id ==
-          ^user.id and dm.destination_id == ^destination.id
+      where: dm.id == ^destination.id
     )
     |> Repo.update_all(set: [status: status])
   end
 
-  def remove_destination_members(%Destination{} = destination, member_id) do
+  def remove_destination_members(member_id) do
     query =
       from d in DestinationMembers,
-        where: d.user_id == ^member_id and d.destination_id == ^destination.id
+        where: d.id == ^member_id
 
     Repo.delete_all(query)
   end

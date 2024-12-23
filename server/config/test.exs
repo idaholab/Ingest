@@ -30,12 +30,12 @@ config :ingest, Ingest.Repo,
   ]
 
 config :ecto_sqlite3,
-  binary_id_type: :binary,
-  uuid_type: :binary
+  binary_id_type: :string,
+  uuid_type: :string
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :ingest, IngestWeb.Endpoint,
+config :ingest_web, IngestWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "XvVGGL6usjMplRva2TfagtLfayv88C/1erGcFPF8/8h+5Q5DQKSuDKj/kzgiy0SR",
   server: false
