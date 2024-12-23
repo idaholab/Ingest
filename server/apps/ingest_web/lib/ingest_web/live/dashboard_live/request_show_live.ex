@@ -671,9 +671,20 @@ defmodule IngestWeb.RequestShowLive do
                     </td>
                     <td class="relative w-14 p-0">
                       <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                        <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                          Active
-                        </span>
+                        <.link
+                          :if={
+                            Bodyguard.permit?(
+                              Ingest.Destinations.Destination,
+                              :update_destination,
+                              @current_user,
+                              destination
+                            )
+                          }
+                          patch={~p"/dashboard/requests/#{@request}/destination/#{destination}"}
+                          class="text-indigo-600 hover:text-indigo-900 px-5"
+                        >
+                          Configure
+                        </.link>
                         <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
                           Default
                         </span>
@@ -1049,19 +1060,7 @@ defmodule IngestWeb.RequestShowLive do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> assign(:section, "requests")
-     |> stream(:uploads, [])
-     |> assign(:destination, nil)
-     |> assign(:destination_member, nil), layout: {IngestWeb.Layouts, :dashboard}}
-  end
-
-  @impl true
-  def handle_params(%{"id" => id, "destination_id" => destination}, _uri, socket) do
-    destination = Ingest.Destinations.get_destination!(destination)
-
+  def mount(%{"id" => id}, _session, socket) do
     request = Requests.get_request!(id)
     changeset = Requests.change_request(request)
 
@@ -1077,6 +1076,34 @@ defmodule IngestWeb.RequestShowLive do
       RequestMembers
       |> where(request_id: ^request.id)
       |> Repo.all()
+
+    {:ok,
+     socket
+     |> assign(:section, "requests")
+     |> stream(:uploads, [])
+     |> assign(:destination, nil)
+     |> assign(:destination_member, nil)
+     |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
+     |> assign(:request_templates, request.templates)
+     |> assign(
+       :request_destinations,
+       request.destinations |> Enum.filter(fn d -> !Enum.member?(Enum.map(project.destinations, fn pd -> pd.id end), d.id) end)
+     )
+     |> assign(:project_templates, project.templates)
+     |> assign(:project_destinations, project.destinations)
+     |> assign(:members, members)
+     |> assign(:request, request)
+     |> assign(:request_form, to_form(changeset))
+     |> stream(:templates, request.templates)
+     |> assign(page: 1, per_page: 10)
+     |> assign(filter_completed: false, sort: "date")
+     |> paginate_uploads(1)
+     |> stream(:destinations, request.destinations), layout: {IngestWeb.Layouts, :dashboard}}
+  end
+
+  @impl true
+  def handle_params(%{"destination_id" => destination} = _params, _uri, socket) do
+    destination = Ingest.Destinations.get_destination!(destination)
 
     {:noreply,
      socket
@@ -1084,56 +1111,13 @@ defmodule IngestWeb.RequestShowLive do
      |> assign(
        :destination_member,
        Ingest.Destinations.list_destination_members(destination)
-       |> Enum.find(fn member -> member.request_id == request.id end)
-     )
-     |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
-     |> assign(:request_templates, request.templates)
-     |> assign(:request_destinations, request.destinations)
-     |> assign(:project_templates, project.templates)
-     |> assign(:project_destinations, project.destinations)
-     |> assign(:members, members)
-     |> assign(:request, request)
-     |> assign(:request_form, to_form(changeset))
-     |> stream(:templates, request.templates)
-     |> assign(page: 1, per_page: 10)
-     |> assign(filter_completed: false, sort: "date")
-     |> paginate_uploads(1)
-     |> stream(:destinations, request.destinations)}
+       |> Enum.find(fn member -> member.request_id == socket.assigns.request.id end)
+     )}
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _uri, socket) do
-    request = Requests.get_request!(id)
-    changeset = Requests.change_request(request)
-
-    project = Projects.get_project!(request.project_id)
-
-    # set back to draft if there are not enough parts - not a catch all, but works most of the time if they remove something
-    if (request.templates == [] && project.templates == []) ||
-         (request.destinations == [] && project.destinations == []) do
-      Requests.update_request(request, %{status: :draft})
-    end
-
-    members =
-      RequestMembers
-      |> where(request_id: ^request.id)
-      |> Repo.all()
-
-    {:noreply,
-     socket
-     |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
-     |> assign(:request_templates, request.templates)
-     |> assign(:request_destinations, request.destinations)
-     |> assign(:project_templates, project.templates)
-     |> assign(:project_destinations, project.destinations)
-     |> assign(:members, members)
-     |> assign(:request, request)
-     |> assign(:request_form, to_form(changeset))
-     |> stream(:templates, request.templates)
-     |> assign(page: 1, per_page: 10)
-     |> assign(filter_completed: false, sort: "date")
-     |> paginate_uploads(1)
-     |> stream(:destinations, request.destinations)}
+  def handle_params(_params, _uri, socket) do
+    {:noreply, socket}
   end
 
   @impl true
