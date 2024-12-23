@@ -1058,41 +1058,6 @@ defmodule IngestWeb.RequestShowLive do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _uri, socket) do
-    request = Requests.get_request!(id)
-    changeset = Requests.change_request(request)
-
-    project = Projects.get_project!(request.project_id)
-
-    # set back to draft if there are not enough parts - not a catch all, but works most of the time if they remove something
-    if (request.templates == [] && project.templates == []) ||
-         (request.destinations == [] && project.destinations == []) do
-      Requests.update_request(request, %{status: :draft})
-    end
-
-    members =
-      RequestMembers
-      |> where(request_id: ^request.id)
-      |> Repo.all()
-
-    {:noreply,
-     socket
-     |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
-     |> assign(:request_templates, request.templates)
-     |> assign(:request_destinations, request.destinations)
-     |> assign(:project_templates, project.templates)
-     |> assign(:project_destinations, project.destinations)
-     |> assign(:members, members)
-     |> assign(:request, request)
-     |> assign(:request_form, to_form(changeset))
-     |> stream(:templates, request.templates)
-     |> assign(page: 1, per_page: 10)
-     |> assign(filter_completed: false, sort: "date")
-     |> paginate_uploads(1)
-     |> stream(:destinations, request.destinations)}
-  end
-
-  @impl true
   def handle_params(%{"id" => id, "destination_id" => destination}, _uri, socket) do
     destination = Ingest.Destinations.get_destination!(destination)
 
@@ -1117,9 +1082,44 @@ defmodule IngestWeb.RequestShowLive do
      |> assign(:destination, destination)
      |> assign(
        :destination_member,
-       destination.destination_members
+       Ingest.Destinations.list_destination_members(destination)
        |> Enum.find(fn member -> member.request_id == request.id end)
      )
+     |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
+     |> assign(:request_templates, request.templates)
+     |> assign(:request_destinations, request.destinations)
+     |> assign(:project_templates, project.templates)
+     |> assign(:project_destinations, project.destinations)
+     |> assign(:members, members)
+     |> assign(:request, request)
+     |> assign(:request_form, to_form(changeset))
+     |> stream(:templates, request.templates)
+     |> assign(page: 1, per_page: 10)
+     |> assign(filter_completed: false, sort: "date")
+     |> paginate_uploads(1)
+     |> stream(:destinations, request.destinations)}
+  end
+
+  @impl true
+  def handle_params(%{"id" => id}, _uri, socket) do
+    request = Requests.get_request!(id)
+    changeset = Requests.change_request(request)
+
+    project = Projects.get_project!(request.project_id)
+
+    # set back to draft if there are not enough parts - not a catch all, but works most of the time if they remove something
+    if (request.templates == [] && project.templates == []) ||
+         (request.destinations == [] && project.destinations == []) do
+      Requests.update_request(request, %{status: :draft})
+    end
+
+    members =
+      RequestMembers
+      |> where(request_id: ^request.id)
+      |> Repo.all()
+
+    {:noreply,
+     socket
      |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
      |> assign(:request_templates, request.templates)
      |> assign(:request_destinations, request.destinations)

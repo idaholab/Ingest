@@ -3,7 +3,6 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
   This is the LiveComponent for managing the sharing of destinations with other people.
   """
 
-  alias ExAws.Operation.S3
   use IngestWeb, :live_component
 
   alias Ingest.Destinations.LakeFSConfigAdditional
