@@ -65,7 +65,7 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
                 :update_destination,
                 @current_user,
                 @destination
-              ) && (member.project_id || member.request_id)
+              ) && (member.project_id || member.request_id) && member.status != :pending
             }
             class="text-indigo-600 hover:text-indigo-900"
             patch={~p"/dashboard/destinations/#{@destination}/sharing/#{member}"}
