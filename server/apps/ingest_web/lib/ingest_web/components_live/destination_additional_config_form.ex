@@ -55,14 +55,20 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
               <.label for="status-select">
                 Repository Name
               </.label>
-              <.input type="text" field={@form[:folder_name]} />
+              <.input
+                type="text"
+                field={@form[:repository_name]}
+                phx-change="repo_name_change"
+                phx-target={@myself}
+              />
+              <p class="text"><b>Repository Name:</b> {@slug_repo_name}</p>
             </div>
 
             <div class="col-span-full">
               <.label for="status-select">
                 Owner Email
               </.label>
-              <.input type="text" field={@form[:folder_name]} />
+              <.input type="text" field={@form[:repository_owner_email]} />
               <p class="text-xs py-2">
                 The email address of the repository owner.
               </p>
@@ -105,8 +111,7 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
   @impl true
   def update(
         %{
-          destination: destination,
-          destination_member: member
+          destination: destination
         } = assigns,
         socket
       ) do
@@ -143,6 +148,7 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
     {:ok,
      socket
      |> assign(:form, to_form(changeset))
+     |> assign(:slug_repo_name, nil)
      |> assign(assigns)}
   end
 
@@ -152,7 +158,7 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
       case socket.assigns.destination.type do
         :lakefs ->
           %LakeFSConfigAdditional{}
-          |> LakeFSConfigAdditional.changeset(params["lakefs_config_additional"])
+          |> LakeFSConfigAdditional.changeset(params["lake_fs_config_additional"])
           |> Map.put(:action, :validate)
 
         :azure ->
@@ -169,13 +175,32 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
     {:noreply, socket |> assign(:form, to_form(changeset))}
   end
 
-  @imple true
+  @impl true
+  def handle_event("repo_name_change", params, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       :slug_repo_name,
+       Slug.slugify(Map.get(params["lake_fs_config_additional"], "repository_name", ""))
+     )}
+  end
+
+  @impl true
   def handle_event("save", params, socket) do
     params =
       case socket.assigns.destination.type do
-        :lakefs -> params["lakefs_config_additional"]
-        :azure -> params["azure_config_additional"]
-        :s3 -> params["s3_config_additional"]
+        :lakefs ->
+          params["lake_fs_config_additional"]
+          |> Map.replace(
+            "repository_name",
+            Slug.slugify(Map.get(params["lake_fs_config_additional"], "repository_name", ""))
+          )
+
+        :azure ->
+          params["azure_config_additional"]
+
+        :s3 ->
+          params["s3_config_additional"]
       end
 
     cond do

@@ -698,6 +698,7 @@ defmodule IngestWeb.RequestShowLive do
                           <span class="font-medium leading-none text-white">
                             <span :if={destination.type == :s3}>S3</span>
                             <span :if={destination.type == :azure}>AZ</span>
+                            <span :if={destination.type == :lakefs}>LF</span>
                             <span :if={destination.type == :internal}>I</span>
                           </span>
                         </span>

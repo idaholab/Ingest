@@ -448,26 +448,22 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
         client =
           if destination && destination.type == :lakefs do
-            Ingest.Destinations.Lakefs.new_client(
+            Ingest.LakeFS.new!(
               base_url,
-              {
-                destination.lakefs_config.access_key_id,
-                destination.lakefs_config.secret_access_key
-              },
+              access_key: destination.lakefs_config.access_key_id,
+              secret_access_key: destination.lakefs_config.secret_access_key,
               port: destination.lakefs_config.port
             )
           else
-            Ingest.Destinations.Lakefs.new_client(
+            Ingest.LakeFS.new!(
               base_url,
-              {
-                destination_params["lakefs_config"]["access_key_id"],
-                destination_params["lakefs_config"]["secret_access_key"]
-              },
+              access_key: destination_params["lakefs_config"]["access_key_id"],
+              secret_access_key: destination_params["lakefs_config"]["secret_access_key"],
               port: destination_params["lakefs_config"]["port"]
             )
           end
 
-        {:ok, repos} = Ingest.Destinations.Lakefs.list_repos(client)
+        {:ok, repos} = Ingest.LakeFS.list_repos(client)
 
         {:noreply,
          socket

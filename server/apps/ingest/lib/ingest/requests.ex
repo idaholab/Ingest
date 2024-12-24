@@ -204,6 +204,24 @@ defmodule Ingest.Requests do
     |> Repo.preload(destinations: destinations_query)
   end
 
+  def get_request(id) do
+    destinations_query =
+      from d in Ingest.Destinations.Destination,
+        left_join: rd in Ingest.Requests.RequestDestination,
+        on: rd.destination_id == d.id and rd.request_id == ^id,
+        select: %Ingest.Destinations.Destination{d | additional_config: rd.additional_config}
+
+    project_destinations_query =
+      from d in Ingest.Destinations.Destination,
+        left_join: pd in Ingest.Projects.ProjectDestination,
+        on: pd.destination_id == d.id
+
+    Repo.get(Request, id)
+    |> Repo.preload(:templates)
+    |> Repo.preload(project: [:templates, destinations: project_destinations_query])
+    |> Repo.preload(destinations: destinations_query)
+  end
+
   @doc """
   Creates a request.
 

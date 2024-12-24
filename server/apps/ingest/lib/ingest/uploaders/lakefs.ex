@@ -54,7 +54,6 @@ defmodule Ingest.Uploaders.Lakefs do
         |> Map.put(:parts, [])}}
     else
       err -> {:error, err}
-      _ -> {:error, :unrecognized_error}
     end
   end
 
@@ -160,23 +159,25 @@ defmodule Ingest.Uploaders.Lakefs do
       end
 
     with client <-
-           Ingest.Destinations.Lakefs.new_client(
+           Ingest.LakeFS.new!(
              base_url,
-             {config.access_key_id, config.secret_access_key},
+             access_key: config.access_key_id,
+             secret_access_key: config.secret_access_key,
              port: config.port
            ),
-         {:ok, branches} <- Ingest.Destinations.Lakefs.list_branches(client, config.repository) do
+         {:ok, branches} <- Ingest.LakeFS.list_branches(client, config.repository) do
       branch =
         Enum.find(branches, fn b -> b["id"] == branch_name end)
 
       if !branch do
         {:ok, _res} =
-          Ingest.Destinations.Lakefs.new_client(
+          Ingest.LakeFS.new!(
             base_url,
-            {config.access_key_id, config.secret_access_key},
+            access_key: config.access_key_id,
+            secret_access_key: config.secret_access_key,
             port: config.port
           )
-          |> Ingest.Destinations.Lakefs.create_branch(
+          |> Ingest.LakeFS.create_branch(
             config.repository,
             branch_name
           )

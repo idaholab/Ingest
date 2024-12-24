@@ -91,6 +91,16 @@ defmodule Ingest.Projects do
     |> Repo.preload(:destinations)
   end
 
+  def get_project(id) do
+    Repo.get(Project, id)
+    |> Repo.preload(:user)
+    |> Repo.preload(project_members: :project_roles)
+    |> Repo.preload(invites: :invited_user)
+    |> Repo.preload(:requests)
+    |> Repo.preload(:templates)
+    |> Repo.preload(:destinations)
+  end
+
   def get_owned_project!(%User{} = user, id) do
     Repo.one!(
       from p in Project,
