@@ -61,7 +61,9 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
                 phx-change="repo_name_change"
                 phx-target={@myself}
               />
-              <p class="text"><b>Repository Name:</b> {@slug_repo_name}</p>
+              <p :if={@slug_repo_name} class="text py-2">
+                <b>URL Safe Repository Name:</b> {@slug_repo_name}
+              </p>
             </div>
 
             <div class="col-span-full">
@@ -72,7 +74,22 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
               <p class="text-xs py-2">
                 The email address of the repository owner.
               </p>
+            </div>
 
+            <div class="col-span-3">
+              <.label for="status-select">
+                Create Repository
+              </.label>
+              <.input type="checkbox" field={@form[:upsert_repository]} />
+              <p class="text-xs py-2">
+                If checked, create repository if it does not exist. <br />
+                <b>
+                  Note: this may fail if the repository exists but the credentials provided don't have permissions to see it.
+                </b>
+              </p>
+            </div>
+
+            <div :if={@form[:upsert_repository].value == "true"} class="col-span-3">
               <.label for="status-select">
                 Generate Admin Policies
               </.label>
@@ -84,12 +101,36 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
 
             <div class="col-span-3">
               <.label for="status-select">
+                Enable DataHub Integration
+              </.label>
+              <.input type="checkbox" field={@form[:datahub_integration]} />
+              <p class="text-xs">
+                Whether or not to enable the DataHub integration through LakeFS's action system.
+              </p>
+            </div>
+
+            <div class="col-span-3">
+              <.label for="status-select">
                 Integrated Metadata
               </.label>
               <.input type="checkbox" field={@form[:integrated_metadata]} />
               <p class="text-xs">
                 Whether or not to use this destination's type native method for storing metadata.
               </p>
+            </div>
+
+            <div :if={@form[:datahub_integration].value == true} class="col-span-3">
+              <.label for="status-select">
+                DataHub Endpoint
+              </.label>
+              <.input type="text" field={@form[:datahub_endpoint]} />
+            </div>
+
+            <div :if={@form[:datahub_integration].value == true} class="col-span-3">
+              <.label for="status-select">
+                DataHub Token
+              </.label>
+              <.input type="text" field={@form[:datahub_token]} />
             </div>
           </div>
         </div>
@@ -132,23 +173,22 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
         :lakefs ->
           %LakeFSConfigAdditional{}
           |> LakeFSConfigAdditional.changeset(if config, do: config, else: %{})
-          |> Map.put(:action, :validate)
 
         :azure ->
           %AzureConfigAdditional{}
           |> AzureConfigAdditional.changeset(if config, do: config, else: %{})
-          |> Map.put(:action, :validate)
 
         :s3 ->
           %S3ConfigAdditional{}
           |> S3ConfigAdditional.changeset(if config, do: config, else: %{})
-          |> Map.put(:action, :validate)
       end
 
     {:ok,
      socket
      |> assign(:form, to_form(changeset))
      |> assign(:slug_repo_name, nil)
+     |> assign(:upsert_repository, false)
+     |> assign(:datahub_checked, false)
      |> assign(assigns)}
   end
 
@@ -187,52 +227,74 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
 
   @impl true
   def handle_event("save", params, socket) do
-    params =
+    changeset =
       case socket.assigns.destination.type do
         :lakefs ->
-          params["lake_fs_config_additional"]
-          |> Map.replace(
-            "repository_name",
-            Slug.slugify(Map.get(params["lake_fs_config_additional"], "repository_name", ""))
-          )
+          %LakeFSConfigAdditional{}
+          |> LakeFSConfigAdditional.changeset(params["lake_fs_config_additional"])
+          |> Map.put(:action, :validate)
 
         :azure ->
-          params["azure_config_additional"]
+          %AzureConfigAdditional{}
+          |> AzureConfigAdditional.changeset(params["azure_config_additional"])
+          |> Map.put(:action, :validate)
 
         :s3 ->
-          params["s3_config_additional"]
+          %S3ConfigAdditional{}
+          |> S3ConfigAdditional.changeset(params["s3_config_additionasl"])
+          |> Map.put(:action, :validate)
       end
 
-    cond do
-      socket.assigns.destination_member.request_id ->
-        case Ingest.Requests.update_request_destination_config(
-               socket.assigns.destination_member,
-               params
-             ) do
-          {1, _request} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Destination updated successfully")
-             |> push_patch(to: socket.assigns.patch)}
+    if changeset.errors != [] do
+      {:noreply, socket |> assign(:form, to_form(changeset))}
+    else
+      params =
+        case socket.assigns.destination.type do
+          :lakefs ->
+            params["lake_fs_config_additional"]
+            |> Map.replace(
+              "repository_name",
+              Slug.slugify(Map.get(params["lake_fs_config_additional"], "repository_name", ""))
+            )
 
-          _ ->
-            {:noreply, socket}
+          :azure ->
+            params["azure_config_additional"]
+
+          :s3 ->
+            params["s3_config_additional"]
         end
 
-      socket.assigns.destination_member.project_id ->
-        case Ingest.Projects.update_project_destination_config(
-               socket.assigns.destination_member,
-               params
-             ) do
-          {1, _project} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Destination updated successfully")
-             |> push_patch(to: socket.assigns.patch)}
+      cond do
+        socket.assigns.destination_member.request_id ->
+          case Ingest.Requests.update_request_destination_config(
+                 socket.assigns.destination_member,
+                 params
+               ) do
+            {1, _request} ->
+              {:noreply,
+               socket
+               |> put_flash(:info, "Destination updated successfully")
+               |> push_patch(to: socket.assigns.patch)}
 
-          _ ->
-            {:noreply, socket}
-        end
+            _ ->
+              {:noreply, socket}
+          end
+
+        socket.assigns.destination_member.project_id ->
+          case Ingest.Projects.update_project_destination_config(
+                 socket.assigns.destination_member,
+                 params
+               ) do
+            {1, _project} ->
+              {:noreply,
+               socket
+               |> put_flash(:info, "Destination updated successfully")
+               |> push_patch(to: socket.assigns.patch)}
+
+            _ ->
+              {:noreply, socket}
+          end
+      end
     end
   end
 end

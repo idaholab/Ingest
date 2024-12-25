@@ -1088,7 +1088,10 @@ defmodule IngestWeb.RequestShowLive do
      |> assign(:request_templates, request.templates)
      |> assign(
        :request_destinations,
-       request.destinations |> Enum.filter(fn d -> !Enum.member?(Enum.map(project.destinations, fn pd -> pd.id end), d.id) end)
+       request.destinations
+       |> Enum.filter(fn d ->
+         !Enum.member?(Enum.map(project.destinations, fn pd -> pd.id end), d.id)
+       end)
      )
      |> assign(:project_templates, project.templates)
      |> assign(:project_destinations, project.destinations)
