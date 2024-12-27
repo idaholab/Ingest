@@ -268,7 +268,12 @@ defmodule IngestWeb.DestinationsLive do
 
   @impl true
   def handle_info({IngestWeb.LiveComponents.DestinationForm, {:saved, project}}, socket) do
-    {:noreply, stream_insert(socket, :destinations, project)}
+    {:noreply,
+     socket
+     |> assign(
+       :destinations,
+       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+     )}
   end
 
   @impl true
@@ -283,7 +288,12 @@ defmodule IngestWeb.DestinationsLive do
              destination
            ),
          {:ok, _} <- Ingest.Destinations.delete_destination(destination) do
-      {:noreply, stream_delete(socket, :destinations, destination)}
+      {:noreply,
+       socket
+       |> assign(
+         :destinations,
+         Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+       )}
     else
       _ -> {:noreply, socket |> put_flash(:error, "Unable to delete destination")}
     end

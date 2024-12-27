@@ -9,57 +9,32 @@ defmodule Ingest.LakeFS do
   @doc """
   Contains options for setting the access and secret access key
   """
-  def new(endpoint, opts \\ []) do
-    prefix =
-      if Keyword.get(opts, :ssl) do
-        "https://"
-      else
-        "http://"
-      end
-
-    case URI.new(endpoint) do
-      {:ok, uri} ->
-        {:ok,
-         %__MODULE__{
-           endpoint: uri,
-           access_key: Keyword.get(opts, :access_key),
-           secret_access_key: Keyword.get(opts, :secret_access_key),
-           storage_namespace: Keyword.get(opts, :storage_namespace),
-           base_req:
-             Req.new(
-               base_url:
-                 "#{prefix}#{endpoint}#{if Keyword.get(opts, :port) do
-                   ":#{Keyword.get(opts, :port)}"
-                 end}",
-               auth:
-                 {:basic,
-                  "#{Keyword.get(opts, :access_key)}:#{Keyword.get(opts, :secret_access_key)}"}
-             )
-         }}
-
-      _ ->
-        {:error, "unable to parse endpoint"}
-    end
+  def new(%URI{} = endpoint, opts \\ []) do
+    {:ok,
+     %__MODULE__{
+       endpoint: endpoint,
+       access_key: Keyword.get(opts, :access_key),
+       secret_access_key: Keyword.get(opts, :secret_access_key),
+       storage_namespace: Keyword.get(opts, :storage_namespace),
+       base_req:
+         Req.new(
+           base_url: URI.to_string(endpoint),
+           auth:
+             {:basic,
+              "#{Keyword.get(opts, :access_key)}:#{Keyword.get(opts, :secret_access_key)}"}
+         )
+     }}
   end
 
-  def new!(endpoint, opts \\ []) do
-    prefix =
-      if Keyword.get(opts, :ssl) do
-        "https://"
-      else
-        "http://"
-      end
-
+  def new!(%URI{} = endpoint, opts \\ []) do
     %__MODULE__{
-      endpoint: URI.new!(endpoint),
+      endpoint: endpoint,
       access_key: Keyword.get(opts, :access_key),
       secret_access_key: Keyword.get(opts, :secret_access_key),
+      storage_namespace: Keyword.get(opts, :storage_namespace),
       base_req:
         Req.new(
-          base_url:
-            "#{prefix}#{endpoint}#{if Keyword.get(opts, :port) do
-              ":#{Keyword.get(opts, :port)}"
-            end}",
+          base_url: URI.to_string(endpoint),
           auth:
             {:basic, "#{Keyword.get(opts, :access_key)}:#{Keyword.get(opts, :secret_access_key)}"}
         )

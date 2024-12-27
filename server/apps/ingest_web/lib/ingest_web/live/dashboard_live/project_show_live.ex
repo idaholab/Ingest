@@ -531,7 +531,7 @@ defmodule IngestWeb.ProjectShowLive do
     email = Map.get(invite_params, "email")
     user = Accounts.get_user_by_email(email)
 
-    if is_nil(email) && is_nil(user) do
+    if is_nil(user) do
       {:ok, i} = Projects.invite_by_email(socket.assigns.project, email)
 
       Ingest.Projects.ProjectNotifier.notify_project_invite(

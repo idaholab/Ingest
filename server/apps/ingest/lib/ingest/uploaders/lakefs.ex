@@ -151,19 +151,15 @@ defmodule Ingest.Uploaders.Lakefs do
   defp upsert_branch(%LakeFSConfig{} = config, %Request{} = request, %User{} = user) do
     branch_name = Regex.replace(~r/\W+/, "#{request.name}-by-#{user.name}", "-")
 
-    base_url =
-      if config.ssl do
-        "https://#{config.base_url}"
-      else
-        "http://#{config.base_url}"
-      end
-
     with client <-
            Ingest.LakeFS.new!(
-             base_url,
+             %URI{
+               host: config.base_url,
+               scheme: if(config.ssl, do: "https", else: "http"),
+               port: config.port
+             },
              access_key: config.access_key_id,
-             secret_access_key: config.secret_access_key,
-             port: config.port
+             secret_access_key: config.secret_access_key
            ),
          {:ok, branches} <- Ingest.LakeFS.list_branches(client, config.repository) do
       branch =
@@ -172,7 +168,11 @@ defmodule Ingest.Uploaders.Lakefs do
       if !branch do
         {:ok, _res} =
           Ingest.LakeFS.new!(
-            base_url,
+            %URI{
+              host: config.base_url,
+              scheme: if(config.ssl, do: "https", else: "http"),
+              port: config.port
+            },
             access_key: config.access_key_id,
             secret_access_key: config.secret_access_key,
             port: config.port

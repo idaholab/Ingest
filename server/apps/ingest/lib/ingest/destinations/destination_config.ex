@@ -151,8 +151,10 @@ defmodule Ingest.Destinations.LakeFSConfig do
     field :region, Ingest.Encrypted.Binary
     field :base_url, Ingest.Encrypted.Binary
     field :repository, Ingest.Encrypted.Binary
+    field :upsert_repository, :boolean, default: true
     field :port, :integer, default: nil
     field :ssl, :boolean, default: true
+    field :storage_namespace, :string, default: "local://"
     field :integrated_metadata, :boolean, default: false
   end
 

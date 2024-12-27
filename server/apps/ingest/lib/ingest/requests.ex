@@ -196,7 +196,8 @@ defmodule Ingest.Requests do
     project_destinations_query =
       from d in Ingest.Destinations.Destination,
         left_join: pd in Ingest.Projects.ProjectDestination,
-        on: pd.destination_id == d.id
+        on: pd.destination_id == d.id,
+        select: %Ingest.Destinations.Destination{d | additional_config: pd.additional_config}
 
     Repo.get!(Request, id)
     |> Repo.preload(:templates)

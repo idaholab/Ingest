@@ -153,34 +153,7 @@ defmodule Ingest.Destinations do
 
   """
   def get_destination!(id) do
-    destination = Repo.get!(Destination, id) |> Repo.preload(:destination_members)
-
-    case destination.type do
-      :s3 ->
-        %{
-          destination
-          | s3_config: %{destination.s3_config | access_key_id: nil, secret_access_key: nil}
-        }
-
-      :azure ->
-        %{
-          destination
-          | azure_config: %{destination.azure_config | account_name: nil, account_key: nil}
-        }
-
-      :lakefs ->
-        %{
-          destination
-          | lakefs_config: %{
-              destination.lakefs_config
-              | access_key_id: nil,
-                secret_access_key: nil
-            }
-        }
-
-      _ ->
-        destination
-    end
+    Repo.get!(Destination, id) |> Repo.preload(:destination_members) |> Repo.preload(:user)
   end
 
   def get_destination(id) do
@@ -188,7 +161,31 @@ defmodule Ingest.Destinations do
   end
 
   def get_destination_member!(id) do
-    Repo.get!(DestinationMembers, id) |> Repo.preload([:destination, :user, :project, :request])
+    member = Repo.get!(DestinationMembers, id)
+
+    destination_query =
+      cond do
+        member.project_id ->
+          from d in Ingest.Destinations.Destination,
+            left_join: pd in Ingest.Projects.ProjectDestination,
+            on: pd.destination_id == d.id,
+            select: %Ingest.Destinations.Destination{d | additional_config: pd.additional_config}
+
+        member.request_id ->
+          from d in Ingest.Destinations.Destination,
+            left_join: rd in Ingest.Requests.RequestDestination,
+            on: rd.destination_id == d.id and rd.request_id == ^id,
+            select: %Ingest.Destinations.Destination{d | additional_config: rd.additional_config}
+
+        true ->
+          from d in Ingest.Destinations.Destination,
+            left_join: dm in Ingest.Destinations.DestinationMembers,
+            on: dm.destination_id == d.id,
+            select: d
+      end
+
+    member
+    |> Repo.preload([:user, :project, :request, destination: destination_query])
   end
 
   @doc """
@@ -413,6 +410,37 @@ defmodule Ingest.Destinations do
       where: dm.id == ^destination.id
     )
     |> Repo.update_all(set: [status: status])
+  end
+
+  def update_destination_members_additional_config(
+        %DestinationMembers{} = member,
+        config
+      ) do
+    {updated_r, _d} =
+      if member.request_id do
+        from(rd in Ingest.Requests.RequestDestination,
+          where:
+            rd.request_id == ^member.request_id and
+              rd.destination_id == ^member.destination.id
+        )
+        |> Repo.update_all(set: [additional_config: config])
+      else
+        {0, :ok}
+      end
+
+    {updated_p, _d} =
+      if member.project_id do
+        from(pd in Ingest.Projects.ProjectDestination,
+          where:
+            pd.project_id == ^member.project_id and
+              pd.destination_id == ^member.destination_id
+        )
+        |> Repo.update_all(set: [additional_config: config])
+      else
+        {0, :ok}
+      end
+
+    updated_r + updated_p
   end
 
   def remove_destination_members(member_id) do

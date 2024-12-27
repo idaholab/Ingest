@@ -150,6 +150,7 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
   end
 
   @impl true
+  # credo:disable-for-next-line
   def update(
         %{
           destination: destination
@@ -264,36 +265,27 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
             params["s3_config_additional"]
         end
 
-      cond do
-        socket.assigns.destination_member.request_id ->
-          case Ingest.Requests.update_request_destination_config(
-                 socket.assigns.destination_member,
-                 params
-               ) do
-            {1, _request} ->
-              {:noreply,
-               socket
-               |> put_flash(:info, "Destination updated successfully")
-               |> push_patch(to: socket.assigns.patch)}
+      updated =
+        Ingest.Destinations.update_destination_members_additional_config(
+          socket.assigns.destination_member,
+          params
+        )
 
-            _ ->
-              {:noreply, socket}
-          end
+      if updated > 0 do
+        # we kick off an Oban job to async run any configuration needed on the member
+        %{destination_member_id: socket.assigns.destination_member.id}
+        |> Ingest.Workers.Destination.new()
+        |> Oban.insert()
 
-        socket.assigns.destination_member.project_id ->
-          case Ingest.Projects.update_project_destination_config(
-                 socket.assigns.destination_member,
-                 params
-               ) do
-            {1, _project} ->
-              {:noreply,
-               socket
-               |> put_flash(:info, "Destination updated successfully")
-               |> push_patch(to: socket.assigns.patch)}
-
-            _ ->
-              {:noreply, socket}
-          end
+        {:noreply,
+         socket
+         |> put_flash(:info, "Destination Configuration updated successfully")
+         |> push_patch(to: socket.assigns.patch)}
+      else
+        {:noreply,
+         socket
+         |> put_flash(:error, "Unable to update Destination Configration")
+         |> push_patch(to: socket.assigns.patch)}
       end
     end
   end
