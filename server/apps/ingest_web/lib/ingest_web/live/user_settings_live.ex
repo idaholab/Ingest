@@ -187,7 +187,6 @@ defmodule IngestWeb.UserSettingsLive do
       |> stream_configure(:keys, dom_id: &"#{&1.access_key}")
       |> assign(:current_password, nil)
       |> assign(:email_form_current_password, nil)
-      |> assign(:show_email_edit?, false)
       |> assign(:current_email, user.email)
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
@@ -199,20 +198,10 @@ defmodule IngestWeb.UserSettingsLive do
 
   @impl true
   def handle_params(_params, _uri, socket) do
-    Logger.info "is this running"
     keys = Accounts.list_user_keys(socket.assigns.current_user)
-
     {:noreply,
      socket
      |> stream(:keys, keys)}
-  end
-
-  @impl true
-  def handle_event("show_email_edit", params, socket) do
-    Logger.debug "Var value: #{inspect(socket.assigns.show_email_edit?)}"
-    new_value = !socket.assigns.show_email_edit?
-    Logger.info "NEW VALUE" + new_value
-    {:noreply, assign(socket, :show_email_edit?, !socket.assigns.show_email_edit?)}
   end
 
   @impl true

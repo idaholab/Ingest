@@ -43,7 +43,7 @@ config :esbuild,
     cd: Path.expand("../apps/ingest_web/assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ],
-  cacerts_path: "/Users/Shared/CAINLROOT_B64.crt"
+  cacerts_path: "PATH TO CA CERTS"
 
 # Configure tailwind (the version is required)
 config :tailwind,
@@ -56,7 +56,7 @@ config :tailwind,
     ),
     cd: Path.expand("../apps/ingest_web/assets", __DIR__)
   ],
-  cacerts_path: "/Users/Shared/CAINLROOT_B64.crt"
+  cacerts_path: "PATH TO CA CERTS"
 
 # Configures Elixir's Logger
 config :logger, :console,
