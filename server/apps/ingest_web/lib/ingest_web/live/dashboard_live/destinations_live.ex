@@ -145,6 +145,24 @@ defmodule IngestWeb.DestinationsLive do
       </.modal>
 
       <.modal
+        :if={@live_action == :additional_config}
+        id="config_destination_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/destinations/#{@destination}/sharing")}
+      >
+        <.live_component
+          destination={@destination}
+          destination_member={@destination_member}
+          project={@project}
+          request={@request}
+          module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
+          id="share-destination-modal-component"
+          current_user={@current_user}
+          patch={~p"/dashboard/destinations/#{@destination}/sharing"}
+        />
+      </.modal>
+
+      <.modal
         :if={@live_action in [:register_client]}
         id="client_modal"
         show
@@ -172,6 +190,31 @@ defmodule IngestWeb.DestinationsLive do
        Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
      )
      |> assign(:section, "destinations"), layout: {IngestWeb.Layouts, :dashboard}}
+  end
+
+  @impl true
+  def handle_params(%{"id" => id, "destination_member" => member} = _params, _uri, socket) do
+    member = Ingest.Destinations.get_destination_member!(member)
+
+    {:noreply,
+     socket
+     |> assign(
+       :destination,
+       Ingest.Destinations.get_destination!(id)
+     )
+     |> assign(:destination_member, member)
+     |> assign(
+       :project,
+       if(member.project_id, do: Ingest.Projects.get_project(member.project_id))
+     )
+     |> assign(
+       :request,
+       if(member.request_id, do: Ingest.Requests.get_request(member.request_id))
+     )
+     |> assign(
+       :destinations,
+       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+     )}
   end
 
   @impl true
@@ -225,7 +268,12 @@ defmodule IngestWeb.DestinationsLive do
 
   @impl true
   def handle_info({IngestWeb.LiveComponents.DestinationForm, {:saved, project}}, socket) do
-    {:noreply, stream_insert(socket, :destinations, project)}
+    {:noreply,
+     socket
+     |> assign(
+       :destinations,
+       Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+     )}
   end
 
   @impl true
@@ -240,7 +288,12 @@ defmodule IngestWeb.DestinationsLive do
              destination
            ),
          {:ok, _} <- Ingest.Destinations.delete_destination(destination) do
-      {:noreply, stream_delete(socket, :destinations, destination)}
+      {:noreply,
+       socket
+       |> assign(
+         :destinations,
+         Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+       )}
     else
       _ -> {:noreply, socket |> put_flash(:error, "Unable to delete destination")}
     end

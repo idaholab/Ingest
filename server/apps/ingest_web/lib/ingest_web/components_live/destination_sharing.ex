@@ -27,7 +27,7 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
             for={}
             phx-change="update_status"
             phx-target={@myself}
-            phx-value-member={member.user.id}
+            phx-value-member={member.id}
             phx-value-email={member.user.email}
           >
             <.input
@@ -44,7 +44,7 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
             for={}
             phx-change="update_role"
             phx-target={@myself}
-            phx-value-member={member.user.id}
+            phx-value-member={member.id}
             phx-value-email={member.user.email}
           >
             <.input
@@ -65,11 +65,28 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
                 :update_destination,
                 @current_user,
                 @destination
+              ) && (member.project_id || member.request_id) && member.status != :pending
+            }
+            class="text-indigo-600 hover:text-indigo-900"
+            patch={~p"/dashboard/destinations/#{@destination}/sharing/#{member}"}
+          >
+            Configure
+          </.link>
+        </:action>
+
+        <:action :let={member}>
+          <.link
+            :if={
+              Bodyguard.permit?(
+                Ingest.Destinations.Destination,
+                :update_destination,
+                @current_user,
+                @destination
               )
             }
             phx-target={@myself}
             class="text-red-600 hover:text-red-900"
-            phx-click={JS.push("revoke_access", value: %{id: member.user.id})}
+            phx-click={JS.push("revoke_access", value: %{id: member.id})}
             data-confirm="Are you sure?"
           >
             Delete
@@ -130,10 +147,11 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
         %{"role" => role, "member" => member_id} = _params,
         socket
       ) do
-    case socket.assigns.destination
-         |> Ingest.Destinations.update_destination_members_role(
-           Enum.find(socket.assigns.destination.destination_members, fn member ->
-             member.id == member_id
+    {id, _rest} = Integer.parse(member_id, 10)
+
+    case Ingest.Destinations.update_destination_members_role(
+           Enum.find(socket.assigns.members, fn member ->
+             member.id == id
            end),
            String.to_existing_atom(role)
          ) do
@@ -157,14 +175,23 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
         %{"status" => status, "member" => member_id} = _params,
         socket
       ) do
-    case socket.assigns.destination
-         |> Ingest.Destinations.update_destination_members_status(
-           Enum.find(socket.assigns.destination.destination_members, fn member ->
-             member.id == member_id
-           end),
-           String.to_existing_atom(status)
+    {id, _rest} = Integer.parse(member_id, 10)
+
+    member =
+      Enum.find(socket.assigns.members, fn member ->
+        member.id == id
+      end)
+
+    status = String.to_existing_atom(status)
+
+    case Ingest.Destinations.update_destination_members_status(
+           member,
+           status
          ) do
       {1, _n} ->
+        # if we've updated we need to either remove or add a record
+        propogate_status(status, member)
+
         {:noreply,
          socket
          |> put_flash(:info, "Succesfully Changed Status!")
@@ -184,8 +211,7 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
         %{"id" => member_id} = _params,
         socket
       ) do
-    case socket.assigns.destination
-         |> Ingest.Destinations.remove_destination_members(member_id) do
+    case Ingest.Destinations.remove_destination_members(member_id) do
       {1, _n} ->
         {:noreply,
          socket
@@ -197,6 +223,40 @@ defmodule IngestWeb.LiveComponents.DestinationSharing do
          socket
          |> put_flash(:error, "Failed to Revoke Access!")
          |> push_patch(to: ~p"/dashboard/destinations/#{socket.assigns.destination.id}/sharing")}
+    end
+  end
+
+  # if accepted we can add the record
+  defp propogate_status(:accepted, member) do
+    cond do
+      member.request_id ->
+        Ingest.Requests.add_request_destination(
+          Ingest.Requests.get_request!(member.request_id),
+          Ingest.Destinations.get_destination!(member.destination_id)
+        )
+
+      member.project_id ->
+        Ingest.Projects.add_destination(
+          Ingest.Projects.get_project!(member.project_id),
+          Ingest.Destinations.get_destination!(member.destination_id)
+        )
+    end
+  end
+
+  # everything else removed
+  defp propogate_status(_status, member) do
+    cond do
+      member.request_id ->
+        Ingest.Requests.remove_destination(
+          Ingest.Requests.get_request!(member.request_id),
+          Ingest.Destinations.get_destination!(member.destination_id)
+        )
+
+      member.project_id ->
+        Ingest.Projects.remove_destination(
+          Ingest.Projects.get_project!(member.project_id),
+          Ingest.Destinations.get_destination!(member.destination_id)
+        )
     end
   end
 end

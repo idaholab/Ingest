@@ -151,8 +151,10 @@ defmodule Ingest.Destinations.LakeFSConfig do
     field :region, Ingest.Encrypted.Binary
     field :base_url, Ingest.Encrypted.Binary
     field :repository, Ingest.Encrypted.Binary
+    field :upsert_repository, :boolean, default: true
     field :port, :integer, default: nil
     field :ssl, :boolean, default: true
+    field :storage_namespace, :string, default: "local://"
     field :integrated_metadata, :boolean, default: false
   end
 
@@ -194,9 +196,16 @@ defmodule Ingest.Destinations.LakeFSConfigAdditional do
     #  email given here will be given the repository admin privilege on the resulting LakeFS repository
     field :repository_owner_email, :string
 
+    field :upsert_repository, :boolean, default: true
+
     # whether or not we should use our lakefs credentials and make groups and policies for
     # this new repository connection
     field :generate_permissions, :boolean, default: true
+
+    field :datahub_integration, :boolean, default: false
+    field :datahub_endpoint, :string
+    field :datahub_token, :string
+
     field :integrated_metadata, :boolean, default: false
   end
 
@@ -208,13 +217,29 @@ defmodule Ingest.Destinations.LakeFSConfigAdditional do
       [
         :repository_name,
         :repository_owner_email,
+        :upsert_repository,
         :generate_permissions,
-        :integrated_metadata
+        :integrated_metadata,
+        :datahub_integration,
+        :datahub_endpoint,
+        :datahub_token
       ],
       empty_values: [""]
     )
     |> validate_required([:repository_name])
+    |> maybe_validate_datahub()
     |> validate_email()
+  end
+
+  def maybe_validate_datahub(changeset) do
+    validate_datahub? = Ecto.Changeset.get_field(changeset, :datahub_integration)
+
+    if validate_datahub? do
+      changeset
+      |> validate_required([:datahub_endpoint, :datahub_token])
+    else
+      changeset
+    end
   end
 
   def validate_email(changeset) do

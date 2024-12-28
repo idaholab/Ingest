@@ -146,7 +146,7 @@ defmodule IngestWeb.UploadShowLive do
       |> List.flatten()
       |> Enum.uniq()
 
-    if Requests.is_invited(socket.assigns.current_user) do
+    if Requests.invited?(socket.assigns.current_user) do
       {:ok,
        socket
        |> Phoenix.LiveView.put_flash(:error, "Access denied!")

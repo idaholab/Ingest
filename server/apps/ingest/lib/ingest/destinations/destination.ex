@@ -16,9 +16,11 @@ defmodule Ingest.Destinations.Destination do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "destinations" do
+    field :additional_config, :map, virtual: true
+
     field :name, :string
     # internal storage are those methods provided by the Ingest application administrators
-    field :type, Ecto.Enum, values: [:s3, :azure, :lakefs], default: :s3
+    field :type, Ecto.Enum, values: [:s3, :azure, :lakefs, :temporary], default: :s3
     field :visibility, Ecto.Enum, values: [:public, :private], default: :private
 
     field :status, Ecto.Enum,

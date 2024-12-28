@@ -8,7 +8,7 @@ defmodule Ingest.Uploaders.Lakefs do
   alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.Destination
 
-  def init(%Destination{} = destination, filename, state, opts \\ []) do
+  def init!(%Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination.lakefs_config, state.request, state.user)
@@ -151,31 +151,33 @@ defmodule Ingest.Uploaders.Lakefs do
   defp upsert_branch(%LakeFSConfig{} = config, %Request{} = request, %User{} = user) do
     branch_name = Regex.replace(~r/\W+/, "#{request.name}-by-#{user.name}", "-")
 
-    base_url =
-      if config.ssl do
-        "https://#{config.base_url}"
-      else
-        "http://#{config.base_url}"
-      end
-
     with client <-
-           Ingest.Destinations.Lakefs.new_client(
-             base_url,
-             {config.access_key_id, config.secret_access_key},
-             port: config.port
+           Ingest.LakeFS.new!(
+             %URI{
+               host: config.base_url,
+               scheme: if(config.ssl, do: "https", else: "http"),
+               port: config.port
+             },
+             access_key: config.access_key_id,
+             secret_access_key: config.secret_access_key
            ),
-         {:ok, branches} <- Ingest.Destinations.Lakefs.list_branches(client, config.repository) do
+         {:ok, branches} <- Ingest.LakeFS.list_branches(client, config.repository) do
       branch =
         Enum.find(branches, fn b -> b["id"] == branch_name end)
 
       if !branch do
         {:ok, _res} =
-          Ingest.Destinations.Lakefs.new_client(
-            base_url,
-            {config.access_key_id, config.secret_access_key},
+          Ingest.LakeFS.new!(
+            %URI{
+              host: config.base_url,
+              scheme: if(config.ssl, do: "https", else: "http"),
+              port: config.port
+            },
+            access_key: config.access_key_id,
+            secret_access_key: config.secret_access_key,
             port: config.port
           )
-          |> Ingest.Destinations.Lakefs.create_branch(
+          |> Ingest.LakeFS.create_branch(
             config.repository,
             branch_name
           )

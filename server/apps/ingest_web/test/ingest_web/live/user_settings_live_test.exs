@@ -1,7 +1,6 @@
 defmodule IngestWeb.UserSettingsLiveTest do
   use IngestWeb.ConnCase, async: false
 
-  alias Ingest.Accounts
   import Phoenix.LiveViewTest
 
   describe "Settings page" do

@@ -118,7 +118,7 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
         S3.init(destination, filename, state, original_filename: state.original_filename)
 
       :lakefs ->
-        Lakefs.init(destination, filename, state, original_filename: state.original_filename)
+        Lakefs.init!(destination, filename, state, original_filename: state.original_filename)
 
       _ ->
         {:error, :unknown_destination_type}

@@ -4,6 +4,7 @@ defmodule Ingest.Requests do
   """
 
   import Ecto.Query, warn: false
+  alias Ingest.Requests.RequestDestination
   alias Ingest.Projects.ProjectSearch
   alias Ingest.Requests.TemplateSearch
   alias Ingest.Uploads.Upload
@@ -153,7 +154,7 @@ defmodule Ingest.Requests do
     |> Repo.preload(:project)
   end
 
-  def is_invited(%User{} = user) do
+  def invited?(%User{} = user) do
     request_for_creator =
       Repo.all(
         from r in Request,
@@ -185,12 +186,42 @@ defmodule Ingest.Requests do
       ** (Ecto.NoResultsError)
 
   """
-  def get_request!(id),
-    do:
-      Repo.get!(Request, id)
-      |> Repo.preload(:templates)
-      |> Repo.preload(project: [:templates, :destinations])
-      |> Repo.preload(:destinations)
+  def get_request!(id) do
+    destinations_query =
+      from d in Ingest.Destinations.Destination,
+        left_join: rd in Ingest.Requests.RequestDestination,
+        on: rd.destination_id == d.id and rd.request_id == ^id,
+        select: %Ingest.Destinations.Destination{d | additional_config: rd.additional_config}
+
+    project_destinations_query =
+      from d in Ingest.Destinations.Destination,
+        left_join: pd in Ingest.Projects.ProjectDestination,
+        on: pd.destination_id == d.id,
+        select: %Ingest.Destinations.Destination{d | additional_config: pd.additional_config}
+
+    Repo.get!(Request, id)
+    |> Repo.preload(:templates)
+    |> Repo.preload(project: [:templates, destinations: project_destinations_query])
+    |> Repo.preload(destinations: destinations_query)
+  end
+
+  def get_request(id) do
+    destinations_query =
+      from d in Ingest.Destinations.Destination,
+        left_join: rd in Ingest.Requests.RequestDestination,
+        on: rd.destination_id == d.id and rd.request_id == ^id,
+        select: %Ingest.Destinations.Destination{d | additional_config: rd.additional_config}
+
+    project_destinations_query =
+      from d in Ingest.Destinations.Destination,
+        left_join: pd in Ingest.Projects.ProjectDestination,
+        on: pd.destination_id == d.id
+
+    Repo.get(Request, id)
+    |> Repo.preload(:templates)
+    |> Repo.preload(project: [:templates, destinations: project_destinations_query])
+    |> Repo.preload(destinations: destinations_query)
+  end
 
   @doc """
   Creates a request.
@@ -271,6 +302,16 @@ defmodule Ingest.Requests do
   """
   def change_request(%Request{} = request, attrs \\ %{}) do
     Request.changeset(request, attrs)
+  end
+
+  def get_request_destination(%Request{} = request, destination) do
+    # there should only ever be _one_ destination/request combination
+    Repo.one(
+      from rd in Ingest.Requests.RequestDestination,
+        where: rd.request_id == ^request.id and rd.destination_id == ^destination.id,
+        select: rd
+    )
+    |> Repo.preload(request: [:destinations])
   end
 
   def remove_destination(%Request{} = request, %Destination{} = destination) do
@@ -370,6 +411,27 @@ defmodule Ingest.Requests do
 
       Repo.all(query)
     end
+  end
+
+  def add_request_destination(
+        %Request{} = request,
+        %Ingest.Destinations.Destination{} = destination
+      ) do
+    %RequestDestination{
+      request_id: request.id,
+      destination_id: destination.id
+    }
+    |> Repo.insert(on_conflict: :nothing)
+  end
+
+  def remove_request_destination(
+        %Request{} = request,
+        %Ingest.Destinations.Destination{} = destination
+      ) do
+    Repo.delete_all(
+      from rd in RequestDestination,
+        where: rd.request_id == ^request.id and rd.destination_id == ^destination.id
+    )
   end
 
   def search_requests_by_project(search_term) do
@@ -529,6 +591,18 @@ defmodule Ingest.Requests do
           ^user.id and tm.template_id == ^template.id
     )
     |> Repo.update_all(set: [role: role])
+  end
+
+  def update_request_destination_config(
+        %Ingest.Destinations.DestinationMembers{} = member,
+        config
+      ) do
+    from(rd in RequestDestination,
+      where:
+        rd.request_id == ^member.request_id and
+          rd.destination_id == ^member.destination.id
+    )
+    |> Repo.update_all(set: [additional_config: config])
   end
 
   @doc """

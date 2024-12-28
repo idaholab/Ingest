@@ -60,7 +60,7 @@ defmodule IngestWeb.CoreComponents do
         tabindex="0"
       >
         <div class="flex min-h-full items-center justify-center">
-          <div class="w-full max-w-5xl p-4 sm:p-6 lg:py-8">
+          <div class="w-full max-w-7xl p-4 sm:p-6 lg:py-8">
             <.focus_wrap
               id={"#{@id}-container"}
               phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
@@ -301,7 +301,7 @@ defmodule IngestWeb.CoreComponents do
 
     ~H"""
     <div phx-feedback-for={@name}>
-      <label class="input input-bordered flex items-center gap-2">
+      <label class="input flex items-center gap-2">
         <input type="hidden" name={@name} value="false" />
         <input
           type="checkbox"

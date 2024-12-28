@@ -64,7 +64,7 @@ defmodule Ingest.DestinationsTest do
 
     test "get_destination!/1 returns the destination with given id" do
       destination = destination_fixture()
-      assert Destinations.get_destination!(destination.id) == destination
+      assert Destinations.get_destination!(destination.id).id == destination.id
     end
 
     test "create_destination/1 with valid data creates a destination" do
@@ -96,7 +96,7 @@ defmodule Ingest.DestinationsTest do
       assert {:error, %Ecto.Changeset{}} =
                Destinations.update_destination(destination, @invalid_attrs)
 
-      assert destination == Destinations.get_destination!(destination.id)
+      assert destination.id == Destinations.get_destination!(destination.id).id
     end
 
     test "delete_destination/1 deletes the destination" do

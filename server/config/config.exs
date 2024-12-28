@@ -77,7 +77,7 @@ config :ingest, Ingest.Vault,
 
 config :ingest, Oban,
   engine: Oban.Engines.Lite,
-  queues: [default: 10, metadata: 10],
+  queues: [default: 10, metadata: 10, destinations: 5],
   repo: Ingest.Repo
 
 config :error_tracker,

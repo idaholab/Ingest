@@ -55,7 +55,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
                     @live_action in [:search_destinations, :search_destinations_project] &&
                       Bodyguard.permit?(
                         Ingest.Destinations.Destination,
-                        :use_destination,
+                        :update_destination,
                         @current_user,
                         result
                       )
@@ -158,7 +158,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
 
     Ingest.Requests.update_request_templates(socket.assigns.request, templates)
 
-    {:noreply, socket |> push_patch(to: ~p"/dashboard/requests/#{socket.assigns.request.id}")}
+    {:noreply, socket |> push_patch(to: socket.assigns.patch)}
   end
 
   def add(socket, :search_destinations, id) do
@@ -168,7 +168,17 @@ defmodule IngestWeb.LiveComponents.SearchForm do
 
     Ingest.Requests.update_request_destinations(socket.assigns.request, destinations)
 
-    {:noreply, socket |> push_patch(to: ~p"/dashboard/requests/#{socket.assigns.request.id}")}
+    {:noreply, socket |> push_patch(to: socket.assigns.patch)}
+  end
+
+  def add(socket, :search_destinations_project, id) do
+    destinations = [
+      Ingest.Destinations.get_destination!(id) | socket.assigns.project.destinations
+    ]
+
+    Ingest.Projects.update_project_destinations(socket.assigns.project, destinations)
+
+    {:noreply, socket |> push_patch(to: socket.assigns.patch)}
   end
 
   def search(socket, :search_projects, value) do

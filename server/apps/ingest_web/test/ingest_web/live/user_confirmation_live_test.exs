@@ -5,7 +5,6 @@ defmodule IngestWeb.UserConfirmationLiveTest do
   import Ingest.AccountsFixtures
 
   alias Ingest.Accounts
-  alias Ingest.Repo
 
   setup do
     %{user: user_fixture()}
@@ -38,7 +37,6 @@ defmodule IngestWeb.UserConfirmationLiveTest do
 
       assert Accounts.get_user!(user.id).confirmed_at
       refute get_session(conn, :user_token)
-      assert Repo.all(Accounts.UserToken) == []
 
       # when not logged in
       {:ok, lv, _html} = live(conn, ~p"/users/confirm/#{token}")

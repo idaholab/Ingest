@@ -123,8 +123,6 @@ defmodule Ingest.Projects.ProjectDestination do
     # in the destination schema file itself. It relies on the destination type
     # to know what additional config to choose
     field :additional_config, :map
-
-    timestamps()
   end
 
   @doc false

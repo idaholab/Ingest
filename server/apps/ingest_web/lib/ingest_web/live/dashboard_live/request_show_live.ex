@@ -671,9 +671,20 @@ defmodule IngestWeb.RequestShowLive do
                     </td>
                     <td class="relative w-14 p-0">
                       <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                        <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                          Active
-                        </span>
+                        <.link
+                          :if={
+                            Bodyguard.permit?(
+                              Ingest.Destinations.Destination,
+                              :update_destination,
+                              @current_user,
+                              destination
+                            )
+                          }
+                          patch={~p"/dashboard/requests/#{@request}/destination/#{destination}"}
+                          class="text-indigo-600 hover:text-indigo-900 px-5"
+                        >
+                          Configure
+                        </.link>
                         <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
                           Default
                         </span>
@@ -687,6 +698,7 @@ defmodule IngestWeb.RequestShowLive do
                           <span class="font-medium leading-none text-white">
                             <span :if={destination.type == :s3}>S3</span>
                             <span :if={destination.type == :azure}>AZ</span>
+                            <span :if={destination.type == :lakefs}>LF</span>
                             <span :if={destination.type == :internal}>I</span>
                           </span>
                         </span>
@@ -702,9 +714,20 @@ defmodule IngestWeb.RequestShowLive do
                     </td>
                     <td class="relative w-14 p-0">
                       <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                        <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                          Active
-                        </span>
+                        <.link
+                          :if={
+                            Bodyguard.permit?(
+                              Ingest.Destinations.Destination,
+                              :update_destination,
+                              @current_user,
+                              destination
+                            )
+                          }
+                          patch={~p"/dashboard/requests/#{@request}/destination/#{destination}"}
+                          class="text-indigo-600 hover:text-indigo-900 px-5"
+                        >
+                          Configure
+                        </.link>
                         <span
                           :if={
                             Bodyguard.permit?(
@@ -750,6 +773,23 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
       </div>
+      <.modal
+        :if={@live_action == :destination_additional_config}
+        id="config_destination_modal"
+        show
+        on_cancel={JS.patch(~p"/dashboard/requests/#{@request}")}
+      >
+        <.live_component
+          destination={@destination}
+          destination_member={@destination_member}
+          request={@request}
+          module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
+          id="share-destination-modal-component"
+          current_user={@current_user}
+          patch={JS.patch(~p"/dashboard/requests/#{@request}")}
+        />
+      </.modal>
+
       <.modal
         :if={@live_action in [:search_projects, :search_destinations, :search_templates]}
         id="search_modal"
@@ -1021,13 +1061,7 @@ defmodule IngestWeb.RequestShowLive do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:section, "requests") |> stream(:uploads, []),
-     layout: {IngestWeb.Layouts, :dashboard}}
-  end
-
-  @impl true
-  def handle_params(%{"id" => id}, _uri, socket) do
+  def mount(%{"id" => id}, _session, socket) do
     request = Requests.get_request!(id)
     changeset = Requests.change_request(request)
 
@@ -1044,11 +1078,21 @@ defmodule IngestWeb.RequestShowLive do
       |> where(request_id: ^request.id)
       |> Repo.all()
 
-    {:noreply,
+    {:ok,
      socket
+     |> assign(:section, "requests")
+     |> stream(:uploads, [])
+     |> assign(:destination, nil)
+     |> assign(:destination_member, nil)
      |> assign(:filter_form, to_form(%{"sort" => "date", "filter_completed" => false}))
      |> assign(:request_templates, request.templates)
-     |> assign(:request_destinations, request.destinations)
+     |> assign(
+       :request_destinations,
+       request.destinations
+       |> Enum.filter(fn d ->
+         !Enum.member?(Enum.map(project.destinations, fn pd -> pd.id end), d.id)
+       end)
+     )
      |> assign(:project_templates, project.templates)
      |> assign(:project_destinations, project.destinations)
      |> assign(:members, members)
@@ -1058,7 +1102,55 @@ defmodule IngestWeb.RequestShowLive do
      |> assign(page: 1, per_page: 10)
      |> assign(filter_completed: false, sort: "date")
      |> paginate_uploads(1)
-     |> stream(:destinations, request.destinations)}
+     |> stream(:destinations, request.destinations), layout: {IngestWeb.Layouts, :dashboard}}
+  end
+
+  @impl true
+  def handle_params(%{"destination_id" => destination, "id" => id} = _params, _uri, socket) do
+    request = Requests.get_request!(id)
+    project = Projects.get_project!(request.project_id)
+
+    destination = Ingest.Destinations.get_destination!(destination)
+
+    {:noreply,
+     socket
+     |> assign(:request, request)
+     |> assign(:destination, destination)
+     |> assign(:request_templates, request.templates)
+     |> assign(
+       :request_destinations,
+       request.destinations
+       |> Enum.filter(fn d ->
+         !Enum.member?(Enum.map(project.destinations, fn pd -> pd.id end), d.id)
+       end)
+     )
+     |> assign(:project_templates, project.templates)
+     |> assign(:project_destinations, project.destinations)
+     |> assign(
+       :destination_member,
+       Ingest.Destinations.list_destination_members(destination)
+       |> Enum.find(fn member -> member.request_id == socket.assigns.request.id end)
+     )}
+  end
+
+  @impl true
+  def handle_params(%{"id" => id} = _params, _uri, socket) do
+    request = Requests.get_request!(id)
+    project = Projects.get_project!(request.project_id)
+
+    {:noreply,
+     socket
+     |> assign(:request, request)
+     |> assign(:request_templates, request.templates)
+     |> assign(
+       :request_destinations,
+       request.destinations
+       |> Enum.filter(fn d ->
+         !Enum.member?(Enum.map(project.destinations, fn pd -> pd.id end), d.id)
+       end)
+     )
+     |> assign(:project_templates, project.templates)
+     |> assign(:project_destinations, project.destinations)}
   end
 
   @impl true
@@ -1091,11 +1183,11 @@ defmodule IngestWeb.RequestShowLive do
              socket.assigns.request
            ),
          template <- Ingest.Requests.get_template!(id) do
+      {1, _} = Ingest.Requests.remove_template(socket.assigns.request, template)
+
       {:noreply,
        stream_delete(socket, :templates, template)
        |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
-
-      {1, _} = Ingest.Requests.remove_template(socket.assigns.request, template)
     else
       _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
     end

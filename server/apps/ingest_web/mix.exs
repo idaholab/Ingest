@@ -52,6 +52,7 @@ defmodule IngestWeb.MixProject do
       {:error_tracker, "~> 0.4"},
       {:telemetry_metrics, "~> 1.0.0"},
       {:telemetry_poller, "~> 1.0"},
+      {:slugify, "~> 1.3"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},

@@ -225,8 +225,8 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
             </div>
 
             <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-              <div class="sm:col-span-6">
-                <.inputs_for :let={config} field={@destination_form[:lakefs_config]}>
+              <.inputs_for :let={config} field={@destination_form[:lakefs_config]}>
+                <div class="sm:col-span-3">
                   <.label for="status-select">
                     Access Key ID
                   </.label>
@@ -235,7 +235,9 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     placeholder="secret not shown"
                     field={config[:access_key_id]}
                   />
+                </div>
 
+                <div class="sm:col-span-3">
                   <.label for="status-select">
                     Secret Access Key
                   </.label>
@@ -244,7 +246,9 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                     placeholder="secret not shown"
                     field={config[:secret_access_key]}
                   />
+                </div>
 
+                <div class="col-span-3">
                   <.label for="status-select">
                     URL
                   </.label>
@@ -252,7 +256,9 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <p class="text-xs">
                     Leave the trailing / off the url.
                   </p>
+                </div>
 
+                <div class="col-span-3">
                   <.label for="status-select">
                     Port
                   </.label>
@@ -260,7 +266,9 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <p class="text-xs">
                     When in doubt, leave blank.
                   </p>
+                </div>
 
+                <div class="col-span-3">
                   <.label for="status-select">
                     SSL
                   </.label>
@@ -268,7 +276,9 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <p class="text-xs">
                     When in doubt, enable this setting.
                   </p>
+                </div>
 
+                <div class="col-span-3">
                   <.label for="status-select">
                     Integrated Metadata
                   </.label>
@@ -276,39 +286,40 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <p class="text-xs">
                     Whether or not to use this destination's type native method for storing metadata.
                   </p>
+                </div>
 
-                  <.button
-                    class="rounded-md bg-indigo-600 px-3 py-2 mt-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    phx-disable-with="Saving..."
-                    name="save"
-                    value="test_connection"
-                  >
-                    Test Connection
-                  </.button>
-
+                <div class="sm:col-span-3">
                   <.label for="status-select">
-                    Repositories
+                    Repository Name
                   </.label>
                   <.input
-                    :if={@lakefs_repos != [] || config[:repository]}
-                    type="select"
-                    options={
-                      if @destination.lakefs_config do
-                        [
-                          @destination.lakefs_config.repository
-                          | @lakefs_repos |> Enum.map(fn r -> r["id"] end)
-                        ]
-                      else
-                        @lakefs_repos |> Enum.map(fn r -> r["id"] end)
-                      end
-                    }
+                    type="text"
                     field={config[:repository]}
+                    phx-change="repo_name_change"
+                    phx-target={@myself}
                   />
-                </.inputs_for>
-                <p :if={@lakefs_repos == []} class="text-xs">
-                  Test connection to load repositories for selection
-                </p>
-              </div>
+                  <p :if={@slug_repo_name} class="text py-2">
+                    <b>URL Safe Repository Name:</b> {@slug_repo_name}
+                  </p>
+                </div>
+
+                <div class="sm:col-span-3">
+                  <.label for="status-select">
+                    Root Storage Namespace
+                  </.label>
+                  <.input type="text" field={config[:storage_namespace]} />
+                </div>
+
+                <div class="col-span-3">
+                  <.label for="status-select">
+                    Create Repository (if does not exist)
+                  </.label>
+                  <.input type="checkbox" field={config[:upsert_repository]} />
+                  <p class="text-xs">
+                    Whether or not to create the repository if it does not exist.
+                  </p>
+                </div>
+              </.inputs_for>
             </div>
           </div>
 
@@ -405,6 +416,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
      socket
      |> assign(:type, Atom.to_string(destination.type))
      |> assign(assigns)
+     |> assign(:slug_repo_name, nil)
      |> assign(:lakefs_repos, [])
      |> assign(:destination_id, destination.id)
      |> assign_form(changeset)}
@@ -432,13 +444,6 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
       # currently this only applies to the LakeFS destination, and will populate the repositories and remove the disabled tag
       "test_connection" ->
-        base_url =
-          if destination_params["lakefs_config"]["ssl"] == "true" do
-            "https://#{destination_params["lakefs_config"]["base_url"]}"
-          else
-            "http://#{destination_params["lakefs_config"]["base_url"]}"
-          end
-
         destination =
           if socket.assigns.destination_id do
             Destinations.get_destination(socket.assigns.destination_id)
@@ -448,31 +453,53 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
         client =
           if destination && destination.type == :lakefs do
-            Ingest.Destinations.Lakefs.new_client(
-              base_url,
-              {
-                destination.lakefs_config.access_key_id,
-                destination.lakefs_config.secret_access_key
+            Ingest.LakeFS.new!(
+              %URI{
+                host: destination.lakefs_config.base_url,
+                scheme:
+                  if(destination.lakefs_config.ssl,
+                    do: "https",
+                    else: "http"
+                  ),
+                port: destination.lakefs_config.port
               },
-              port: destination.lakefs_config.port
+              access_key: destination.lakefs_config.access_key_id,
+              secret_access_key: destination.lakefs_config.secret_access_key,
+              port: destination.lakefs_config.port,
+              ssl: destination.lakefs_config.ssl
             )
           else
-            Ingest.Destinations.Lakefs.new_client(
-              base_url,
-              {
-                destination_params["lakefs_config"]["access_key_id"],
-                destination_params["lakefs_config"]["secret_access_key"]
+            Ingest.LakeFS.new!(
+              %URI{
+                host: destination_params["lakefs_config"]["base_url"],
+                scheme:
+                  if(destination_params["lakefs_config"]["ssl"] == "true",
+                    do: "https",
+                    else: "http"
+                  ),
+                port: destination_params["lakefs_config"]["port"]
               },
-              port: destination_params["lakefs_config"]["port"]
+              access_key: destination_params["lakefs_config"]["access_key_id"],
+              secret_access_key: destination_params["lakefs_config"]["secret_access_key"]
             )
           end
 
-        {:ok, repos} = Ingest.Destinations.Lakefs.list_repos(client)
+        {:ok, repos} = Ingest.LakeFS.list_repos(client)
 
         {:noreply,
          socket
          |> assign(:lakefs_repos, repos)}
     end
+  end
+
+  @impl true
+  def handle_event("repo_name_change", params, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       :slug_repo_name,
+       Slug.slugify(Map.get(params["destination"]["lakefs_config"], "repository", ""))
+     )}
   end
 
   defp save_destination(socket, :edit, destination_params) do
@@ -493,6 +520,10 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
          {:ok, destination} <-
            Ingest.Destinations.update_destination(socket.assigns.destination, destination_params) do
       notify_parent({:saved, destination})
+
+      %{destination_id: socket.assigns.destination.id}
+      |> Ingest.Workers.Destination.new()
+      |> Oban.insert()
 
       {:noreply,
        socket
