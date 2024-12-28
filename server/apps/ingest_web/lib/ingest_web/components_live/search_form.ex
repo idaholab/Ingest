@@ -158,7 +158,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
 
     Ingest.Requests.update_request_templates(socket.assigns.request, templates)
 
-    {:noreply, socket |> push_patch(to: ~p"/dashboard/requests/#{socket.assigns.request.id}")}
+    {:noreply, socket |> push_patch(to: socket.assigns.patch)}
   end
 
   def add(socket, :search_destinations, id) do
@@ -168,7 +168,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
 
     Ingest.Requests.update_request_destinations(socket.assigns.request, destinations)
 
-    {:noreply, socket |> push_patch(to: ~p"/dashboard/requests/#{socket.assigns.request.id}")}
+    {:noreply, socket |> push_patch(to: socket.assigns.patch)}
   end
 
   def add(socket, :search_destinations_project, id) do
@@ -178,7 +178,7 @@ defmodule IngestWeb.LiveComponents.SearchForm do
 
     Ingest.Projects.update_project_destinations(socket.assigns.project, destinations)
 
-    {:noreply, socket |> push_patch(to: ~p"/dashboard/projects/#{socket.assigns.project.id}")}
+    {:noreply, socket |> push_patch(to: socket.assigns.patch)}
   end
 
   def search(socket, :search_projects, value) do

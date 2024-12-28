@@ -1106,12 +1106,25 @@ defmodule IngestWeb.RequestShowLive do
   end
 
   @impl true
-  def handle_params(%{"destination_id" => destination} = _params, _uri, socket) do
+  def handle_params(%{"destination_id" => destination, "id" => id} = _params, _uri, socket) do
+    request = Requests.get_request!(id)
+    project = Projects.get_project!(request.project_id)
+
     destination = Ingest.Destinations.get_destination!(destination)
 
     {:noreply,
      socket
      |> assign(:destination, destination)
+     |> assign(:request_templates, request.templates)
+     |> assign(
+       :request_destinations,
+       request.destinations
+       |> Enum.filter(fn d ->
+         !Enum.member?(Enum.map(project.destinations, fn pd -> pd.id end), d.id)
+       end)
+     )
+     |> assign(:project_templates, project.templates)
+     |> assign(:project_destinations, project.destinations)
      |> assign(
        :destination_member,
        Ingest.Destinations.list_destination_members(destination)
@@ -1120,8 +1133,22 @@ defmodule IngestWeb.RequestShowLive do
   end
 
   @impl true
-  def handle_params(_params, _uri, socket) do
-    {:noreply, socket}
+  def handle_params(%{"id" => id} = _params, _uri, socket) do
+    request = Requests.get_request!(id)
+    project = Projects.get_project!(request.project_id)
+
+    {:noreply,
+     socket
+     |> assign(:request_templates, request.templates)
+     |> assign(
+       :request_destinations,
+       request.destinations
+       |> Enum.filter(fn d ->
+         !Enum.member?(Enum.map(project.destinations, fn pd -> pd.id end), d.id)
+       end)
+     )
+     |> assign(:project_templates, project.templates)
+     |> assign(:project_destinations, project.destinations)}
   end
 
   @impl true
@@ -1154,11 +1181,11 @@ defmodule IngestWeb.RequestShowLive do
              socket.assigns.request
            ),
          template <- Ingest.Requests.get_template!(id) do
+      {1, _} = Ingest.Requests.remove_template(socket.assigns.request, template)
+
       {:noreply,
        stream_delete(socket, :templates, template)
        |> push_navigate(to: "/dashboard/requests/#{socket.assigns.request.id}")}
-
-      {1, _} = Ingest.Requests.remove_template(socket.assigns.request, template)
     else
       _ -> {:noreply, socket |> put_flash(:error, "Not Authorized")}
     end
