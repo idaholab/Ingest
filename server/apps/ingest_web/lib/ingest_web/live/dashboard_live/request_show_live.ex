@@ -1114,6 +1114,7 @@ defmodule IngestWeb.RequestShowLive do
 
     {:noreply,
      socket
+     |> assign(:request, request)
      |> assign(:destination, destination)
      |> assign(:request_templates, request.templates)
      |> assign(
@@ -1139,6 +1140,7 @@ defmodule IngestWeb.RequestShowLive do
 
     {:noreply,
      socket
+     |> assign(:request, request)
      |> assign(:request_templates, request.templates)
      |> assign(
        :request_destinations,
