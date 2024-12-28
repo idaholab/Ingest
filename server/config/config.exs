@@ -42,8 +42,8 @@ config :esbuild,
       ~w(js/app.js --bundle --target=esnext --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../apps/ingest_web/assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
-  ],
-  cacerts_path: "PATH TO CA CERTS"
+  ]
+  #,cacerts_path: "PATH TO CA CERTS"
 
 # Configure tailwind (the version is required)
 config :tailwind,
@@ -55,8 +55,8 @@ config :tailwind,
       --output=../priv/static/assets/app.css
     ),
     cd: Path.expand("../apps/ingest_web/assets", __DIR__)
-  ],
-  cacerts_path: "PATH TO CA CERTS"
+  ]
+  # ,cacerts_path: "PATH TO CA CERTS"
 
 # Configures Elixir's Logger
 config :logger, :console,
