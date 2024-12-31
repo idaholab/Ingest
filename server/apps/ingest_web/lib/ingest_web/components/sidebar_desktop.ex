@@ -146,6 +146,9 @@ defmodule Sidebar do
               </ul>
             </li>
             <li class="mt-auto">
+              <a href={~p"/wiki"} class={active("Wiki", @section)}>
+                <.icon name="hero-document" /> Wiki
+              </a>
               <a href={~p"/users/settings"} class={active("settings", @section)}>
                 <svg
                   class="h-6 w-6 shrink-0"

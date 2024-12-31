@@ -93,6 +93,9 @@ defmodule IngestWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{IngestWeb.UserAuth, :ensure_authenticated}] do
+      live "/wiki", WikiLive, :home
+      live "/wiki/:page", WikiLive, :page
+
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/new_key", UserSettingsLive, :new_key
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email

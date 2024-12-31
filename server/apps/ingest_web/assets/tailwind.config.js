@@ -41,6 +41,7 @@ module.exports = {
   plugins: [
     // require("@tailwindcss/forms"),
     require("daisyui"),
+    require("@tailwindcss/typography"),
     // Allows prefixing tailwind classes with LiveView classes to add rules
     // only when LiveView classes are applied, for example:
     //
@@ -80,7 +81,7 @@ module.exports = {
     // Embeds Heroicons (https://heroicons.com) into your app.css bundle
     // See your `CoreComponents.icon/1` for more information.
     //
-    plugin(function ({ matchComponents, theme }) {
+    plugin(function({ matchComponents, theme }) {
       let iconsDir = path.join(__dirname, "../../../deps/heroicons/optimized");
       let values = {};
       let icons = [
