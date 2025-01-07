@@ -460,12 +460,12 @@ defmodule Ingest.Requests do
 @doc """
 Search Requests by Request and Project Names
 """
-  def search_by_requests_and_project_name(search_term) do
+  def search_by_request_and_project_name(search_term) do
     if search_term == "" do
       []
     else
       search_term = String.replace(search_term, " ", "")
-      #Using existing ProjectSearch Schema
+
       query_r =
         from r in Request,
           join: rs in RequestSearch,
@@ -475,7 +475,7 @@ Search Requests by Request and Project Names
             r.status == :published and
             r.visibility == :public,
           select: r
-      #Using existing RequestSearch Schema
+
       query_p =
         from r in Request,
           join: p in Project,
