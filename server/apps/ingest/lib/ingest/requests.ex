@@ -457,7 +457,9 @@ defmodule Ingest.Requests do
       |> Repo.preload(:project)
     end
   end
-
+@doc """
+Updates a request.
+"""
   def search_by_requests_and_project_name(search_term) do
     if search_term == "" do
       []
@@ -490,7 +492,7 @@ defmodule Ingest.Requests do
       results_projects = Repo.all(query_p)
 
       # Combine the results and remove duplicates by request id
-      results = Enum.uniq(results_requests ++ results_projects, fn r -> r.name end)
+      results = Enum.uniq(results_requests ++ results_projects, fn r -> r.id end)
       Repo.preload(results, :project)
     end
   end
