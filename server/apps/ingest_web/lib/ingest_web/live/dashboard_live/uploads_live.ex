@@ -139,7 +139,7 @@ defmodule IngestWeb.UploadsLive do
      |> assign(:searched, true)
      |> assign(
        :results,
-       Ingest.Requests.search_requests_by_project(value)
+       Ingest.Requests.search_by_requests_and_project_name(value)
      )}
   end
 end
