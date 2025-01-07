@@ -458,7 +458,7 @@ defmodule Ingest.Requests do
     end
   end
 @doc """
-Updates a request.
+Search Requests by Request and Project Names
 """
   def search_by_requests_and_project_name(search_term) do
     if search_term == "" do
