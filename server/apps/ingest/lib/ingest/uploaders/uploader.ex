@@ -1,6 +1,6 @@
 defmodule Ingest.Uploaders.MultiDestinationWriter do
   @moduledoc """
-  This is the primary implemenation of LiveView.UploadWriter. This accepts multiple destinations for different
+  This is the primary implementation of LiveView.UploadWriter. This accepts multiple destinations for different
   types and uploads chunks to each of the included destinations and their configurations. See the individual
   files for each storage provider implementation.
   """
@@ -8,6 +8,7 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
   alias Ingest.Uploaders.Azure
   alias Ingest.Uploaders.S3
   alias Ingest.Uploaders.Lakefs
+  alias Ingest.Uploaders.DeepLynx
 
   @impl true
   def init(opts) do
@@ -120,6 +121,9 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
       :lakefs ->
         Lakefs.init!(destination, filename, state, original_filename: state.original_filename)
 
+      :deeplynx ->
+        DeepLynx.init(destination, filename, state, original_filename: state.original_filename)
+
       _ ->
         {:error, :unknown_destination_type}
     end
@@ -145,6 +149,11 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
           original_filename: state.original_filename
         )
 
+      :deeplynx ->
+        DeepLynx.upload_chunk(destination, filename, state, data,
+          original_filename: state.original_filename
+        )
+
       _ ->
         {:error, :unknown_destination_type}
     end
@@ -161,6 +170,9 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
 
       :lakefs ->
         Lakefs.commit(destination, filename, state, original_filename: state.original_filename)
+
+      :deeplynx ->
+        DeepLynx.commit(destination, filename, state, original_filename: state.original_filename)
 
       _ ->
         {:error, :unknown_destination_type}

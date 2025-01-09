@@ -21,7 +21,7 @@ Ingest is desisgned to be the upload point for various data management solutions
 
 ## Common Problems and Solutions
 - Mix can't find `rebar3` or fails to install `rebar3` via Hex: Download the [rebar3 binary](https://rebar3.org/) for your OS and put in a common location (`/usr/local/bin` for Unix systems). Then use this command to point Hex to `rebar3` - `mix local.rebar rebar3 path/to/rebar`
-- CA Cert problems: Typically you'll see a failed `:httpc` library call and something about an unkown CA authority. The easier solution is to include an environment variable called `HEX_CACERTS_PATH` and set it to your root CA bundle. Another, less secure option, is to set `HEX_UNSAFE_HTTPS` to `1` and turn off SSL completely. Not recommended  
+- CA Cert problems: Typically you'll see a failed `:httpc` library call and something about an unknown CA authority. The easier solution is to include an environment variable called `HEX_CACERTS_PATH` and set it to your root CA bundle. Another, less secure option, is to set `HEX_UNSAFE_HTTPS` to `1` and turn off SSL completely. Not recommended
 - More CA Cert Problems - modify the configuration file in `config/dev.exs` - you will see various places referring to your SSL cert store (default /etc/ssl/certs on Unix systems) - change those to point to your certificate bundle
 - ElixirLS Problems - Two different solutions. Either make sure you are opening the project from the server directory or install hex globally. `mix archive.install github hexpm/hex branch latest` run this command in `/users/{YourName}` and `/Ingest/` directory.  
 

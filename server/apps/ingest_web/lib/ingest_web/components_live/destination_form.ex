@@ -64,7 +64,8 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   options={[
                     {"AWS S3", :s3},
                     {"Azure Blob Storage", :azure},
-                    {"LakeFS Repository", :lakefs}
+                    {"LakeFS Repository", :lakefs},
+                    {"DeepLynx Repository", :deeplynx}
                   ]}
                 />
               </div>
@@ -389,6 +390,49 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   <.input type="text" field={config[:container]} />
                 </.inputs_for>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          :if={@type == "deeplynx"}
+          class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3"
+        >
+          <div>
+            <h2 class="text-base font-semibold leading-7 text-gray-900">
+              DeepLynx Credentials
+            </h2>
+            <p class="mt-1 text-sm leading-6 text-gray-600">
+              Your DeepLynx credentials
+            </p>
+          </div>
+          <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
+            <div class="sm:col-span-6">
+              <.inputs_for :let={config} field={@destination_form[:deeplynx_config]}>
+                <.label for="status-select">
+                  Base Service URL
+                </.label>
+                <.input type="text" field={config[:base_url]} />
+                <p class="text-xs">
+                  Leave the trailing / off the url.
+                </p>
+                <.label for="status-select">
+                  Access Key ID
+                </.label>
+                <.input type="password" field={config[:access_key_id]} />
+                <.label for="status-select">
+                  Secret Access Key
+                </.label>
+                <.input type="password" field={config[:secret_access_key]} />
+                <.label for="status-select">
+                  Container ID
+                </.label>
+                <.input type="text" field={config[:container]} />
+                <.label for="status-select">
+                  Data Source ID
+                </.label>
+                <.input type="text" field={config[:datasource]} />
+              </.inputs_for>
             </div>
           </div>
         </div>

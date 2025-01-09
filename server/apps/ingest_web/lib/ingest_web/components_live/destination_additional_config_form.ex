@@ -8,6 +8,7 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
   alias Ingest.Destinations.LakeFSConfigAdditional
   alias Ingest.Destinations.AzureConfigAdditional
   alias Ingest.Destinations.S3ConfigAdditional
+  alias Ingest.Destinations.DeepLynxConfigAdditional
 
   @impl true
   def render(assigns) do

@@ -252,6 +252,66 @@ defmodule Ingest.Destinations.LakeFSConfigAdditional do
   end
 end
 
+defmodule Ingest.Destinations.DeepLynxConfig do
+  @moduledoc """
+  DeepLynx storage configuration
+  """
+  use Ecto.Schema
+  import Ecto.Changeset
+  embedded_schema do
+    field :base_url, Ingest.Encrypted.Binary
+    field :access_key_id, Ingest.Encrypted.Binary
+    field :secret_access_key, Ingest.Encrypted.Binary
+    field :container, :integer
+    field :datasource, :integer
+  end
+
+  @doc false
+  def changeset(config, attrs) do
+    config
+    |> cast(attrs, [
+      :base_url,
+      :access_key_id,
+      :secret_access_key,
+      :container,
+      :datasource
+    ])
+    |> validate_required([:base_url, :container, :datasource])
+  end
+end
+
+defmodule Ingest.Destinations.DeepLynxConfigAdditional do
+  @moduledoc """
+  DeepLynx additional configuration storage
+  """
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  embedded_schema do
+    # often we need to provide a name as a slug, so that users or admins can specify
+    # how a project/request will be named in the root storage mechanism
+    #
+    # DeepLynx Specific: this is the name of the root folder in which the data will be
+    # housed for this shared destination
+    field :folder_name, :string
+    field :integrated_metadata, :boolean, default: false
+  end
+
+  @doc false
+  def changeset(config, attrs) do
+    config
+    |> cast(
+      attrs,
+      [
+        :folder_name,
+        :integrated_metadata
+      ],
+      empty_values: [""]
+    )
+    |> validate_required([:folder_name])
+  end
+end
+
 defmodule Ingest.Destinations.TemporaryConfig do
   @moduledoc """
   Temporary storage configuration
