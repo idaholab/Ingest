@@ -457,9 +457,10 @@ defmodule Ingest.Requests do
       |> Repo.preload(:project)
     end
   end
-@doc """
-Search Requests by Request and Project Names
-"""
+
+  @doc """
+  Search Requests by Request and Project Names
+  """
   def search_by_request_and_project_name(search_term) do
     if search_term == "" do
       []
@@ -472,8 +473,8 @@ Search Requests by Request and Project Names
           on: rs.id == r.id,
           where:
             fragment("requests_search MATCH ?", ^search_term) and
-            r.status == :published and
-            r.visibility == :public,
+              r.status == :published and
+              r.visibility == :public,
           select: r
 
       query_p =
@@ -484,9 +485,10 @@ Search Requests by Request and Project Names
           on: ps.id == p.id,
           where:
             fragment("projects_search MATCH ?", ^search_term) and
-            r.status == :published and
-            r.visibility == :public,
+              r.status == :published and
+              r.visibility == :public,
           select: r
+
       # Get both query results
       results_requests = Repo.all(query_r)
       results_projects = Repo.all(query_p)

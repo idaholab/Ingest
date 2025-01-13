@@ -11,17 +11,24 @@ defmodule Ingest.Uploaders.Lakefs do
   def init!(%Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)
     # we need validate/create if not exists a branch for the request & user email
-    branch_name = upsert_branch(destination.lakefs_config, state.request, state.user)
+    branch_name = upsert_branch(destination, state.request, state.user)
+
+    repository =
+      if destination.additional_config do
+        destination.additional_config["repository_name"]
+      else
+        destination.lakefs_config.repository
+      end
 
     # first we check if the object by filename and path exist in the bucket already
     # if it does, then we need to change the name and appened a - COPY (date) to the end of it
     filename =
       with s3_op <-
              ExAws.S3.head_object(
-               "#{destination.lakefs_config.repository}/#{branch_name}",
+               "#{repository}/#{branch_name}",
                filename
              ),
-           s3_config <- ExAws.Config.new(:s3, build_config(destination.lakefs_config)),
+           s3_config <- build_config(destination.lakefs_config),
            {:ok, %{headers: _headers}} <- ExAws.request(s3_op, s3_config) do
         "#{filename} - COPY #{DateTime.now!("UTC") |> DateTime.to_naive()}"
       else
@@ -38,10 +45,10 @@ defmodule Ingest.Uploaders.Lakefs do
 
     with s3_op <-
            ExAws.S3.initiate_multipart_upload(
-             "#{destination.lakefs_config.repository}/#{branch_name}",
+             "#{repository}/#{branch_name}",
              filename
            ),
-         s3_config <- ExAws.Config.new(:s3, build_config(destination.lakefs_config)),
+         s3_config <- build_config(destination.lakefs_config),
          {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
       {:ok,
        {destination,
@@ -67,13 +74,20 @@ defmodule Ingest.Uploaders.Lakefs do
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination.lakefs_config, request, user)
 
+    repository =
+      if destination.additional_config do
+        destination.additional_config["repository_name"]
+      else
+        destination.lakefs_config.repository
+      end
+
     with s3_op <-
            ExAws.S3.put_object(
-             "#{destination.lakefs_config.repository}/#{branch_name}",
+             "#{repository}/#{branch_name}",
              filename,
              data
            ),
-         s3_config <- ExAws.Config.new(:s3, build_config(destination.lakefs_config)),
+         s3_config <- build_config(destination.lakefs_config),
          {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
       {:ok, upload_id}
     else
@@ -91,15 +105,22 @@ defmodule Ingest.Uploaders.Lakefs do
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination.lakefs_config, request, user)
 
+    repository =
+      if destination.additional_config do
+        destination.additional_config["repository_name"]
+      else
+        destination.lakefs_config.repository
+      end
+
     with s3_op <-
            ExAws.S3.put_object_copy(
-             "#{destination.lakefs_config.repository}/#{branch_name}",
+             "#{repository}/#{branch_name}",
              filename,
-             "#{destination.lakefs_config.repository}/#{branch_name}",
+             "#{repository}/#{branch_name}",
              filename,
              [{:metadata_directive, "REPLACE"}, {:meta, data}]
            ),
-         s3_config <- ExAws.Config.new(:s3, build_config(destination.lakefs_config)),
+         s3_config <- build_config(destination.lakefs_config),
          {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
       {:ok, upload_id}
     else
@@ -129,7 +150,7 @@ defmodule Ingest.Uploaders.Lakefs do
   end
 
   defp build_config(%LakeFSConfig{} = config) do
-    ExAws.Config.new(:s3, %{
+    ExAws.Config.new(:s3,
       host: Map.get(config, :base_url, nil),
       scheme:
         if Map.get(config, :ssl, true) do
@@ -145,11 +166,19 @@ defmodule Ingest.Uploaders.Lakefs do
         secret_access_key: config.secret_access_key,
         region: Map.get(config, config.region, "us-east-1")
       ]
-    })
+    )
   end
 
-  defp upsert_branch(%LakeFSConfig{} = config, %Request{} = request, %User{} = user) do
+  defp upsert_branch(%Destination{} = destination, %Request{} = request, %User{} = user) do
     branch_name = Regex.replace(~r/\W+/, "#{request.name}-by-#{user.name}", "-")
+    config = destination.lakefs_config
+
+    repository =
+      if destination.additional_config do
+        destination.additional_config["repository_name"]
+      else
+        destination.lakefs_config.repository
+      end
 
     with client <-
            Ingest.LakeFS.new!(
@@ -161,7 +190,7 @@ defmodule Ingest.Uploaders.Lakefs do
              access_key: config.access_key_id,
              secret_access_key: config.secret_access_key
            ),
-         {:ok, branches} <- Ingest.LakeFS.list_branches(client, config.repository) do
+         {:ok, branches} <- Ingest.LakeFS.list_branches(client, repository) do
       branch =
         Enum.find(branches, fn b -> b["id"] == branch_name end)
 
@@ -178,7 +207,7 @@ defmodule Ingest.Uploaders.Lakefs do
             port: config.port
           )
           |> Ingest.LakeFS.create_branch(
-            config.repository,
+            repository,
             branch_name
           )
       end

@@ -37,6 +37,13 @@ defmodule Ingest.Uploaders.Azure do
         filename
       end
 
+    filename =
+      if destination.additional_config do
+        Enum.join([destination.additional_config["folder_name"], filename], "/")
+      else
+        filename
+      end
+
     blob =
       AzureStorage.Container.new(d_config.container)
       |> AzureStorage.Blob.new("#{filename}")
@@ -56,6 +63,13 @@ defmodule Ingest.Uploaders.Azure do
       base_service_url: Map.get(d_config, :base_url),
       ssl: Map.get(d_config, :ssl, true)
     }
+
+    filename =
+      if destination.additional_config do
+        Enum.join([destination.additional_config["folder_name"], filename], "/")
+      else
+        filename
+      end
 
     AzureStorage.Container.new(d_config.container)
     |> AzureStorage.Blob.new("#{filename}")
@@ -82,6 +96,13 @@ defmodule Ingest.Uploaders.Azure do
   # object
   def update_metadata(%Destinations.Destination{} = destination, path, metadata) do
     %AzureConfig{} = d_config = destination.azure_config
+
+    path =
+      if destination.additional_config do
+        Enum.join([destination.additional_config["folder_name"], path], "/")
+      else
+        path
+      end
 
     config =
       %AzureStorage.Config{

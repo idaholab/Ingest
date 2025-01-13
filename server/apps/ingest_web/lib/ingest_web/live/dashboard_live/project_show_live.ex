@@ -277,7 +277,7 @@ defmodule IngestWeb.ProjectShowLive do
                       :update_project,
                       @current_user,
                       @project
-                    ) || member.id == @current_user.id
+                    ) || member.member_id == @current_user.id
                   }
                   data-confirm="Are you sure?"
                   phx-click="remove_member"

@@ -196,7 +196,6 @@ defmodule Ingest.DataHub do
       :date -> "com.linkedin.schema.DateType"
       {:f, 32} -> "com.linkedin.schema.NumberType"
       {:f, 64} -> "com.linkedin.schema.NumberType"
-      :string -> "com.linkedin.schema.StringType"
       :time -> "com.linkedin.schema.TimeType"
       {:list, _inner} -> "com.linkedin.schema.ArrayType"
       {:struct, _inner} -> "com.linkedin.schema.RecordType"

@@ -117,8 +117,8 @@ defmodule IngestWeb.LiveComponents.SearchForm do
   def update(assigns, socket) do
     {:ok,
      socket
-     |> assign(:results, nil)
-     |> assign(assigns)}
+     |> assign(assigns)
+     |> initial_results(assigns.live_action)}
   end
 
   @impl true
@@ -219,5 +219,29 @@ defmodule IngestWeb.LiveComponents.SearchForm do
        :results,
        Ingest.Destinations.search_own(value, socket.assigns.current_user)
      )}
+  end
+
+  def initial_results(socket, :search_templates) do
+    socket
+    |> assign(
+      :results,
+      Ingest.Requests.list_owned_templates(socket.assigns.current_user)
+    )
+  end
+
+  def initial_results(socket, :search_destinations) do
+    socket
+    |> assign(
+      :results,
+      Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+    )
+  end
+
+  def initial_results(socket, :search_destinations_project) do
+    socket
+    |> assign(
+      :results,
+      Ingest.Destinations.list_own_destinations(socket.assigns.current_user)
+    )
   end
 end

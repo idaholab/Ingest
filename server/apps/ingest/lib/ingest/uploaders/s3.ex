@@ -12,7 +12,7 @@ defmodule Ingest.Uploaders.S3 do
     # if it does, then we need to change the name and appened a - COPY (date) to the end of it
     filename =
       with s3_op <- ExAws.S3.head_object(destination.s3_config.bucket, filename),
-           s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
+           s3_config <- build_config(destination.s3_config),
            {:ok, %{body: _body}} <- ExAws.request(s3_op, s3_config) do
         "#{filename} - COPY #{DateTime.now!("UTC") |> DateTime.to_naive()}"
       else
@@ -27,9 +27,16 @@ defmodule Ingest.Uploaders.S3 do
         filename
       end
 
+    filename =
+      if destination.additional_config do
+        Enum.join([destination.additional_config["folder_name"], filename], "/")
+      else
+        filename
+      end
+
     return =
       with s3_op <- ExAws.S3.initiate_multipart_upload(destination.s3_config.bucket, filename),
-           s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
+           s3_config <- build_config(destination.s3_config),
            {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
         {:ok,
          {destination,
@@ -48,7 +55,7 @@ defmodule Ingest.Uploaders.S3 do
 
   def upload_full_object(%Destination{} = destination, filename, data) do
     with s3_op <- ExAws.S3.put_object(destination.s3_config.bucket, filename, data),
-         s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
+         s3_config <- build_config(destination.s3_config),
          {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
       {:ok, upload_id}
     else
@@ -65,7 +72,7 @@ defmodule Ingest.Uploaders.S3 do
              filename,
              [{:metadata_directive, "REPLACE"}, {:meta, data}]
            ),
-         s3_config <- ExAws.Config.new(:ex_aws, build_config(destination.s3_config)),
+         s3_config <- build_config(destination.s3_config),
          {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
       {:ok, upload_id}
     else
@@ -95,7 +102,7 @@ defmodule Ingest.Uploaders.S3 do
   end
 
   defp build_config(%S3Config{} = s3_config) do
-    ExAws.Config.new(:s3, %{
+    ExAws.Config.new(:s3,
       ex_aws: [
         access_key_id: s3_config.access_key_id,
         secret_access_key: s3_config.secret_access_key,
@@ -110,7 +117,7 @@ defmodule Ingest.Uploaders.S3 do
             end
         ]
       ]
-    })
+    )
   end
 
   defp build_config(%LakeFSConfig{} = config) do
