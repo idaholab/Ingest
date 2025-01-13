@@ -8,6 +8,7 @@ defmodule IngestWeb.Endpoint do
     store: :cookie,
     key: "_ingest_key",
     signing_salt: "HLm+jAwf",
+    secure: true,
     same_site: "Lax"
   ]
 
