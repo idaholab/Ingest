@@ -410,6 +410,18 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
   @impl true
   def update(%{destination: destination} = assigns, socket) do
+    destination =
+      if destination.classifications_allowed do
+        Map.merge(
+          destination,
+          Map.new(destination.classifications_allowed, fn classification ->
+            {classification, true}
+          end)
+        )
+      else
+        destination
+      end
+
     changeset = Ingest.Destinations.change_destination(destination)
 
     {:ok,
@@ -542,6 +554,8 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
         collect_classifications(destination_params)
       )
 
+    dbg(destination_params)
+
     case Map.put(destination_params, "inserted_by", socket.assigns.current_user.id)
          |> Ingest.Destinations.create_destination() do
       {:ok, destination} ->
@@ -557,7 +571,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
     end
   end
 
-  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
+  defp assign_form(socket, changeset) do
     assign(socket, :destination_form, to_form(changeset))
   end
 
