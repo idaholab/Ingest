@@ -171,7 +171,8 @@ defmodule Ingest.Destinations.LakeFSConfig do
         :port,
         :ssl,
         :region,
-        :integrated_metadata
+        :integrated_metadata,
+        :storage_namespace
       ],
       empty_values: [""]
     )
