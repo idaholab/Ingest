@@ -264,6 +264,7 @@ defmodule Ingest.Destinations.DeepLynxConfig do
     field :secret_access_key, Ingest.Encrypted.Binary
     field :container, :integer
     field :datasource, :integer
+    field :integrated_metadata, :boolean, default: false
   end
 
   @doc false
@@ -274,7 +275,8 @@ defmodule Ingest.Destinations.DeepLynxConfig do
       :access_key_id,
       :secret_access_key,
       :container,
-      :datasource
+      :datasource,
+      :integrated_metadata
     ])
     |> validate_required([:base_url, :container, :datasource])
   end

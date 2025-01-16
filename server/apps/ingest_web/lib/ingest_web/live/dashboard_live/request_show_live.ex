@@ -783,7 +783,7 @@ defmodule IngestWeb.RequestShowLive do
           destination={@destination}
           destination_member={@destination_member}
           request={@request}
-          module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
+          module={IngestWeb.LiveComponents.DestinationAdditionalConfigForm}
           id="share-destination-modal-component"
           current_user={@current_user}
           patch={JS.patch(~p"/dashboard/requests/#{@request}")}

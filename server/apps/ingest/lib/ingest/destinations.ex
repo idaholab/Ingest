@@ -8,6 +8,7 @@ defmodule Ingest.Destinations do
   alias Ingest.Destinations.DestinationMembers
   alias Ingest.Destinations.AzureConfig
   alias Ingest.Destinations.S3Config
+  alias Ingest.Destinations.DeepLynxConfig
   alias Ingest.Repo
 
   alias Ingest.Destinations.Client
@@ -270,6 +271,10 @@ defmodule Ingest.Destinations do
 
   def change_azure_config(%S3Config{} = azure_config, attrs \\ %{}) do
     AzureConfig.changeset(azure_config, attrs)
+  end
+
+  def change_deeplynx_config(%DeepLynxConfig{} = deeplynx_config, attrs \\ %{}) do
+    DeepLynxConfig.changeset(deeplynx_config, attrs)
   end
 
   @defaults %{exclude: []}

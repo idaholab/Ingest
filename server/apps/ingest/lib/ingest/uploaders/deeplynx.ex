@@ -31,7 +31,7 @@ defmodule Ingest.Uploaders.DeepLynx do
       |> Map.put(:parts, [])}}
   end
 
-  def update_metadata(%Destinations.Destination{} = destination, file_id, metadata) do
+  def update_metadata(%Destinations.Destination{} = destination, path, metadata) do
     %DeepLynxConfig{} = d_config = destination.deeplynx_config
     config = %DeepLynxConfig{
       base_url: d_config.base_url,
@@ -47,7 +47,7 @@ defmodule Ingest.Uploaders.DeepLynx do
       headers: [{"content-type", "application/octet-stream"}]
     )
 
-    response = Req.post!(request, url: "/containers/#{config.container}/import/datasources/#{config.datasource}/#{file_id}/metadata", body: metadata)
+    response = Req.post!(request, url: "/containers/#{config.container}/import/datasources/#{config.datasource}/#{path}/metadata", body: metadata)
 
     case response do
       %{status: 200} ->
@@ -57,7 +57,7 @@ defmodule Ingest.Uploaders.DeepLynx do
     end
   end
 
-  def upload_full_object(%Destinations.Destination{} = destination, data) do
+  def upload_full_object(%Destinations.Destination{} = destination, path, data) do
     %DeepLynxConfig{} = d_config = destination.deeplynx_config
     config = %DeepLynxConfig{
       base_url: d_config.base_url,

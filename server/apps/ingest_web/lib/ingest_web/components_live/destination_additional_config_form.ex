@@ -1,4 +1,4 @@
-defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
+defmodule IngestWeb.LiveComponents.DestinationAdditionalConfigForm do
   @moduledoc """
   This is the LiveComponent for managing the sharing of destinations with other people.
   """
@@ -183,6 +183,10 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
         :s3 ->
           %S3ConfigAdditional{}
           |> S3ConfigAdditional.changeset(if config, do: config, else: %{})
+
+        :deeplynx ->
+          %DeepLynxConfigAdditional{}
+          |> DeepLynxConfigAdditional.changeset(if config, do: config, else: %{})
       end
 
     {:ok,
@@ -210,7 +214,12 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
 
         :s3 ->
           %S3ConfigAdditional{}
-          |> S3ConfigAdditional.changeset(params["s3_config_additionasl"])
+          |> S3ConfigAdditional.changeset(params["s3_config_additional"])
+          |> Map.put(:action, :validate)
+
+        :deeplynx ->
+          %DeepLynxConfigAdditional{}
+          |> DeepLynxConfigAdditional.changeset(params["deeplynx_config_additional"])
           |> Map.put(:action, :validate)
       end
 
@@ -243,8 +252,14 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
 
         :s3 ->
           %S3ConfigAdditional{}
-          |> S3ConfigAdditional.changeset(params["s3_config_additionasl"])
+          |> S3ConfigAdditional.changeset(params["s3_config_additional"])
           |> Map.put(:action, :validate)
+
+        :deeplynx ->
+          %DeepLynxConfigAdditional{}
+          |> DeepLynxConfigAdditional.changeset(params["deeplynx_config_additional"])
+          |> Map.put(:action, :validate)
+
       end
 
     if changeset.errors != [] do
@@ -264,6 +279,9 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
 
           :s3 ->
             params["s3_config_additional"]
+
+          :deeplynx ->
+            params["deeplynx_config_additional"]
         end
 
       updated =
@@ -285,7 +303,7 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
       else
         {:noreply,
          socket
-         |> put_flash(:error, "Unable to update Destination Configration")
+         |> put_flash(:error, "Unable to update Destination Configuration")
          |> push_patch(to: socket.assigns.patch)}
       end
     end

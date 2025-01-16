@@ -155,7 +155,7 @@ defmodule IngestWeb.DestinationsLive do
           destination_member={@destination_member}
           project={@project}
           request={@request}
-          module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
+          module={IngestWeb.LiveComponents.DestinationAdditionalConfigForm}
           id="share-destination-modal-component"
           current_user={@current_user}
           patch={~p"/dashboard/destinations/#{@destination}/sharing"}

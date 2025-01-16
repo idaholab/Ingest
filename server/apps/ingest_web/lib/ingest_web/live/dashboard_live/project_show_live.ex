@@ -403,7 +403,7 @@ defmodule IngestWeb.ProjectShowLive do
         destination={@destination}
         project={@project}
         destination_member={@destination_member}
-        module={IngestWeb.LiveComponents.DestinationAddtionalConfigForm}
+        module={IngestWeb.LiveComponents.DestinationAdditionalConfigForm}
         id="share-destination-modal-component"
         current_user={@current_user}
         patch={JS.patch(~p"/dashboard/projects/#{@project}")}
