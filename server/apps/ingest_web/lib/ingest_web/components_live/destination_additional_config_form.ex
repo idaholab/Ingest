@@ -24,7 +24,7 @@ defmodule IngestWeb.LiveComponents.DestinationAdditionalConfigForm do
           </div>
 
           <div
-            :if={@destination.type in [:azure, :s3]}
+            :if={@destination.type in [:azure, :s3, :deeplynx]}
             class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2"
           >
             <div class="col-span-full">
