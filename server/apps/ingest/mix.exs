@@ -60,6 +60,7 @@ defmodule Ingest.MixProject do
       {:oban, "~> 2.17"},
       {:earmark, "~> 1.4"},
       {:bodyguard, "~> 2.4"},
+      {:oban_web, "~> 2.11"},
       {:error_tracker, "~> 0.4"},
       {:explorer, "~> 0.10.0"},
       {:ecto_sqlite3_extras, "~> 1.2.2"},

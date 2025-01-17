@@ -118,6 +118,11 @@ defmodule Ingest.Accounts do
     User.email_changeset(user, attrs, validate_email: false)
   end
 
+  def update_user_identity_provider(user, attrs \\ %{}) do
+    User.identity_provider_changeset(user, attrs)
+    |> Repo.update()
+  end
+
   def user_edit_change(%User{} = user, attrs \\ %{}) do
     User.edit_changeset(user, attrs)
   end

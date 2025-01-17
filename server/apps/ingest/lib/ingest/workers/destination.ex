@@ -81,6 +81,8 @@ defmodule Ingest.Workers.Destination do
         secret_access_key: destination.lakefs_config.secret_access_key
       )
 
+    # we need to 
+
     # create the repo, if we error, we assume it's because it exists already - any future calls
     # will fail if this assumption is untrue, and we don't need to be gentle handling errors
     repo =
@@ -98,10 +100,23 @@ defmodule Ingest.Workers.Destination do
           repo["id"]
       end
 
+    account =
+      Ingest.Accounts.get_user_by_email(destination.additional_config["repository_owner_email"])
+
+    user_id =
+      if account.identity_provider_id do
+        account.identity_provider_id
+      else
+        account.id
+      end
+
     # create the user, if we error, we assume it's because it exists already - any future calls
     # will fail if this assumption is untrue, and we don't need to be gentle handling errors
     user =
-      case LakeFS.create_repo(client, destination.additional_config["repository_owner_email"],
+      case LakeFS.create_user(
+             client,
+             user_id,
+             email: destination.additional_config["repository_owner_email"],
              invite_user: true
            ) do
         {:ok, user} -> user.id
@@ -175,5 +190,9 @@ defmodule Ingest.Workers.Destination do
 
     # once everything is done, we can set the branch protection
     LakeFS.protect_branch(client, repo, "main")
+  end
+
+  def configure_destination(destination) do
+    :ok
   end
 end

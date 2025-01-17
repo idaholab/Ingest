@@ -15,6 +15,7 @@ defmodule Ingest.Accounts.User do
     # these are general roles, admin: has all roles, manager: can build data requests, member: can only upload and input supporting data
     field :roles, Ecto.Enum, values: [:admin, :manager, :member]
     field :identity_provider, Ecto.Enum, values: [:oidc, :internal], default: :internal
+    field :identity_provider_id, :string
 
     has_many :project_roles, ProjectMembers, foreign_key: :member_id
     has_many :project_invites, ProjectInvites, foreign_key: :project_id
@@ -60,7 +61,7 @@ defmodule Ingest.Accounts.User do
 
   def oidcc_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :name, :identity_provider, :roles])
+    |> cast(attrs, [:email, :password, :name, :identity_provider, :roles, :identity_provider_id])
     |> validate_email(opts)
   end
 
@@ -126,6 +127,11 @@ defmodule Ingest.Accounts.User do
       %{changes: %{email: _}} = changeset -> changeset
       %{} = changeset -> add_error(changeset, :email, "did not change")
     end
+  end
+
+  def identity_provider_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:identity_provider, :identity_provider_id])
   end
 
   @doc """

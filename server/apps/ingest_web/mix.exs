@@ -77,6 +77,7 @@ defmodule IngestWeb.MixProject do
       {:rustler, "~> 0.35.0", override: true},
       {:ecto_sqlite3_extras, "~> 1.2.2"},
       {:ingest, in_umbrella: true},
+      {:oban_web, "~> 2.11"},
       {:credo, "~> 1.7.9", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}

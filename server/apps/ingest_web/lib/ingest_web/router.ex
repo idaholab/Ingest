@@ -1,6 +1,7 @@
 defmodule IngestWeb.Router do
   use IngestWeb, :router
   use ErrorTracker.Web, :router
+  import Oban.Web.Router
 
   import IngestWeb.UserAuth
   import Backpex.Router
@@ -58,6 +59,7 @@ defmodule IngestWeb.Router do
       live_dashboard "/dashboard", metrics: IngestWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
       error_tracker_dashboard("/errors")
+      oban_dashboard("/oban")
 
       backpex_routes()
 

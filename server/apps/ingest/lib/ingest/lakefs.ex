@@ -52,6 +52,17 @@ defmodule Ingest.LakeFS do
   end
 
   @doc """
+  Lists all users
+  """
+  def list_users(%__MODULE__{} = client) do
+    # we shouldn't need to return more than 10k users at any point
+    case Req.get(client.base_req, url: "/api/v1/auth/users", params: [amount: 10000]) do
+      {:ok, %{body: %{"results" => results}}} -> {:ok, results}
+      {:error, res} -> {:error, res}
+    end
+  end
+
+  @doc """
   Get single repository
   """
   def get_repo(%__MODULE__{} = client, repo) do
@@ -133,10 +144,15 @@ defmodule Ingest.LakeFS do
   def create_user(%__MODULE__{} = client, user, opts \\ []) do
     case Req.post(client.base_req,
            url: "/api/v1/auth/users",
-           json: %{id: "#{user}", invite_user: Keyword.get(opts, :invite_user, true)}
+           json: %{
+             id: "#{user}",
+             email: Keyword.get(opts, :email),
+             invite_user: Keyword.get(opts, :invite_user, true)
+           }
          ) do
       {:ok, %{body: user, status: 201}} -> {:ok, user}
-      {:ok, %{body: %{"message" => message}, status: 409}} -> {:error, message}
+      # 409 indicates a user with that ID exists, so let's just return a shell with the ID
+      {:ok, %{body: %{"message" => message}, status: 409}} -> {:ok, %{"id" => user}}
       {:error, res} -> {:error, res}
       message -> {:error, message}
     end

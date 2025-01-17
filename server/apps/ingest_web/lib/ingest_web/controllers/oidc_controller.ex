@@ -29,7 +29,12 @@ defmodule IngestWeb.OidcController do
       case user do
         nil ->
           case Accounts.register_user(
-                 %{email: claims["email"], roles: :manager, identity_provider: :oidc},
+                 %{
+                   email: claims["email"],
+                   roles: :manager,
+                   identity_provider: :oidc,
+                   identity_provider_id: claims["sub"]
+                 },
                  :oidcc
                ) do
             {:ok, user} ->
@@ -44,6 +49,7 @@ defmodule IngestWeb.OidcController do
           end
 
         _ ->
+          Accounts.update_user_identity_provider(user, %{identity_provider_id: claims["sub"]})
           UserAuth.log_in_user(conn, user, %{})
       end
     else
@@ -75,7 +81,12 @@ defmodule IngestWeb.OidcController do
       case user do
         nil ->
           case Accounts.register_user(
-                 %{email: claims["email"], roles: :manager, identity_provider: :oidc},
+                 %{
+                   email: claims["email"],
+                   roles: :manager,
+                   identity_provider: :oidc,
+                   identity_provider_id: claims["sub"]
+                 },
                  :oidcc
                ) do
             {:ok, user} ->
@@ -90,6 +101,7 @@ defmodule IngestWeb.OidcController do
           end
 
         _ ->
+          Accounts.update_user_identity_provider(user, %{identity_provider_id: claims["sub"]})
           UserAuth.log_in_user(conn, user, %{})
       end
     else
