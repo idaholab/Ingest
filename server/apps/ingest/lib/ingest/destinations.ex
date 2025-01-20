@@ -168,13 +168,13 @@ defmodule Ingest.Destinations do
         member.project_id ->
           from d in Ingest.Destinations.Destination,
             left_join: pd in Ingest.Projects.ProjectDestination,
-            on: pd.destination_id == d.id,
+            on: pd.destination_id == d.id and pd.project_id == ^member.project_id,
             select: %Ingest.Destinations.Destination{d | additional_config: pd.additional_config}
 
         member.request_id ->
           from d in Ingest.Destinations.Destination,
             left_join: rd in Ingest.Requests.RequestDestination,
-            on: rd.destination_id == d.id and rd.request_id == ^id,
+            on: rd.destination_id == d.id and rd.request_id == ^member.request_id,
             select: %Ingest.Destinations.Destination{d | additional_config: rd.additional_config}
 
         true ->
