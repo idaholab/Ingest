@@ -100,8 +100,8 @@ config :ingest, :openid_connect_oneid,
   client_secret: "",
   redirect_uri: "http://localhost:4000/users/log_in/one_id",
   response_type: "code",
-  scope: "openid email profile"
-  # ca_cert: "PATH TO CA CERTS"
+  scope: "openid email profile",
+  ca_cert: "/Users/Shared/CAINLROOT_B64.crt"
 
 config :ingest, :openid_connect_okta,
   issuer: "https://identity-preview.inl.gov",
@@ -109,8 +109,8 @@ config :ingest, :openid_connect_okta,
   client_secret: "",
   redirect_uri: "http://localhost:4000/users/log_in/okta",
   response_type: "code",
-  scope: "openid email profile"
-  # ca_cert: "PATH TO CA CERTS"
+  scope: "openid email profile",
+  ca_cert: "/Users/Shared/CAINLROOT_B64.crt"
 
 # config :ingest, :ca_certfile_path, "PATH TO CA CERTS"
 config :ingest, :environment, :dev
