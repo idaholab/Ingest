@@ -158,7 +158,7 @@ defmodule Ingest.Workers.Destination do
       :ok = LakeFS.attach_group_policy(client, admin_group["id"], admin_policy["id"])
       :ok = LakeFS.attach_group_policy(client, read_group["id"], read_policy["id"])
       :ok = LakeFS.attach_group_policy(client, read_write_group["id"], read_write_policy["id"])
-      :ok = LakeFS.attach_user_group(client, admin_group["id"], user)
+      LakeFS.attach_user_group(client, admin_group["id"], user)
     end
 
     # if we have the datahub_integration we need to put the datahub action into the repository and commit
