@@ -1,4 +1,3 @@
-:public_key.cacerts_load("/Users/Shared/CAINLROOT_B64.crt")
 defmodule Ingest.Umbrella.MixProject do
   use Mix.Project
 
