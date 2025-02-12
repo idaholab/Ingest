@@ -12,15 +12,225 @@ defmodule IngestWeb.RequestShowLive do
   def render(assigns) do
     ~H"""
     <div>
+      <!-- start top banner -->
+      <div class="flex justify-between ml-8 mr-8 mb-2">
+        <div>
+          <h1 class="text-2xl">
+            {@request.name} for {@request.project.name}
+            <span class="text-sm">
+              <sup><a href={~p"/dashboard/requests/#{@request.id}/edit"}>Edit</a></sup>
+            </span>
+          </h1>
+          <p>{@request.description}</p>
+        </div>
+        <div class="max-h-24 self-center">
+          <ul role="list" class="divide-gray-100">
+            <%= for member <- @members do %>
+              <li class="flex items-center justify-between gap-x-6 py-5">
+                <div class="flex min-w-0 gap-x-4">
+                  <div class="min-w-0 flex-auto">
+                    <p class="text-sm font-semibold leading-6 text-gray-900">
+                      {member.email}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
+                    Active
+                  </span>
+
+                  <span
+                    :if={
+                      Bodyguard.permit?(
+                        Ingest.Requests.Request,
+                        :update_request,
+                        @current_user,
+                        @request
+                      )
+                    }
+                    data-confirm="Are you sure?"
+                    phx-click="remove_member"
+                    phx-value-email={member.email}
+                    class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
+                  >
+                    Remove
+                  </span>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+          <form action="#" class="flex text-center">
+            <label id="listbox-label" class="sr-only">Change visibility </label>
+            <div class="relative pl-12">
+              <div
+                :if={
+                  Bodyguard.permit?(
+                    Ingest.Requests.Request,
+                    :update_request,
+                    @current_user,
+                    @request
+                  )
+                }
+                class="inline-flex divide-x divide-white-700 rounded-md shadow-sm"
+              >
+                <div class={
+                  if @request.visibility == :public do
+                    "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
+                  else
+                    "inline-flex items-center gap-x-1.5 rounded-l-md bg-indigo-600 px-3 py-2 text-white shadow-sm"
+                  end
+                }>
+                  <svg
+                    class="-ml-0.5 h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  <p :if={@request.visibility == :public} class="text-sm font-semibold">Public</p>
+                  <p :if={@request.visibility == :private} class="text-sm font-semibold">Private</p>
+                </div>
+                <button
+                  phx-click={
+                    JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
+                  }
+                  type="button"
+                  class={
+                    if @request.visibility == :public do
+                      "inline-flex items-center rounded-l-none rounded-r-md bg-green-600 p-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                    else
+                      "inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+                    end
+                  }
+                  aria-haspopup="listbox"
+                  aria-expanded="true"
+                  aria-labelledby="listbox-label"
+                >
+                  <span class="sr-only">Change published status</span>
+                  <svg
+                    class="h-5 w-5 text-white"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <ul
+                phx-click-away={
+                  JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
+                }
+                id="visibility_dropdown"
+                class=" hidden absolute left-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                tabindex="-1"
+                role="listbox"
+                aria-labelledby="listbox-label"
+                aria-activedescendant="listbox-option-0"
+              >
+                <li
+                  class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
+                  id="listbox-option-0"
+                  role="option"
+                  phx-click="set_public"
+                >
+                  <div class="flex flex-col cursor-pointer">
+                    <div class="flex justify-between">
+                      <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                      <p class="font-normal">Public</p>
+
+                      <span :if={@request.visibility == :public}>
+                        <svg
+                          class="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <p class="mt-2">
+                      Allow all users to upload data. Visible in searches.
+                    </p>
+                  </div>
+                </li>
+
+                <li
+                  class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600"
+                  id="listbox-option-0"
+                  role="option"
+                  phx-click="set_private"
+                >
+                  <div class="flex flex-col cursor-pointer">
+                    <div class="flex justify-between">
+                      <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                      <p class="font-normal">Private</p>
+
+                      <span :if={@request.visibility == :private}>
+                        <svg
+                          class="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <p class="mt-2">
+                      Allow only invited users to upload data.
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <.link patch={~p"/dashboard/requests/#{@request.id}/invite"}>
+                <button class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                  Send Invite
+                </button>
+              </.link>
+            </div>
+            <button
+              id="copy_link_button"
+              phx-hook="ClipboardCopy"
+              data-body={url(~p"/dashboard/uploads/#{@request.id}")}
+              class="ml-4 flex-shrink-0 rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Copy Link
+            </button>
+          </form>
+        </div>
+      </div>
+      <!-- end top banner -->
       <div
         :if={
           (@request.destinations == [] && @project_destinations == []) ||
             (@request.templates == [] && @project_templates == []) ||
             @request.status != :published
         }
-        class="lg:border-b lg:border-t lg:border-gray-200 mb-10 "
+        class="lg:border-b lg:border-t lg:border-gray-200 mb-10"
       >
-        <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 " aria-label="Progress">
+        <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Progress">
           <ol
             role="list"
             class="overflow-hidden rounded-md lg:flex lg:rounded-none lg:border-l lg:border-r lg:border-gray-200"
@@ -199,112 +409,10 @@ defmodule IngestWeb.RequestShowLive do
           </ol>
         </nav>
       </div>
-
-      <div class="grid grid-cols-2">
+      <!-- Start Metadata Section -->
+      <div class="grid grid-cols-1">
         <div>
-          <span>
-            <h1 class="text-2xl">
-              {@request.name} for {@request.project.name}
-              <span class="text-sm">
-                <sup><a href={~p"/dashboard/requests/#{@request.id}/edit"}>Edit</a></sup>
-              </span>
-            </h1>
-          </span>
-          <p>{@request.description}</p>
-          <div
-            :if={Bodyguard.permit?(Ingest.Requests.Request, :update_request, @current_user, @request)}
-            class="mt-20"
-          >
-            <fieldset aria-label="Privacy setting">
-              <div class="-space-y-px rounded-md bg-white">
-                <label
-                  :if={@request.status == :draft}
-                  class=" z-10 border-indigo-200 bg-indigo-50 relative flex cursor-pointer rounded-tl-md rounded-tr-md border p-4 focus:outline-none"
-                >
-                  <input
-                    checked
-                    type="radio"
-                    class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
-                  />
-                  <span class="ml-3 flex flex-col">
-                    <span class="block text-sm text-indigo-900 font-medium">Draft</span>
-                    <span class="block text-sm text-indigo-700">
-                      Disable uploads and searching for this request.
-                    </span>
-                  </span>
-                </label>
-
-                <label
-                  :if={@request.status != :draft}
-                  class="relative flex cursor-pointer rounded-tl-md rounded-tr-md border p-4 focus:outline-none"
-                >
-                  <input
-                    type="radio"
-                    phx-click="set_draft"
-                    class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
-                  />
-                  <span class="ml-3 flex flex-col">
-                    <span class="block text-sm font-medium">Draft</span>
-                    <span class="block text-sm">
-                      Disable uploads and searching for this request.
-                    </span>
-                  </span>
-                </label>
-                <label
-                  :if={@request.status != :published}
-                  class={"relative flex #{ if (@request.templates != [] || @project_templates != []) &&
-                  (@request.destinations != [] || @project_destinations != []) do "cursor-pointer" else "cursor-not-allowed" end} border p-4 focus:outline-none"}
-                >
-                  <%= if (@request.templates != [] || @project_templates != []) &&
-                (@request.destinations != [] || @project_destinations != []) do %>
-                    <input
-                      phx-click="set_published"
-                      type="radio"
-                      class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
-                    />
-                  <% else %>
-                    <input
-                      type="radio"
-                      disabled
-                      class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
-                    />
-                  <% end %>
-                  <span class="ml-3 flex flex-col">
-                    <!-- Checked: "text-indigo-900", Not Checked: "text-gray-900" -->
-                    <span class="block text-sm font-medium">Published</span>
-                    <!-- Checked: "text-indigo-700", Not Checked: "text-gray-500" -->
-                    <span class="block text-sm">
-                      Enable uploads and the ability to search for this request by project.
-                    </span>
-                  </span>
-                </label>
-
-                <label
-                  :if={@request.status == :published}
-                  class="relative flex cursor-pointer border p-4 focus:outline-none z-10 border-indigo-200 bg-indigo-50"
-                >
-                  <input
-                    type="radio"
-                    checked
-                    class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
-                  />
-                  <span class="ml-3 flex flex-col">
-                    <!-- Checked: "text-indigo-900", Not Checked: "text-gray-900" -->
-                    <span class="block text-sm text-indigo-900 font-medium">Published</span>
-                    <!-- Checked: "text-indigo-700", Not Checked: "text-gray-500" -->
-                    <span class="block text-sm text-indigo-700">
-                      Enable uploads and the ability to search for this request by project.
-                    </span>
-                  </span>
-                </label>
-                <!-- Checked: "z-10 border-indigo-200 bg-indigo-50", Not Checked: "border-gray-200" -->
-              </div>
-            </fieldset>
-          </div>
-        </div>
-      </div>
-      <div class="grid grid-cols-2 mt-15">
-        <div class="pr-5 border-r-2">
+          <!-- Start Metadata Header -->
           <div class="relative mt-10">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-gray-300"></div>
@@ -315,8 +423,8 @@ defmodule IngestWeb.RequestShowLive do
               </span>
             </div>
           </div>
-
-          <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
+          <!-- End Metadata Header -->
+          <div class="px-30 overflow-y-auto sm:overflow-visible sm:px-5">
             <table class="w-[40rem] mt-11 sm:w-full">
               <thead class="text-sm text-left leading-6 text-zinc-500">
                 <tr>
@@ -389,242 +497,11 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
         <!-- STATUS -->
-        <div class="mx-auto max-w-lg">
-          <div class="relative mt-10">
-            <div class="absolute inset-0 flex items-center" aria-hidden="true">
-              <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center">
-              <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
-                Share
-              </span>
-            </div>
-          </div>
-          <div class=" pt-4">
-            <div class="text-center">
-              <svg
-                class="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 48 48"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-              <h2 class="mt-2 text-base font-semibold leading-6 text-gray-900">
-                Share Data Request
-              </h2>
-              <p class="mt-1 text-sm text-gray-500">
-                As the owner of this request, you can send direct invitations to upload data.
-              </p>
-            </div>
-            <ul role="list" class="divide-y divide-gray-100">
-              <%= for member <- @members do %>
-                <li class="flex items-center justify-between gap-x-6 py-5">
-                  <div class="flex min-w-0 gap-x-4">
-                    <div class="min-w-0 flex-auto">
-                      <p class="text-sm font-semibold leading-6 text-gray-900">
-                        {member.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <span class="inline-flex items-center rounded-md  px-2 py-1 text-xs font-medium  ring-1 ring-inset ring-red-600/10">
-                      Active
-                    </span>
-
-                    <span
-                      :if={
-                        Bodyguard.permit?(
-                          Ingest.Requests.Request,
-                          :update_request,
-                          @current_user,
-                          @request
-                        )
-                      }
-                      data-confirm="Are you sure?"
-                      phx-click="remove_member"
-                      phx-value-email={member.email}
-                      class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
-                    >
-                      Remove
-                    </span>
-                  </div>
-                </li>
-              <% end %>
-            </ul>
-            <form action="#" class="mt-12 flex text-center">
-              <label id="listbox-label" class="sr-only">Change visibility </label>
-              <div class="relative pl-12">
-                <div
-                  :if={
-                    Bodyguard.permit?(
-                      Ingest.Requests.Request,
-                      :update_request,
-                      @current_user,
-                      @request
-                    )
-                  }
-                  class="inline-flex divide-x divide-white-700 rounded-md shadow-sm"
-                >
-                  <div class={
-                    if @request.visibility == :public do
-                      "inline-flex items-center gap-x-1.5 rounded-l-md bg-green-600 px-3 py-2 text-white shadow-sm"
-                    else
-                      "inline-flex items-center gap-x-1.5 rounded-l-md bg-indigo-600 px-3 py-2 text-white shadow-sm"
-                    end
-                  }>
-                    <svg
-                      class="-ml-0.5 h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                    <p :if={@request.visibility == :public} class="text-sm font-semibold">Public</p>
-                    <p :if={@request.visibility == :private} class="text-sm font-semibold">Private</p>
-                  </div>
-                  <button
-                    phx-click={
-                      JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
-                    }
-                    type="button"
-                    class={
-                      if @request.visibility == :public do
-                        "inline-flex items-center rounded-l-none rounded-r-md bg-green-600 p-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-gray-50"
-                      else
-                        "inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
-                      end
-                    }
-                    aria-haspopup="listbox"
-                    aria-expanded="true"
-                    aria-labelledby="listbox-label"
-                  >
-                    <span class="sr-only">Change published status</span>
-                    <svg
-                      class="h-5 w-5 text-white"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <ul
-                  phx-click-away={
-                    JS.toggle(to: "#visibility_dropdown", in: "opacity-100", out: "opacity-0")
-                  }
-                  id="visibility_dropdown"
-                  class=" hidden absolute left-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                  tabindex="-1"
-                  role="listbox"
-                  aria-labelledby="listbox-label"
-                  aria-activedescendant="listbox-option-0"
-                >
-                  <li
-                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
-                    id="listbox-option-0"
-                    role="option"
-                    phx-click="set_public"
-                  >
-                    <div class="flex flex-col cursor-pointer">
-                      <div class="flex justify-between">
-                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                        <p class="font-normal">Public</p>
-
-                        <span :if={@request.visibility == :public}>
-                          <svg
-                            class="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                              clip-rule="evenodd"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                      <p class="mt-2">
-                        Allow all users to upload data. Visible in searches.
-                      </p>
-                    </div>
-                  </li>
-
-                  <li
-                    class="text-gray-900 cursor-default select-none p-4 text-sm hover:text-white hover:bg-indigo-600  "
-                    id="listbox-option-0"
-                    role="option"
-                    phx-click="set_private"
-                  >
-                    <div class="flex flex-col cursor-pointer">
-                      <div class="flex justify-between">
-                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                        <p class="font-normal">Private</p>
-
-                        <span :if={@request.visibility == :private}>
-                          <svg
-                            class="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                              clip-rule="evenodd"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                      <p class="mt-2">
-                        Allow only invited users to upload data.
-                      </p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <.link patch={~p"/dashboard/requests/#{@request.id}/invite"}>
-                  <button class="ml-4 flex-shrink-0 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                    Send Invite
-                  </button>
-                </.link>
-              </div>
-              <button
-                id="copy_link_button"
-                phx-hook="ClipboardCopy"
-                data-body={url(~p"/dashboard/uploads/#{@request.id}")}
-                class="ml-4 flex-shrink-0 rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Copy Link
-              </button>
-            </form>
-          </div>
-        </div>
       </div>
 
-      <div class="grid grid-cols-2">
+      <div class="grid grid-cols-1">
         <!-- DESTINATIONS -->
-        <div class=" border-r-2 pr-5">
+        <div>
           <div class="relative mt-10">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-gray-300"></div>
@@ -636,7 +513,7 @@ defmodule IngestWeb.RequestShowLive do
             </div>
           </div>
 
-          <div>
+          <div class="px-20">
             <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
               <table class="w-[40rem] mt-11 sm:w-full">
                 <thead class="text-sm text-left leading-6 text-zinc-500">
@@ -755,7 +632,7 @@ defmodule IngestWeb.RequestShowLive do
               </table>
             </div>
 
-            <div class="relative flex justify-center mt-10">
+            <div class="relative flex justify-center">
               <.link
                 :if={
                   Bodyguard.permit?(Ingest.Requests.Request, :update_request, @current_user, @request)
@@ -838,8 +715,112 @@ defmodule IngestWeb.RequestShowLive do
           request={@request}
         />
       </.modal>
+      <!-- start publish -->
+      <div class="pt-10">
+        <div class="relative mt-10">
+          <div class="absolute inset-0 flex items-center" aria-hidden="true">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center">
+            <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+              Publish Status
+            </span>
+          </div>
+        </div>
+        <div
+          :if={Bodyguard.permit?(Ingest.Requests.Request, :update_request, @current_user, @request)}
+          class="px-20 pt-10"
+        >
+          <fieldset aria-label="Privacy setting">
+            <div class="-space-y-px rounded-md bg-white">
+              <label
+                :if={@request.status == :draft}
+                class="z-10 border-indigo-200 bg-indigo-50 relative flex cursor-pointer rounded-tl-md rounded-tr-md border p-4 focus:outline-none"
+              >
+                <input
+                  checked
+                  type="radio"
+                  class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
+                />
+                <span class="ml-3 flex flex-col">
+                  <span class="block text-sm text-indigo-900 font-medium">Draft</span>
+                  <span class="block text-sm text-indigo-700">
+                    Disable uploads and searching for this request.
+                  </span>
+                </span>
+              </label>
 
-      <div class="mx-auto max-w-4xl">
+              <label
+                :if={@request.status != :draft}
+                class="relative flex cursor-pointer rounded-tl-md rounded-tr-md border p-4 focus:outline-none"
+              >
+                <input
+                  type="radio"
+                  phx-click="set_draft"
+                  class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
+                />
+                <span class="ml-3 flex flex-col">
+                  <span class="block text-sm font-medium">Draft</span>
+                  <span class="block text-sm">
+                    Disable uploads and searching for this request.
+                  </span>
+                </span>
+              </label>
+              <label
+                :if={@request.status != :published}
+                class={"relative flex #{ if (@request.templates != [] || @project_templates != []) &&
+                  (@request.destinations != [] || @project_destinations != []) do "cursor-pointer" else "cursor-not-allowed" end} border p-4 focus:outline-none"}
+              >
+                <%= if (@request.templates != [] || @project_templates != []) &&
+                (@request.destinations != [] || @project_destinations != []) do %>
+                  <input
+                    phx-click="set_published"
+                    type="radio"
+                    class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
+                  />
+                <% else %>
+                  <input
+                    type="radio"
+                    disabled
+                    class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
+                  />
+                <% end %>
+                <span class="ml-3 flex flex-col">
+                  <!-- Checked: "text-indigo-900", Not Checked: "text-gray-900" -->
+                  <span class="block text-sm font-medium">Published</span>
+                  <!-- Checked: "text-indigo-700", Not Checked: "text-gray-500" -->
+                  <span class="block text-sm">
+                    Enable uploads and the ability to search for this request by project.
+                  </span>
+                </span>
+              </label>
+
+              <label
+                :if={@request.status == :published}
+                class="relative flex cursor-pointer border p-4 focus:outline-none z-10 border-indigo-200 bg-indigo-50"
+              >
+                <input
+                  type="radio"
+                  checked
+                  class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer border-gray-300 text-indigo-600 focus:ring-indigo-600 active:ring-2 active:ring-indigo-600 active:ring-offset-2"
+                />
+                <span class="ml-3 flex flex-col">
+                  <!-- Checked: "text-indigo-900", Not Checked: "text-gray-900" -->
+                  <span class="block text-sm text-indigo-900 font-medium">Published</span>
+                  <!-- Checked: "text-indigo-700", Not Checked: "text-gray-500" -->
+                  <span class="block text-sm text-indigo-700">
+                    Enable uploads and the ability to search for this request by project.
+                  </span>
+                </span>
+              </label>
+              <!-- Checked: "z-10 border-indigo-200 bg-indigo-50", Not Checked: "border-gray-200" -->
+            </div>
+          </fieldset>
+        </div>
+      </div>
+      <!-- end publish -->
+      <!-- start upload -->
+      <div>
         <div class="mt-10">
           <div>
             <div class="relative">
@@ -854,7 +835,7 @@ defmodule IngestWeb.RequestShowLive do
             </div>
 
             <div
-              class="mt-8 flow-root"
+              class="mt-8 flow-root px-20"
               phx-click-away={
                 JS.hide(
                   to: "#filter_sort",
@@ -1056,6 +1037,7 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
       </div>
+      <!-- end upload -->
     </div>
     """
   end

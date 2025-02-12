@@ -101,7 +101,7 @@ config :ingest, :openid_connect_oneid,
   redirect_uri: "http://localhost:4000/users/log_in/one_id",
   response_type: "code",
   scope: "openid email profile"
-  # ca_cert: "PATH TO CA CERTS"
+ # ca_cert: "PATH TO CA CERTS"
 
 config :ingest, :openid_connect_okta,
   issuer: "https://identity-preview.inl.gov",
