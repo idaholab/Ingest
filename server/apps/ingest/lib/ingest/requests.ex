@@ -59,8 +59,8 @@ defmodule Ingest.Requests do
 
   def get_name_fields!(id) do
     fields = Repo.get!(Template, id).fields
-    filtered = Enum.filter(fields, fn(d) -> d.namer == true end)
-    test = Enum.map(filtered, fn(d) -> d.label end)
+    filtered = Enum.filter(fields, fn d -> d.namer == true end)
+    test = Enum.map(filtered, fn d -> d.label end)
     test
   end
 

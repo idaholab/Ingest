@@ -1,6 +1,5 @@
 defmodule IngestWeb.TemplateBuilderLive do
   use IngestWeb, :live_view
-  require Logger
   alias Ingest.Requests
 
   @impl true
@@ -25,10 +24,10 @@ defmodule IngestWeb.TemplateBuilderLive do
         <h3 class="text-base font-semibold leading-6 text-gray-900">Form Builder</h3>
       </div>
     </div>
-<!-- Start field wrap -->
-    <div class="flex flex-row bg-red-300">
-    <!-- Start field list -->
-      <div class="basis-1/3 bg-green-300">
+    <!-- Start field wrap -->
+    <div class="flex flex-row">
+      <!-- Start field list -->
+      <div class="basis-1/3">
         <.link
           patch={~p"/dashboard/templates/#{@template.id}/new"}
           type="button"
@@ -289,35 +288,35 @@ defmodule IngestWeb.TemplateBuilderLive do
                   Comma-seperated values. Example: .csv,.pdf,.html - Leave blank for all file types
                 </p>
               </div>
-
-              <fieldset>
-                <div class="sm:col-span-4 py-3">
-                  <label for="username" class="block text-sm font-medium leading-6 text-white">
-                    Required
-                  </label>
-                  <div class="mt-2">
-                  <.input type="checkbox" field={@field_form[:required]} phx-click={required_clicked()}/>
-                  </div>
-                  <p class="mt-3 text-sm leading-6 text-gray-400">
-                    Whether or not a user is required to fill the field before submitting.
-                  </p>
-                </div>
-              <%!-- </fieldset>
-              <fieldset> --%>
-                <div id="naming_convention" class="hidden sm:col-span-4 py-3">
-                  <label for="name" class="block text-sm font-medium leading-6 text-white">
-                    Used In Naming Convention
-                  </label>
-                  <div class="mt-2">
-                    <.input type="checkbox" field={@field_form[:namer]} />
-                  </div>
-                  <p class="mt-3 text-sm leading-6 text-gray-400">
-                    Whether or not field will be used in the naming convention for data uploads.
-                  </p>
-                </div>
-              </fieldset>
             </div>
           </div>
+
+          <fieldset>
+            <div class="sm:col-span-4 py-3">
+              <label for="username" class="block text-sm font-medium leading-6 text-white">
+                Required
+              </label>
+              <div class="mt-2">
+                <.input type="checkbox" field={@field_form[:required]} />
+              </div>
+              <p class="mt-3 text-sm leading-6 text-gray-400">
+                Whether or not a user is required to fill the field before submitting.
+              </p>
+            </div>
+            <%= if @field_form[:required].value == true do %>
+              <div id="naming_convention" class="sm:col-span-4 py-3">
+                <label for="namer" class="block text-sm font-medium leading-6 text-white">
+                  Used In Naming Convention
+                </label>
+                <div class="mt-2">
+                  <.input type="checkbox" field={@field_form[:namer]} />
+                </div>
+                <p class="mt-3 text-sm leading-6 text-gray-400">
+                  Whether or not this field will be used in the naming convention for data uploads.
+                </p>
+              </div>
+            <% end %>
+          </fieldset>
 
           <div class="mt-6 flex items-center justify-end gap-x-6">
             <button type="button" class="text-sm font-semibold leading-6 text-white">Cancel</button>
@@ -395,30 +394,12 @@ defmodule IngestWeb.TemplateBuilderLive do
      |> assign(:section, "templates"), layout: {IngestWeb.Layouts, :dashboard}}
   end
 
-  # @impl true
-  # def handle_event("toggle_required", _params, socket) do
-  #   Logger.info(socket.assigns.field_form[:required].value)
-  #   Logger.info(_params)
-  #   JS.toggle_class("hidden", to: "#naming_convention")
-  #   required = !socket.assigns.field_form[:required].value
-  #   field_form = Map.put(socket.assigns.field_form, :required, %{value: required})
-  #   {:noreply, assign(socket, :field_form, field_form)}
-  # end
-
-  def required_clicked() do
-    JS.toggle_class("hidden", to: "#naming_convention")
-    # check = document.getElementById("naming_convention")
-
-  end
-
-
-
   @impl true
   def handle_params(%{"field_id" => field_id}, _uri, socket) do
     template = Requests.get_template!(socket.assigns.template.id)
     field = Enum.find(template.fields, fn field -> field.id == field_id end)
-    Logger.info("This fires when you select a new field")
-    Logger.info(field)
+    #Fires when you select anew field.
+
     {:noreply,
      socket
      |> assign(:field, field)
@@ -430,7 +411,6 @@ defmodule IngestWeb.TemplateBuilderLive do
 
   @impl true
   def handle_params(_params, _uri, socket) do
-    Logger.info("This handle params _params is firing")
     {:noreply, socket |> assign(:field, nil)}
   end
 
@@ -466,18 +446,26 @@ defmodule IngestWeb.TemplateBuilderLive do
 
   @impl true
   def handle_event("validate", %{"template_field" => field_params}, socket) do
-    %{"file_extensions" => file_extensions, "type" => type} = field_params
+    %{"file_extensions" => file_extensions, "required" => required, "type" => type} = field_params
 
-    Logger.info("This fires when you change any of the parameters aside from the field type")
-    Logger.info(field_params["required"])
+    is_required = required in ["true", true]
 
     field_params =
-      field_params |> Map.replace("file_extensions", file_extensions |> String.split(","))
+      field_params
+      |> Map.replace("file_extensions", String.split(file_extensions, ","))
+      |> Map.put(
+        "namer",
+        case is_required do
+          true -> field_params["namer"]
+          false -> false
+        end
+      )
 
     changeset =
       socket.assigns.field
       |> Ingest.Requests.change_template_field(field_params)
       |> Map.put(:action, :validate)
+
 
     if String.to_existing_atom(type) != socket.assigns.field.type do
       {:noreply, socket |> save_field(field_params)}
@@ -493,8 +481,6 @@ defmodule IngestWeb.TemplateBuilderLive do
         socket
       ) do
     %{"file_extensions" => file_extensions} = field_params
-
-
 
     field_params =
       field_params
@@ -564,7 +550,7 @@ defmodule IngestWeb.TemplateBuilderLive do
 
   defp active(current, field) do
     if field && current == field.id do
-      "flex items-center justify-between gap-x-6 py-5 active active:bg-green-100 bg-green-100 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0 "
+      "flex items-center justify-between gap-x-6 py-5 active active:bg-indigo-100 bg-indigo-100 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0 "
     else
       "flex items-center justify-between gap-x-6 py-5 px-1 cursor-pointer drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0"
     end
