@@ -498,8 +498,8 @@ defmodule IngestWeb.RequestShowLive do
         </div>
         <!-- STATUS -->
       </div>
-
-      <!-- Start Name Section -->
+      
+    <!-- Start Name Section -->
       <div class="grid grid-cols-1">
         <div>
           <!-- Start Header -->
@@ -516,7 +516,6 @@ defmodule IngestWeb.RequestShowLive do
           <!-- End Header -->
 
         </div>
-
       </div>
       <!-- End Name Section -->
 

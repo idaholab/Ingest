@@ -305,11 +305,11 @@ defmodule IngestWeb.TemplateBuilderLive do
             </div>
             <%= if @field_form[:required].value == true do %>
               <div id="naming_convention" class="sm:col-span-4 py-3">
-                <label for="namer" class="block text-sm font-medium leading-6 text-white">
+                <label for="name_field" class="block text-sm font-medium leading-6 text-white">
                   Used In Naming Convention
                 </label>
                 <div class="mt-2">
-                  <.input type="checkbox" field={@field_form[:namer]} />
+                  <.input type="checkbox" field={@field_form[:name_field]} />
                 </div>
                 <p class="mt-3 text-sm leading-6 text-gray-400">
                   Whether or not this field will be used in the naming convention for data uploads.
@@ -398,7 +398,7 @@ defmodule IngestWeb.TemplateBuilderLive do
   def handle_params(%{"field_id" => field_id}, _uri, socket) do
     template = Requests.get_template!(socket.assigns.template.id)
     field = Enum.find(template.fields, fn field -> field.id == field_id end)
-    #Fires when you select anew field.
+    # Fires when you select anew field.
 
     {:noreply,
      socket
@@ -454,9 +454,9 @@ defmodule IngestWeb.TemplateBuilderLive do
       field_params
       |> Map.replace("file_extensions", String.split(file_extensions, ","))
       |> Map.put(
-        "namer",
+        "name_field",
         case is_required do
-          true -> field_params["namer"]
+          true -> field_params["name_field"]
           false -> false
         end
       )
@@ -465,7 +465,6 @@ defmodule IngestWeb.TemplateBuilderLive do
       socket.assigns.field
       |> Ingest.Requests.change_template_field(field_params)
       |> Map.put(:action, :validate)
-
 
     if String.to_existing_atom(type) != socket.assigns.field.type do
       {:noreply, socket |> save_field(field_params)}
