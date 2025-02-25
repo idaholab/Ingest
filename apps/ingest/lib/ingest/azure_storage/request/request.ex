@@ -1,11 +1,11 @@
-defmodule AzureStorage.Request do
+defmodule Datum.AzureStorage.Request do
   @moduledoc """
   Request is the base request module that the other requests use to do things like build
   authorization headers etc.
   """
   defmacro __using__(_opts) do
     quote do
-      alias AzureStorage.Config
+      alias Datum.AzureStorage.Config
 
       def sign(%Req.Request{} = req, %Config{} = config, opts \\ []) do
         date = Keyword.get(opts, :date, DateTime.utc_now())

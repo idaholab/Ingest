@@ -53,7 +53,6 @@ defmodule Ingest.MixProject do
       {:req, "~> 0.5.0"},
       {:timex, "~> 3.7.11"},
       {:gen_smtp, "~> 1.2"},
-      {:azure_storage, path: "../../../azure_storage"},
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
       {:sweet_xml, "~> 0.7.4"},

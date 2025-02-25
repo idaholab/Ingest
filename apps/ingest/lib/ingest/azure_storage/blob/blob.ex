@@ -1,11 +1,11 @@
-defmodule AzureStorage.Blob do
+defmodule Datum.AzureStorage.Blob do
   @moduledoc """
   All operations on Blobs.
   https://learn.microsoft.com/en-us/rest/api/storageservices/operations-on-blobs
   """
-  alias AzureStorage.Container
+  alias Datum.AzureStorage.Container
   alias __MODULE__
-  use AzureStorage.Request
+  use Datum.AzureStorage.Request
 
   @enforce_keys [:name, :container]
   defstruct [

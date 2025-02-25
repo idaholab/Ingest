@@ -6,12 +6,15 @@ defmodule Ingest.Uploaders.Azure do
   """
   alias Ingest.Destinations.AzureConfig
   alias Ingest.Destinations
+  alias Datum.AzureStorage.Config
+  alias Datum.AzureStorage.Blob
+  alias Datum.AzureStorage.Container
 
   def init(%Destinations.Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)
     %AzureConfig{} = d_config = destination.azure_config
 
-    config = %AzureStorage.Config{
+    config = %Config{
       account_name: d_config.account_name,
       account_key: d_config.account_key,
       # base service URL is an optional field, so don't fail if we don't have it
@@ -22,9 +25,9 @@ defmodule Ingest.Uploaders.Azure do
     # first we check if the object by filename and path exist in the container already
     # if it does, then we need to change the name and appened a - COPY (date) to the end of it
     filename =
-      if AzureStorage.Container.new(d_config.container)
-         |> AzureStorage.Blob.new("#{filename}")
-         |> AzureStorage.Blob.exists?(config) do
+      if Container.new(d_config.container)
+         |> Blob.new("#{filename}")
+         |> Blob.exists?(config) do
         "#{filename} - COPY #{DateTime.now!("UTC") |> DateTime.to_naive()}"
       else
         filename
@@ -45,8 +48,8 @@ defmodule Ingest.Uploaders.Azure do
       end
 
     blob =
-      AzureStorage.Container.new(d_config.container)
-      |> AzureStorage.Blob.new("#{filename}")
+      Container.new(d_config.container)
+      |> Blob.new("#{filename}")
 
     {:ok,
      {destination,
@@ -56,7 +59,7 @@ defmodule Ingest.Uploaders.Azure do
   def upload_full_object(%Destinations.Destination{} = destination, filename, data, _opts \\ []) do
     %AzureConfig{} = d_config = destination.azure_config
 
-    config = %AzureStorage.Config{
+    config = %Config{
       account_name: d_config.account_name,
       account_key: d_config.account_key,
       # base service URL is an optional field, so don't fail if we don't have it
@@ -71,13 +74,13 @@ defmodule Ingest.Uploaders.Azure do
         filename
       end
 
-    AzureStorage.Container.new(d_config.container)
-    |> AzureStorage.Blob.new("#{filename}")
-    |> AzureStorage.Blob.put_blob(config, data)
+    Container.new(d_config.container)
+    |> Blob.new("#{filename}")
+    |> Blob.put_blob(config, data)
   end
 
   def upload_chunk(%Destinations.Destination{} = destination, _filename, state, data, _opts \\ []) do
-    case AzureStorage.Blob.put_block(state.blob, state.config, data) do
+    case Blob.put_block(state.blob, state.config, data) do
       {:ok, block_id} ->
         {:ok, {destination, %{state | parts: [block_id | state.parts]}}}
 
@@ -87,7 +90,7 @@ defmodule Ingest.Uploaders.Azure do
   end
 
   def commit(%Destinations.Destination{} = destination, _filename, state, _opts \\ []) do
-    {:ok, _location} = AzureStorage.Blob.put_block_list(state.parts, state.blob, state.config)
+    {:ok, _location} = Blob.put_block_list(state.parts, state.blob, state.config)
     {:ok, {destination, state.blob.name}}
   end
 
@@ -105,7 +108,7 @@ defmodule Ingest.Uploaders.Azure do
       end
 
     config =
-      %AzureStorage.Config{
+      %Config{
         account_name: d_config.account_name,
         account_key: d_config.account_key,
         # base service URL is an optional field, so don't fail if we don't have it
@@ -113,8 +116,8 @@ defmodule Ingest.Uploaders.Azure do
         ssl: Map.get(d_config, :ssl, true)
       }
 
-    AzureStorage.Container.new(d_config.container)
-    |> AzureStorage.Blob.new(path)
-    |> AzureStorage.Blob.update_blob_metadata(config, metadata)
+    Container.new(d_config.container)
+    |> Blob.new(path)
+    |> Blob.update_blob_metadata(config, metadata)
   end
 end

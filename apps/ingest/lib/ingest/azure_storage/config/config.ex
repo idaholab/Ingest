@@ -1,4 +1,4 @@
-defmodule AzureStorage.Config do
+defmodule Datum.AzureStorage.Config do
   # Optional
   defstruct [
     :account_name,
