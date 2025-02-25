@@ -53,7 +53,6 @@ defmodule Ingest.MixProject do
       {:req, "~> 0.5.0"},
       {:timex, "~> 3.7.11"},
       {:gen_smtp, "~> 1.2"},
-      {:azure_storage, path: "../../../azure_storage"},
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
       {:sweet_xml, "~> 0.7.4"},
@@ -67,7 +66,8 @@ defmodule Ingest.MixProject do
       {:credo, "~> 1.7.9", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:rustler, "~> 0.35.0", override: true}
+      {:rustler, "~> 0.35.0", override: true},
+      {:uuid, "~> 1.1"}
     ]
   end
 
@@ -82,7 +82,7 @@ defmodule Ingest.MixProject do
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["clean.db", "ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["clean.db", "ecto.setup"],
-      "clean.db": ["cmd rm -rf ../../config/databases"],
+      "clean.db": ["cmd rm -rf ../config/databases"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "sqlite.fetch": [
         "cmd cd priv/sqlite_extensions && ./install_sqlean.sh",

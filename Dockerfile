@@ -30,8 +30,6 @@ FROM hexpm/elixir:1.17.2-erlang-27.0.1-debian-bullseye-20240701-slim as builder
 RUN apt-get update -y && apt-get install -y build-essential git nodejs npm curl unzip \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
-COPY ./azure_storage azure_storage
-
 # prepare build dir
 WORKDIR /app
 
@@ -43,21 +41,21 @@ RUN mix local.hex --force && \
 ENV MIX_ENV="prod"
 
 # install mix dependencies
-COPY ./server/mix.exs ./server/mix.lock ./
-COPY ./server/apps/ingest/mix.exs  apps/ingest/mix.exs
-COPY ./server/apps/ingest_web/mix.exs apps/ingest_web/mix.exs
+COPY ./mix.exs ./mix.lock ./
+COPY ./apps/ingest/mix.exs  apps/ingest/mix.exs
+COPY ./apps/ingest_web/mix.exs apps/ingest_web/mix.exs
 RUN mix deps.get --only $MIX_ENV
 RUN mkdir config
 
 # copy compile-time config files before we compile dependencies
 # to ensure any relevant config change will trigger the dependencies
 # to be re-compiled.
-COPY ./server/config/config.exs ./server/config/prod.exs config/
+COPY ./config/config.exs ./config/prod.exs config/
 RUN mix deps.compile
 
-COPY ./server/apps apps
-COPY ./server/apps/ingest_web/assets apps/ingest_web/assets
-COPY ./server/apps/ingest_web/priv apps/ingest_web/priv
+COPY ./apps apps
+COPY ./apps/ingest_web/assets apps/ingest_web/assets
+COPY ./apps/ingest_web/priv apps/ingest_web/priv
 
 RUN cd apps/ingest_web/assets && npm ci --progress=false --no-audit --loglevel=error
 
@@ -70,9 +68,9 @@ RUN mix sqlite.fetch
 RUN mix compile
 
 # Changes to config/runtime.exs don't require recompiling the code
-COPY ./server/config/runtime.exs config/
+COPY ./config/runtime.exs config/
 
-COPY ./server/rel rel
+COPY ./rel rel
 
 RUN mix release
 
@@ -97,7 +95,7 @@ ENV LC_ALL en_US.UTF-8
 
 WORKDIR "/app"
 
-COPY ./server/start.sh start.sh
+COPY ./start.sh start.sh
 RUN chmod +x start.sh
 
 RUN chown nobody /app

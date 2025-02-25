@@ -1,48 +1,28 @@
-/client/target/
-/client/.idea
-.ingest_client_config.yml
-ca-certificates.pem
-server/__azurite_db_blob__.json
-server/__azurite_db_blob_extent__.json
-__azurite_db_blob__.json
-__azurite_db_blob_extent__.json
-__azurite_db_queue__.json
-__azurite_db_queue_extent__.json
-server/__blobstorage__
-__blobstorage__
-__queuestorage__
-__azurite_db_table__.json
-server/.DS_Store
-server/priv/sqlite_extensions/crypto.dylib
-server/priv/sqlite_extensions/define.dylib
-server/priv/sqlite_extensions/fileio.dylib
-server/priv/sqlite_extensions/fuzzy.dylib
-server/priv/sqlite_extensions/ipaddr.dylib
-server/priv/sqlite_extensions/math.dylib
-server/priv/sqlite_extensions/regexp.dylib
-server/priv/sqlite_extensions/sqlean.dylib
-server/priv/sqlite_extensions/stats.dylib
-server/priv/sqlite_extensions/text.dylib
-server/priv/sqlite_extensions/time.dylib
-server/priv/sqlite_extensions/unicode.dylib
-server/priv/sqlite_extensions/uuid.dylib
-server/priv/sqlite_extensions/vec0.dylib
-server/priv/sqlite_extensions/vsv.dylib
-server/apps/ingest/priv/sqlite_extensions/crypto.dylib
-server/apps/ingest/priv/sqlite_extensions/define.dylib
-server/apps/ingest/priv/sqlite_extensions/fileio.dylib
-server/apps/ingest/priv/sqlite_extensions/fuzzy.dylib
-server/apps/ingest/priv/sqlite_extensions/ipaddr.dylib
-server/apps/ingest/priv/sqlite_extensions/math.dylib
-server/apps/ingest/priv/sqlite_extensions/regexp.dylib
-server/apps/ingest/priv/sqlite_extensions/sqlean.dylib
-server/apps/ingest/priv/sqlite_extensions/stats.dylib
-server/apps/ingest/priv/sqlite_extensions/text.dylib
-server/apps/ingest/priv/sqlite_extensions/time.dylib
-server/apps/ingest/priv/sqlite_extensions/unicode.dylib
-server/apps/ingest/priv/sqlite_extensions/uuid.dylib
-server/apps/ingest/priv/sqlite_extensions/vec0.dylib
-server/apps/ingest/priv/sqlite_extensions/vsv.dylib
-server/apps/ingest/databases
-server/config/databases
-server/.lexical
+# The directory Mix will write compiled artifacts to.
+/_build/
+
+# If you run "mix test --cover", coverage assets end up here.
+/cover/
+
+# The directory Mix downloads your dependencies sources to.
+/deps/
+
+# Where 3rd-party dependencies like ExDoc output generated docs.
+/doc/
+
+# Ignore .fetch files in case you like to edit your project deps locally.
+/.fetch
+
+# If the VM crashes, it generates a dump, let's ignore it too.
+erl_crash.dump
+
+# Also ignore archive artifacts (built via "mix archive.build").
+*.ez
+
+# Temporary files, for example, from tests.
+/tmp/
+
+.elixir_ls
+
+/databases/
+config/databases
