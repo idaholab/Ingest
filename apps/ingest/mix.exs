@@ -5,10 +5,10 @@ defmodule Ingest.MixProject do
     [
       app: :ingest,
       version: "0.1.0",
-      build_path: "../../_build",
-      config_path: "../../config/config.exs",
-      deps_path: "../../deps",
-      lockfile: "../../mix.lock",
+      build_path: "../_build",
+      config_path: "../config/config.exs",
+      deps_path: "../deps",
+      lockfile: "../mix.lock",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -81,7 +81,7 @@ defmodule Ingest.MixProject do
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["clean.db", "ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["clean.db", "ecto.setup"],
-      "clean.db": ["cmd rm -rf ../../config/databases"],
+      "clean.db": ["cmd rm -rf ../config/databases"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "sqlite.fetch": [
         "cmd cd priv/sqlite_extensions && ./install_sqlean.sh",
