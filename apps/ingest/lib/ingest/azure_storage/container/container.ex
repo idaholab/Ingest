@@ -1,12 +1,12 @@
-defmodule Datum.AzureStorage.Container do
+defmodule Ingest.AzureStorage.Container do
   @moduledoc """
   All operations and program flow for the Containers object in Azure storage.
   https://learn.microsoft.com/en-us/rest/api/storageservices/operations-on-containers
   """
-  alias Datum.AzureStorage.Config
+  alias Ingest.AzureStorage.Config
   alias __MODULE__
 
-  use AzureStorage.Request
+  use Ingest.AzureStorage.Request
   import SweetXml
 
   @enforce_keys [:name]

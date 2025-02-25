@@ -6,9 +6,9 @@ defmodule Ingest.Uploaders.Azure do
   """
   alias Ingest.Destinations.AzureConfig
   alias Ingest.Destinations
-  alias Datum.AzureStorage.Config
-  alias Datum.AzureStorage.Blob
-  alias Datum.AzureStorage.Container
+  alias Ingest.AzureStorage.Config
+  alias Ingest.AzureStorage.Blob
+  alias Ingest.AzureStorage.Container
 
   def init(%Destinations.Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)

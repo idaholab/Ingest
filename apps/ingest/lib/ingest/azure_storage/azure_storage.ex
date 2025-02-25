@@ -1,11 +1,11 @@
-defmodule Datum.AzureStorage do
+defmodule Ingest.AzureStorage do
   @moduledoc """
   Implementation for Azure's Blob Storage in Elixir.
   """
   use GenServer
-  alias Datum.AzureStorage.Config
-  alias Datum.AzureStorage.Container
-  alias Datum.AzureStorage.Blob
+  alias Ingest.AzureStorage.Config
+  alias Ingest.AzureStorage.Container
+  alias Ingest.AzureStorage.Blob
 
   defmodule State do
     @moduledoc """
