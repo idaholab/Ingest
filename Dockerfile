@@ -28,22 +28,20 @@ FROM hexpm/elixir:1.17.2-erlang-27.0.1-debian-bullseye-20240701-slim as builder
 
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git nodejs npm curl unzip \
-    && apt-get clean && rm -f /var/lib/apt/lists/*_*
+  && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # prepare build dir
 WORKDIR /app
 
 # install hex + rebar
 RUN mix local.hex --force && \
-    mix local.rebar --force
+  mix local.rebar --force
 
 # set build ENV
 ENV MIX_ENV="prod"
 
 # install mix dependencies
 COPY ./mix.exs ./mix.lock ./
-COPY ./apps/ingest/mix.exs  apps/ingest/mix.exs
-COPY ./apps/ingest_web/mix.exs apps/ingest_web/mix.exs
 RUN mix deps.get --only $MIX_ENV
 RUN mkdir config
 
@@ -53,19 +51,19 @@ RUN mkdir config
 COPY ./config/config.exs ./config/prod.exs config/
 RUN mix deps.compile
 
-COPY ./apps apps
-COPY ./apps/ingest_web/assets apps/ingest_web/assets
-COPY ./apps/ingest_web/priv apps/ingest_web/priv
-
-RUN cd apps/ingest_web/assets && npm ci --progress=false --no-audit --loglevel=error
+COPY priv priv
+COPY lib lib
+COPY assets assets
 
 # compile assets
-RUN cd apps/ingest_web && mix assets.deploy
+RUN cd assets && npm ci --progress=false --no-audit --loglevel=error
 
 # fetch the sqlite3 extensions
 RUN mix sqlite.fetch
 
 RUN mix compile
+
+RUN mix assets.deploy
 
 # Changes to config/runtime.exs don't require recompiling the code
 COPY ./config/runtime.exs config/
@@ -104,8 +102,7 @@ RUN chown nobody /app
 ENV MIX_ENV="prod"
 
 # Only copy the final release and sqlite3 extensions from the build stage
-COPY --from=builder --chown=nobody:root /app/_build/prod/rel/ingest_umbrella ./
-COPY --from=builder --chown=nobody:root /app/apps/ingest/priv/sqlite_extensions /sqlite_extensions
+COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/ingest ./
 
 USER nobody
 
@@ -114,5 +111,4 @@ USER nobody
 # above and adding an entrypoint. See https://github.com/krallin/tini for details
 # ENTRYPOINT ["/tini", "--"]
 
-
-ENTRYPOINT ["/app/start.sh"]
+CMD ["/app/bin/docker"]
