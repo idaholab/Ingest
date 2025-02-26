@@ -15,7 +15,7 @@ config :ingest, :generators,
   binary_id: true
 
 # Configures the endpoint
-config :ingest_web, IngestWeb.Endpoint,
+config :ingest, IngestWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
   url: [host: "localhost"],
   render_errors: [
@@ -34,33 +34,26 @@ config :ingest_web, IngestWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :ingest, Ingest.Mailer, adapter: Swoosh.Adapters.Local
 
-# Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",
-  ingest_web: [
+  ingest: [
     args:
-      ~w(js/app.js --bundle --target=esnext --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
-    cd: Path.expand("../apps/ingest_web/assets", __DIR__),
+      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
-  ],
-  cacerts_path: "/Users/Shared/CAINLROOT_B64.crt"
-
-# ca_cert: "PATH TO CA CERTS"
+  ]
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.3.2",
-  ingest_web: [
+  version: "3.4.3",
+  ingest: [
     args: ~w(
       --config=tailwind.config.js
       --input=css/app.css
       --output=../priv/static/assets/app.css
     ),
-    cd: Path.expand("../apps/ingest_web/assets", __DIR__)
-  ],
-  cacerts_path: "/Users/Shared/CAINLROOT_B64.crt"
-
-# ca_cert: "PATH TO CA CERTS"
+    cd: Path.expand("../assets", __DIR__)
+  ]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -86,7 +79,7 @@ config :ingest, Oban,
 
 config :error_tracker,
   repo: Ingest.Repo,
-  otp_app: :ingest_web
+  otp_app: :ingest
 
 # classification acronyms - NOTE: if you change these, ensure that you're not removing any \
 # which are currently in use, or the system will break

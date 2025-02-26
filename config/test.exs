@@ -35,7 +35,7 @@ config :ecto_sqlite3,
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :ingest_web, IngestWeb.Endpoint,
+config :ingest, IngestWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "XvVGGL6usjMplRva2TfagtLfayv88C/1erGcFPF8/8h+5Q5DQKSuDKj/kzgiy0SR",
   server: false

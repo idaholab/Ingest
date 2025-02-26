@@ -32,7 +32,7 @@ config :ecto_sqlite3,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :ingest_web, IngestWeb.Endpoint,
+config :ingest, IngestWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
@@ -41,8 +41,8 @@ config :ingest_web, IngestWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "z5aeLcCGuJYv2pb7ZISYCWmEB3eirkBhYuLH2ylEwfF4zgBiYxD/lBUezCJsZIvi",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:ingest_web, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:ingest_web, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:ingest, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:ingest, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -69,7 +69,7 @@ config :ingest_web, IngestWeb.Endpoint,
 # different ports.
 
 # Watch static and templates for browser reloading.
-config :ingest_web, IngestWeb.Endpoint,
+config :ingest, IngestWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
@@ -101,7 +101,8 @@ config :ingest, :openid_connect_oneid,
   redirect_uri: "http://localhost:4000/users/log_in/one_id",
   response_type: "code",
   scope: "openid email profile"
- # ca_cert: "PATH TO CA CERTS"
+
+# ca_cert: "PATH TO CA CERTS"
 
 config :ingest, :openid_connect_okta,
   issuer: "https://identity-preview.inl.gov",
@@ -110,7 +111,8 @@ config :ingest, :openid_connect_okta,
   redirect_uri: "http://localhost:4000/users/log_in/okta",
   response_type: "code",
   scope: "openid email profile"
-  # ca_cert: "PATH TO CA CERTS"
+
+# ca_cert: "PATH TO CA CERTS"
 
 # config :ingest, :ca_certfile_path, "PATH TO CA CERTS"
 config :ingest, :environment, :dev
