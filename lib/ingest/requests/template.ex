@@ -111,7 +111,7 @@ defmodule Ingest.Requests.TemplateField do
     # the map has two keys, template and name
     field :branch_options, {:array, :map}, default: []
     field :required, :boolean
-    field :namer, :boolean
+    field :name_field, :boolean
     field :file_extensions, {:array, :string}
   end
 
@@ -124,7 +124,7 @@ defmodule Ingest.Requests.TemplateField do
       :select_options,
       :branch_options,
       :required,
-      :namer,
+      :name_field,
       :file_extensions
     ])
     |> validate_required([:label, :type])

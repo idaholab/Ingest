@@ -1,4 +1,5 @@
 defmodule IngestWeb.TemplateBuilderLive do
+require Logger
   use IngestWeb, :live_view
   alias Ingest.Requests
 
@@ -303,7 +304,7 @@ defmodule IngestWeb.TemplateBuilderLive do
                 Whether or not a user is required to fill the field before submitting.
               </p>
             </div>
-            <%= if @field_form[:required].value == true do %>
+            <%= if @field_form[:required].value in ["true", true] do %>
               <div id="naming_convention" class="sm:col-span-4 py-3">
                 <label for="name_field" class="block text-sm font-medium leading-6 text-white">
                   Used In Naming Convention
@@ -556,6 +557,7 @@ defmodule IngestWeb.TemplateBuilderLive do
   end
 
   defp save_field(socket, field_params) do
+
     fields =
       Enum.map(socket.assigns.fields, fn f ->
         field = Map.from_struct(f)
@@ -583,6 +585,7 @@ defmodule IngestWeb.TemplateBuilderLive do
   end
 
   defp save_field_atoms(socket, field_params) do
+
     fields =
       Enum.map(socket.assigns.fields, fn f ->
         field = Map.from_struct(f)
