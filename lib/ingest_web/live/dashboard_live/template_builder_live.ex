@@ -1,5 +1,5 @@
 defmodule IngestWeb.TemplateBuilderLive do
-require Logger
+  require Logger
   use IngestWeb, :live_view
   alias Ingest.Requests
 
@@ -557,7 +557,6 @@ require Logger
   end
 
   defp save_field(socket, field_params) do
-
     fields =
       Enum.map(socket.assigns.fields, fn f ->
         field = Map.from_struct(f)
@@ -585,7 +584,6 @@ require Logger
   end
 
   defp save_field_atoms(socket, field_params) do
-
     fields =
       Enum.map(socket.assigns.fields, fn f ->
         field = Map.from_struct(f)

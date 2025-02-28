@@ -58,6 +58,25 @@ defmodule Ingest.Requests do
   def get_template!(id), do: Repo.get!(Template, id) |> Repo.preload(:template_members)
 
   @doc """
+  Gets name convention fields for a given template
+  Raises `Ecto.NoResultsError` if the array is empty.
+  ## Examples
+      iex> Ingest.Requests.get_name_fields!("778aa19c-e9d4-4c3a-906d-10a76e5f92d7")
+      %Template{}
+      iex> Ingest.Requests.get_name_fields!(123)
+      ** (Ecto.NoResultsError)
+  """
+  def get_name_fields!(id) do
+    fields = Repo.get!(Template, id).fields
+    filtered = Enum.filter(fields, fn d -> d.name_field == true end)
+
+    name_fields =
+      Enum.map(filtered, fn d -> %{id: d.id, label: d.label, help_text: d.help_text} end)
+
+    name_fields
+  end
+
+  @doc """
   Creates a template.
 
   ## Examples

@@ -455,6 +455,13 @@ defmodule IngestWeb.RequestShowLive do
                     <div class="py-4 pr-6 text-sm font-semibold leading-6 text-gray-900">
                       {template.name}
                     </div>
+                    <% name_fields = Ingest.Requests.get_name_fields!(template.id) %>
+                    <p class="text-xs text-gray-600">
+                      Template Fields Used in Naming Convention: {case name_fields do
+                        [] -> "None"
+                        _ -> Enum.map(name_fields, & &1.label) |> Enum.join(", ")
+                      end}
+                    </p>
                   </td>
                   <td class="relative w-14 p-0">
                     <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
@@ -498,7 +505,7 @@ defmodule IngestWeb.RequestShowLive do
         </div>
         <!-- STATUS -->
       </div>
-      
+
     <!-- Start Name Section -->
       <div class="grid grid-cols-1">
         <div>
