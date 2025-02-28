@@ -123,7 +123,7 @@ defmodule IngestWeb.UserLoginLive do
 
     with {:ok, redirect_uri} <-
            Oidcc.create_redirect_url(
-             IngestWeb.Application.Okta,
+             Ingest.Application.Okta,
              config[:client_id],
              config[:client_secret],
              %{
