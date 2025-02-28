@@ -3,6 +3,6 @@ set -eu
 
 cd -P -- "$(dirname -- "$0")"
 
-exec ./datum eval Ingest.Release.migrate
+exec ./ingest eval Ingest.Release.migrate
 
 PHX_SERVER=true exec ./ingest start
