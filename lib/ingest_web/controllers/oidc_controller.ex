@@ -64,7 +64,7 @@ defmodule IngestWeb.OidcController do
     with {:ok, token} <-
            Oidcc.retrieve_token(
              code,
-             IngestWeb.Application.Okta,
+             Ingest.Application.Okta,
              config[:client_id],
              config[:client_secret],
              %{redirect_uri: config[:redirect_uri]}
@@ -72,7 +72,7 @@ defmodule IngestWeb.OidcController do
          {:ok, claims} <-
            Oidcc.retrieve_userinfo(
              token,
-             IngestWeb.Application.Okta,
+             Ingest.Application.Okta,
              config[:client_id],
              config[:client_secret],
              %{expected_subject: "sub"}
