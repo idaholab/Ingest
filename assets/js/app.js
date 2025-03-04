@@ -40,6 +40,19 @@ Hooks.FormBuilderFields = {
   },
 };
 
+Hooks.Sortable = {
+  mounted() {
+    let el = this.el;
+    let sortable = Sortable.create(el, {
+      animation: 150,
+      onEnd: (evt) => {
+        let ids = Array.from(el.children).map(row => row.dataset.id);
+        this.pushEvent("reorder_fields", { order: ids });
+      }
+    });
+  }
+};
+
 Hooks.UploadBox = {
   mounted() {
     this.el.addEventListener("click", (e) => {

@@ -514,15 +514,43 @@ defmodule IngestWeb.RequestShowLive do
             </div>
           </div>
           <!-- End Header -->
-          <div :for={template <- @request_templates} class="mt-10">
-              <% name_fields = Ingest.Requests.get_name_fields!(template.id) %>
-              <p class="text-xs text-gray-600">
-                Template Fields Used in Naming Convention: {case name_fields do
-                  [] -> "None"
-                  _ -> Enum.map(name_fields, & &1.label) |> Enum.join(", ")
-                end}
-              </p>
-            </div>
+
+          <table class="w-[40rem] mt-11 sm:w-full">
+            <thead class="text-sm text-left leading-6 text-zinc-500">
+              <tr>
+                <th class="p-0 pr-6 pb-4 font-normal">Fields Used in Naming Convention:</th>
+                <th class="relative p-0 pb-4"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody
+              :for={template <- @request_templates}
+              id="sortable-fields"
+              phx-hook="Sortable"
+              phx-update="stream"
+              class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700"
+            >
+              <%!-- <tr :for={template <- @request_templates}>
+                  <td class="p-0 pb-4 pr-6">
+                  <% name_fields = Ingest.Requests.get_name_fields!(template.id) %>
+                    <div class="py-4 pr-6 text-sm font-semibold leading-6 text-gray-900">
+                    {case name_fields do
+                      [] -> "None"
+                      _ -> Enum.map(name_fields, & &1.label) |> Enum.join(", ")
+                    end}
+                    </div>
+                  </td>
+                </tr> --%>
+              <%= for field <- Ingest.Requests.get_name_fields!(template.id) do %>
+                <tr id={"field-#{field.id}"} data-id={field.id}>
+                  <td class="p-0 pb-4 pr-6 cursor-move">
+                    <div class="py-4 pr-6 text-sm font-semibold leading-6 text-gray-900">
+                      {field.label}
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
         </div>
       </div>
       <!-- End Name Section -->
@@ -1161,6 +1189,20 @@ defmodule IngestWeb.RequestShowLive do
      )
      |> assign(:project_templates, project.templates)
      |> assign(:project_destinations, project.destinations)}
+  end
+
+  def handle_event("reorder_fields", %{"order" => new_order}, socket) do
+    # `new_order` will be a list of IDs in the new order
+    updated_fields =
+      Enum.with_index(new_order)
+      |> Enum.map(fn {id, index} -> %{id: String.to_integer(id), order: index} end)
+
+    # Update the database (assuming you have an `update_order/2` function)
+    # Enum.each(updated_fields, fn %{id: id, order: order} ->
+    #   # Ingest.Repo.update!(from(f in MyApp.Field, where: f.id == ^id, set: [order: order]))
+    # end)
+
+    {:noreply, socket}
   end
 
   @impl true

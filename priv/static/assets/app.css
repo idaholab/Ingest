@@ -4451,6 +4451,10 @@ html {
   cursor: pointer;
 }
 
+.cursor-move {
+  cursor: move;
+}
+
 .select-none {
   -webkit-user-select: none;
      -moz-user-select: none;
