@@ -514,8 +514,29 @@ defmodule IngestWeb.RequestShowLive do
             </div>
           </div>
           <!-- End Header -->
+          <div class="w-[40rem] mt-11 sm:w-full">
+  <div class="text-sm text-left leading-6 text-zinc-500 pb-4 font-normal">
+    Fields Used in Naming Convention:
+  </div>
 
-          <table class="w-[40rem] mt-11 sm:w-full">
+  <div id="sortable-fields"
+       phx-hook="Sortable"
+       phx-update="stream"
+       class="flex flex-wrap gap-2 bg-gray-100 p-4 rounded-md border border-gray-200">
+
+    <%= for template <- @request_templates do %>
+      <%= for field <- Ingest.Requests.get_name_fields!(template.id) do %>
+        <div id={"field-#{field.id}"}
+             data-id={field.id}
+             class="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-move text-sm">
+          <%= field.label %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+          <%!-- <table class="w-[40rem] mt-11 sm:w-full">
             <thead class="text-sm text-left leading-6 text-zinc-500">
               <tr>
                 <th class="p-0 pr-6 pb-4 font-normal">Fields Used in Naming Convention:</th>
@@ -527,30 +548,20 @@ defmodule IngestWeb.RequestShowLive do
               id="sortable-fields"
               phx-hook="Sortable"
               phx-update="stream"
-              class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700"
+              class="flex flex-wrap gap-2 bg-gray-100 p-4 rounded-md"
             >
-              <%!-- <tr :for={template <- @request_templates}>
-                  <td class="p-0 pb-4 pr-6">
-                  <% name_fields = Ingest.Requests.get_name_fields!(template.id) %>
-                    <div class="py-4 pr-6 text-sm font-semibold leading-6 text-gray-900">
-                    {case name_fields do
-                      [] -> "None"
-                      _ -> Enum.map(name_fields, & &1.label) |> Enum.join(", ")
-                    end}
-                    </div>
-                  </td>
-                </tr> --%>
               <%= for field <- Ingest.Requests.get_name_fields!(template.id) do %>
-                <tr id={"field-#{field.id}"} data-id={field.id}>
-                  <td class="p-0 pb-4 pr-6 cursor-move">
-                    <div class="py-4 pr-6 text-sm font-semibold leading-6 text-gray-900">
-                      {field.label}
-                    </div>
-                  </td>
-                </tr>
+                <div
+                  id={"field-#{field.id}"}
+                  data-id={field.id}
+                  class="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-move text-sm"
+                >
+                  {field.label}
+                </div>
               <% end %>
+             </div>
             </tbody>
-          </table>
+          </table> --%>
         </div>
       </div>
       <!-- End Name Section -->
