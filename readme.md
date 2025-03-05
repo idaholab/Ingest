@@ -24,6 +24,7 @@ Ingest is desisgned to be the upload point for various data management solutions
 - CA Cert problems: Typically you'll see a failed `:httpc` library call and something about an unkown CA authority. The easier solution is to include an environment variable called `HEX_CACERTS_PATH` and set it to your root CA bundle. Another, less secure option, is to set `HEX_UNSAFE_HTTPS` to `1` and turn off SSL completely. Not recommended  
 - More CA Cert Problems - modify the configuration file in `config/dev.exs` - you will see various places referring to your SSL cert store (default /etc/ssl/certs on Unix systems) - change those to point to your certificate bundle
 - ElixirLS Problems - Two different solutions. Either make sure you are opening the project from the server directory or install hex globally. `mix archive.install github hexpm/hex branch latest` run this command in `/users/{YourName}` and `/Ingest/` directory.  
+- If you are getting an error with Argon2 running `mix setup`, make sure you do not have a space in the folder names (even the parent folders of the git repo)
 
 ## Editor Setup
 We recommend that you use either VSCode or Neovim for Elixir. 
