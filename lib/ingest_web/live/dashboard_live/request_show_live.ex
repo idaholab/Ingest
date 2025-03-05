@@ -515,53 +515,33 @@ defmodule IngestWeb.RequestShowLive do
           </div>
           <!-- End Header -->
           <div class="w-[40rem] mt-11 sm:w-full">
-  <div class="text-sm text-left leading-6 text-zinc-500 pb-4 font-normal">
-    Fields Used in Naming Convention:
-  </div>
-
-  <div id="sortable-fields"
-       phx-hook="Sortable"
-       phx-update="stream"
-       class="flex flex-wrap gap-2 bg-gray-100 p-4 rounded-md border border-gray-200">
-
-    <%= for template <- @request_templates do %>
-      <%= for field <- Ingest.Requests.get_name_fields!(template.id) do %>
-        <div id={"field-#{field.id}"}
-             data-id={field.id}
-             class="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-move text-sm">
-          <%= field.label %>
-        </div>
-      <% end %>
-    <% end %>
-  </div>
-</div>
-
-          <%!-- <table class="w-[40rem] mt-11 sm:w-full">
-            <thead class="text-sm text-left leading-6 text-zinc-500">
-              <tr>
-                <th class="p-0 pr-6 pb-4 font-normal">Fields Used in Naming Convention:</th>
-                <th class="relative p-0 pb-4"><span class="sr-only">Actions</span></th>
-              </tr>
-            </thead>
-            <tbody
-              :for={template <- @request_templates}
-              id="sortable-fields"
-              phx-hook="Sortable"
-              phx-update="stream"
-              class="flex flex-wrap gap-2 bg-gray-100 p-4 rounded-md"
-            >
-              <%= for field <- Ingest.Requests.get_name_fields!(template.id) do %>
-                <div
-                  id={"field-#{field.id}"}
-                  data-id={field.id}
-                  class="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-move text-sm"
-                >
-                  {field.label}
-                </div>
-              <% end %>
-             </div>
-            </tbody>
-          </table> --%>
+            <div class="text-sm text-left leading-6 text-zinc-500 pb-4 font-normal">
+              Fields Used in Naming Convention:
+            </div>
+            <div class="flex">
+              <div
+                id="sortable-fields"
+                phx-hook="Sortable"
+                phx-update="stream"
+                class="flex flex-wrap gap-2 bg-gray-100 p-3 rounded-md border border-gray-200"
+              >
+                <%= for template <- @request_templates do %>
+                  <%= for field <- Ingest.Requests.get_name_fields!(template.id) do %>
+                    <div
+                      id={"field-#{field.id}"}
+                      data-id={field.id}
+                      class="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-move text-sm"
+                    >
+                      {field.label}
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+              <div class="bg-gray-100 p-3 ml-2 rounded-md border border-gray-200">
+                .[File Extension]
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <!-- End Name Section -->
@@ -1203,15 +1183,13 @@ defmodule IngestWeb.RequestShowLive do
   end
 
   def handle_event("reorder_fields", %{"order" => new_order}, socket) do
-    # `new_order` will be a list of IDs in the new order
+
     updated_fields =
       Enum.with_index(new_order)
-      |> Enum.map(fn {id, index} -> %{id: String.to_integer(id), order: index} end)
+      # Keep id as a string
+      |> Enum.map(fn {id, index} -> %{id: id, order: index} end)
 
-    # Update the database (assuming you have an `update_order/2` function)
-    # Enum.each(updated_fields, fn %{id: id, order: order} ->
-    #   # Ingest.Repo.update!(from(f in MyApp.Field, where: f.id == ^id, set: [order: order]))
-    # end)
+    # Update the database as next step?
 
     {:noreply, socket}
   end
