@@ -516,7 +516,7 @@ defmodule IngestWeb.RequestShowLive do
           <!-- End Header -->
           <div class="w-[40rem] mt-11 sm:w-full">
             <div class="text-sm text-left leading-6 text-zinc-500 pb-4 font-normal">
-              Fields Used in Naming Convention:
+              Add or remove these fields in template editor:
             </div>
             <div class="flex">
               <div
@@ -1183,7 +1183,6 @@ defmodule IngestWeb.RequestShowLive do
   end
 
   def handle_event("reorder_fields", %{"order" => new_order}, socket) do
-
     updated_fields =
       Enum.with_index(new_order)
       # Keep id as a string
