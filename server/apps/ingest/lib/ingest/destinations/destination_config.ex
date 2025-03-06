@@ -6,15 +6,15 @@ defmodule Ingest.Destinations.S3Config do
   import Ecto.Changeset
 
   embedded_schema do
-    field :access_key_id, Ingest.Encrypted.Binary
-    field :secret_access_key, Ingest.Encrypted.Binary
-    field :region, Ingest.Encrypted.Binary
-    field :base_url, Ingest.Encrypted.Binary
-    field :bucket, Ingest.Encrypted.Binary
-    field :path, Ingest.Encrypted.Binary
-    field :final_path, Ingest.Encrypted.Binary
-    field :ssl, :boolean, default: true
-    field :integrated_metadata, :boolean, default: false
+    field(:access_key_id, Ingest.Encrypted.Binary)
+    field(:secret_access_key, Ingest.Encrypted.Binary)
+    field(:region, Ingest.Encrypted.Binary)
+    field(:base_url, Ingest.Encrypted.Binary)
+    field(:bucket, Ingest.Encrypted.Binary)
+    field(:path, Ingest.Encrypted.Binary)
+    field(:final_path, Ingest.Encrypted.Binary)
+    field(:ssl, :boolean, default: true)
+    field(:integrated_metadata, :boolean, default: false)
   end
 
   @doc false
@@ -52,8 +52,8 @@ defmodule Ingest.Destinations.S3ConfigAdditional do
     #
     # S3 Specific: this is the name of the root folder in which the data will be
     # housed for this shared destination
-    field :folder_name, :string
-    field :integrated_metadata, :boolean, default: false
+    field(:folder_name, :string)
+    field(:integrated_metadata, :boolean, default: false)
   end
 
   @doc false
@@ -79,12 +79,12 @@ defmodule Ingest.Destinations.AzureConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :account_name, Ingest.Encrypted.Binary
-    field :account_key, Ingest.Encrypted.Binary
-    field :base_url, Ingest.Encrypted.Binary
-    field :ssl, :boolean, default: true
-    field :container, Ingest.Encrypted.Binary
-    field :integrated_metadata, :boolean, default: false
+    field(:account_name, Ingest.Encrypted.Binary)
+    field(:account_key, Ingest.Encrypted.Binary)
+    field(:base_url, Ingest.Encrypted.Binary)
+    field(:ssl, :boolean, default: true)
+    field(:container, Ingest.Encrypted.Binary)
+    field(:integrated_metadata, :boolean, default: false)
   end
 
   @doc false
@@ -119,8 +119,8 @@ defmodule Ingest.Destinations.AzureConfigAdditional do
     #
     # Azure Specific: this is the name of the root folder in which the data will be
     # housed for this shared destination
-    field :folder_name, :string
-    field :integrated_metadata, :boolean, default: false
+    field(:folder_name, :string)
+    field(:integrated_metadata, :boolean, default: false)
   end
 
   @doc false
@@ -146,16 +146,16 @@ defmodule Ingest.Destinations.LakeFSConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :access_key_id, Ingest.Encrypted.Binary
-    field :secret_access_key, Ingest.Encrypted.Binary
-    field :region, Ingest.Encrypted.Binary
-    field :base_url, Ingest.Encrypted.Binary
-    field :repository, Ingest.Encrypted.Binary
-    field :upsert_repository, :boolean, default: true
-    field :port, :integer, default: nil
-    field :ssl, :boolean, default: true
-    field :storage_namespace, :string, default: "local://"
-    field :integrated_metadata, :boolean, default: false
+    field(:access_key_id, Ingest.Encrypted.Binary)
+    field(:secret_access_key, Ingest.Encrypted.Binary)
+    field(:region, Ingest.Encrypted.Binary)
+    field(:base_url, Ingest.Encrypted.Binary)
+    field(:repository, Ingest.Encrypted.Binary)
+    field(:upsert_repository, :boolean, default: true)
+    field(:port, :integer, default: nil)
+    field(:ssl, :boolean, default: true)
+    field(:storage_namespace, :string, default: "local://")
+    field(:integrated_metadata, :boolean, default: false)
   end
 
   @doc false
@@ -191,22 +191,22 @@ defmodule Ingest.Destinations.LakeFSConfigAdditional do
     # how a project/request will be named in the root storage mechanism
     #
     # LakeFS Specific: this is the name of the repository this data will be stored in
-    field :repository_name, :string
+    field(:repository_name, :string)
 
     #  email given here will be given the repository admin privilege on the resulting LakeFS repository
-    field :repository_owner_email, :string
+    field(:repository_owner_email, :string)
 
-    field :upsert_repository, :boolean, default: true
+    field(:upsert_repository, :boolean, default: true)
 
     # whether or not we should use our lakefs credentials and make groups and policies for
     # this new repository connection
-    field :generate_permissions, :boolean, default: true
+    field(:generate_permissions, :boolean, default: true)
 
-    field :datahub_integration, :boolean, default: false
-    field :datahub_endpoint, :string
-    field :datahub_token, :string
+    field(:datahub_integration, :boolean, default: false)
+    field(:datahub_endpoint, :string)
+    field(:datahub_token, :string)
 
-    field :integrated_metadata, :boolean, default: false
+    field(:integrated_metadata, :boolean, default: false)
   end
 
   @doc false
@@ -258,45 +258,14 @@ defmodule Ingest.Destinations.DeepLynxConfig do
   """
   use Ecto.Schema
   import Ecto.Changeset
-  embedded_schema do
-    field :base_url, Ingest.Encrypted.Binary
-    field :access_key_id, Ingest.Encrypted.Binary
-    field :secret_access_key, Ingest.Encrypted.Binary
-    field :container, :integer
-    field :datasource, :integer
-    field :integrated_metadata, :boolean, default: false
-  end
-
-  @doc false
-  def changeset(config, attrs) do
-    config
-    |> cast(attrs, [
-      :base_url,
-      :access_key_id,
-      :secret_access_key,
-      :container,
-      :datasource,
-      :integrated_metadata
-    ])
-    |> validate_required([:base_url, :container, :datasource])
-  end
-end
-
-defmodule Ingest.Destinations.DeepLynxConfigAdditional do
-  @moduledoc """
-  DeepLynx additional configuration storage
-  """
-  use Ecto.Schema
-  import Ecto.Changeset
 
   embedded_schema do
-    # often we need to provide a name as a slug, so that users or admins can specify
-    # how a project/request will be named in the root storage mechanism
-    #
-    # DeepLynx Specific: this is the name of the root folder in which the data will be
-    # housed for this shared destination
-    field :folder_name, :string
-    field :integrated_metadata, :boolean, default: false
+    field(:base_url, Ingest.Encrypted.Binary)
+    field(:api_key, Ingest.Encrypted.Binary)
+    field(:api_secret, Ingest.Encrypted.Binary)
+    field(:container, :integer)
+    field(:datasource, :integer)
+    field(:integrated_metadata, :boolean, default: false)
   end
 
   @doc false
@@ -305,12 +274,16 @@ defmodule Ingest.Destinations.DeepLynxConfigAdditional do
     |> cast(
       attrs,
       [
-        :folder_name,
+        :base_url,
+        :api_key,
+        :api_secret,
+        :container,
+        :datasource,
         :integrated_metadata
       ],
       empty_values: [""]
     )
-    |> validate_required([:folder_name])
+    |> validate_required([:base_url])
   end
 end
 
@@ -322,7 +295,7 @@ defmodule Ingest.Destinations.TemporaryConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :limit, :integer
+    field(:limit, :integer)
   end
 
   @doc false

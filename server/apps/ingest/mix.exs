@@ -66,7 +66,8 @@ defmodule Ingest.MixProject do
       {:credo, "~> 1.7.9", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:rustler, "~> 0.35.0", override: true}
+      {:rustler, "~> 0.35.0", override: true},
+      {:shortuuid, "~> 4.0"}
     ]
   end
 

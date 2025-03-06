@@ -417,13 +417,13 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
                   Leave the trailing / off the url.
                 </p>
                 <.label for="status-select">
-                  Access Key ID
+                  API Key
                 </.label>
-                <.input type="password" field={config[:access_key_id]} />
+                <.input type="password" field={config[:api_key]} />
                 <.label for="status-select">
-                  Secret Access Key
+                  API Secret
                 </.label>
-                <.input type="password" field={config[:secret_access_key]} />
+                <.input type="password" field={config[:api_secret]} />
                 <.label for="status-select">
                   Container ID
                 </.label>

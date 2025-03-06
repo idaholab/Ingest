@@ -122,16 +122,16 @@ defmodule Ingest.Workers.Metadata do
             )
         end
 
-        :deeplynx ->
-          if destination.deeplynx_config.integrated_metadata do
-            {:ok, _sent} =
-              DeepLynx.update_metadata(destination, path.path, %{
-                ingest_metadata: Jason.encode!(metadata)
-              })
-          else
-            {:ok, _sent} =
-              DeepLynx.upload_full_object(destination, filename, metadata)
-          end
+      :deeplynx ->
+        if destination.deeplynx_config.integrated_metadata do
+          {:ok, _sent} =
+            DeepLynx.update_metadata(destination, path.path, %{
+              ingest_metadata: Jason.encode!(metadata)
+            })
+        else
+          {:ok, _sent} =
+            DeepLynx.upload_full_object(destination, filename, metadata)
+        end
 
       _ ->
         {:error, :unknown_destination_type}

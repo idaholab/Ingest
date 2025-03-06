@@ -35,11 +35,11 @@ config :ecto_sqlite3,
 config :ingest_web, IngestWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: 4000],
+  http: [ip: {127, 0, 0, 1}, port: 4002],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "z5aeLcCGuJYv2pb7ZISYCWmEB3eirkBhYuLH2ylEwfF4zgBiYxD/lBUezCJsZIvi",
+  secret_key_base: "2GitcJBHay86p+Ci6hVhKAcheKVQUib4/Cdf8BQSS2Xa4pH3eh5nAurcHIyhRCfN",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:ingest_web, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:ingest_web, ~w(--watch)]}
@@ -100,8 +100,8 @@ config :ingest, :openid_connect_oneid,
   client_secret: "",
   redirect_uri: "http://localhost:4000/users/log_in/one_id",
   response_type: "code",
-  scope: "openid email profile"
-  # ca_cert: "PATH TO CA CERTS"
+  scope: "openid email profile",
+  ca_cert: "/Users/Shared/CAINLROOT_B64.crt"
 
 config :ingest, :openid_connect_okta,
   issuer: "https://identity-preview.inl.gov",
@@ -109,10 +109,10 @@ config :ingest, :openid_connect_okta,
   client_secret: "",
   redirect_uri: "http://localhost:4000/users/log_in/okta",
   response_type: "code",
-  scope: "openid email profile"
-  # ca_cert: "PATH TO CA CERTS"
+  scope: "openid email profile",
+  ca_cert: "/Users/Shared/CAINLROOT_B64.crt"
 
-# config :ingest, :ca_certfile_path, "PATH TO CA CERTS"
+config :ingest, :ca_certfile_path, "/Users/Shared/CAINLROOT_B64.crt"
 config :ingest, :environment, :dev
 # display the classification of data warning banner
 config :ingest, :show_classifications, true

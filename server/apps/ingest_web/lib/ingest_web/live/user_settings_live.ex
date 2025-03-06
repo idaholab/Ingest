@@ -8,14 +8,14 @@ defmodule IngestWeb.UserSettingsLive do
   def render(assigns) do
     ~H"""
     <div>
-    <.header class="text-center">
-      Account Settings
-      <:subtitle>Manage your account email address and password settings</:subtitle>
-    </.header>
+      <.header class="text-center">
+        Account Settings
+        <:subtitle>Manage your account email address and password settings</:subtitle>
+      </.header>
     </div>
     <div class="space-y-12 divide-y">
       <div class="flex flex-col justify-center items-center">
-      <!-- Email Section -->
+        <!-- Email Section -->
         <div>
           <.header>Current Email: {@current_user.email}</.header>
         </div>
@@ -37,15 +37,35 @@ defmodule IngestWeb.UserSettingsLive do
               value={@email_form_current_password}
               required
             />
-            <:actions><.button class="flex justify-center items-center" phx-disable-with="Changing...">Confirm Email Change</.button></:actions>
+            <:actions>
+              <.button class="flex justify-center items-center" phx-disable-with="Changing...">
+                Confirm Email Change
+              </.button>
+            </:actions>
           </.simple_form>
-          <div class="mt-2"><button id="cancel_email_change" phx-click={toggle_form("#email-form-wrap", "#show_email_change")} class="btn">Cancel Email Change</button></div>
+          <div class="mt-2">
+            <button
+              id="cancel_email_change"
+              phx-click={toggle_form("#email-form-wrap", "#show_email_change")}
+              class="btn"
+            >
+              Cancel Email Change
+            </button>
+          </div>
         </div>
-        <div class="flex justify-center items-center"><button id="show_email_change" phx-click={toggle_form("#email-form-wrap", "#show_email_change")} class="btn">Change Email</button></div>
+        <div class="flex justify-center items-center">
+          <button
+            id="show_email_change"
+            phx-click={toggle_form("#email-form-wrap", "#show_email_change")}
+            class="btn"
+          >
+            Change Email
+          </button>
+        </div>
       </div>
-
-        <!-- Password Form Section -->
-        <div class="flex flex-col justify-center items-center">
+      
+    <!-- Password Form Section -->
+      <div class="flex flex-col justify-center items-center">
         <div id="password-form-wrap" class="hidden flex justify-center items-center">
           <.simple_form
             :if={@current_user.identity_provider in [:internal]}
@@ -58,86 +78,99 @@ defmodule IngestWeb.UserSettingsLive do
             phx-trigger-action={@trigger_submit}
           >
             <.input
-                field={@password_form[:current_password]}
-                name="current_password"
-                type="password"
-                label="Current password"
-                id="current_password_for_password"
-                value={@current_password}
-                required
-              />
-              <.input
-                field={@password_form[:email]}
-                type="hidden"
-                id="hidden_user_email"
-                value={@current_email}
-              />
-              <.input field={@password_form[:password]} type="password" label="New password" required />
-              <.input
-                field={@password_form[:password_confirmation]}
-                type="password"
-                label="Confirm new password"
-              />
-              <:actions>
-                <.button phx-disable-with="Changing...">Confirm Password Change</.button>
-              </:actions>
+              field={@password_form[:current_password]}
+              name="current_password"
+              type="password"
+              label="Current password"
+              id="current_password_for_password"
+              value={@current_password}
+              required
+            />
+            <.input
+              field={@password_form[:email]}
+              type="hidden"
+              id="hidden_user_email"
+              value={@current_email}
+            />
+            <.input field={@password_form[:password]} type="password" label="New password" required />
+            <.input
+              field={@password_form[:password_confirmation]}
+              type="password"
+              label="Confirm new password"
+            />
+            <:actions>
+              <.button phx-disable-with="Changing...">Confirm Password Change</.button>
+            </:actions>
           </.simple_form>
-          <div class="mt-2"><button class="btn" phx-click={toggle_form("#password-form-wrap", "#show_password_change")}>Cancel Password Change</button></div>
+          <div class="mt-2">
+            <button
+              class="btn"
+              phx-click={toggle_form("#password-form-wrap", "#show_password_change")}
+            >
+              Cancel Password Change
+            </button>
           </div>
-
         </div>
-        <div class="flex justify-center items-center pt-5"><button id="show_password_change" phx-click={toggle_form("#password-form-wrap", "#show_password_change")} class="btn">Change Password</button></div>
-         <!-- End Form -->
+      </div>
+      <div class="flex justify-center items-center pt-5">
+        <button
+          id="show_password_change"
+          phx-click={toggle_form("#password-form-wrap", "#show_password_change")}
+          class="btn"
+        >
+          Change Password
+        </button>
+      </div>
+      <!-- End Form -->
 
         <!-- Access Key Section -->
-        <div class="px-4 sm:px-6 lg:px-8 pt-10">
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h1 class="text-base font-semibold leading-6 text-gray-900">Personal Access Keys</h1>
-              <p class="mt-2 text-sm text-gray-700">
-                A list of your personal access keys. These keys allow you to upload files using either S3 tooling or Azure Blob Storage tooling.
-              </p>
-            </div>
+      <div class="px-4 sm:px-6 lg:px-8 pt-10">
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="text-base font-semibold leading-6 text-gray-900">Personal Access Keys</h1>
+            <p class="mt-2 text-sm text-gray-700">
+              A list of your personal access keys. These keys allow you to upload files using either S3 tooling or Azure Blob Storage tooling.
+            </p>
+          </div>
 
-            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-              <div class="mt-6">
-                <.link patch={~p"/users/settings/new_key"}>
-                  <button
-                    type="button"
-                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <div class="mt-6">
+              <.link patch={~p"/users/settings/new_key"}>
+                <button
+                  type="button"
+                  class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  <.icon name="hero-plus" /> New Access Key
+                </button>
+              </.link>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 flow-root">
+          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <.table id="personal_keys" rows={@streams.keys}>
+                <:col :let={{_id, key}} label="Key">{key.access_key}</:col>
+                <:col :let={{_id, key}} label="Expiration">
+                  {"#{key.expires.day}-#{key.expires.month}-#{key.expires.year}"}
+                </:col>
+
+                <:action :let={{id, key}}>
+                  <.link
+                    class="text-red-600 hover:text-red-900"
+                    phx-click={
+                      JS.push("delete_key", value: %{id: key.access_key})
+                      |> hide("##{id}")
+                    }
+                    data-confirm="Are you sure?"
                   >
-                    <.icon name="hero-plus" /> New Access Key
-                  </button>
-                </.link>
-              </div>
+                    Delete
+                  </.link>
+                </:action>
+              </.table>
             </div>
           </div>
-          <div class="mt-8 flow-root">
-            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <.table id="personal_keys" rows={@streams.keys}>
-                  <:col :let={{_id, key}} label="Key">{key.access_key}</:col>
-                  <:col :let={{_id, key}} label="Expiration">
-                    {"#{key.expires.day}-#{key.expires.month}-#{key.expires.year}"}
-                  </:col>
-
-                  <:action :let={{id, key}}>
-                    <.link
-                      class="text-red-600 hover:text-red-900"
-                      phx-click={
-                        JS.push("delete_key", value: %{id: key.access_key})
-                        |> hide("##{id}")
-                      }
-                      data-confirm="Are you sure?"
-                    >
-                      Delete
-                    </.link>
-                  </:action>
-                </.table>
-              </div>
-            </div>
-          </div>
-
+        </div>
       </div>
 
       <.modal
@@ -199,6 +232,7 @@ defmodule IngestWeb.UserSettingsLive do
   @impl true
   def handle_params(_params, _uri, socket) do
     keys = Accounts.list_user_keys(socket.assigns.current_user)
+
     {:noreply,
      socket
      |> stream(:keys, keys)}

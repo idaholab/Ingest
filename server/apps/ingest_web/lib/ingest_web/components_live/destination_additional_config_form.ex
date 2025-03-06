@@ -8,7 +8,6 @@ defmodule IngestWeb.LiveComponents.DestinationAdditionalConfigForm do
   alias Ingest.Destinations.LakeFSConfigAdditional
   alias Ingest.Destinations.AzureConfigAdditional
   alias Ingest.Destinations.S3ConfigAdditional
-  alias Ingest.Destinations.DeepLynxConfigAdditional
 
   @impl true
   def render(assigns) do
@@ -24,7 +23,7 @@ defmodule IngestWeb.LiveComponents.DestinationAdditionalConfigForm do
           </div>
 
           <div
-            :if={@destination.type in [:azure, :s3, :deeplynx]}
+            :if={@destination.type in [:azure, :s3]}
             class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2"
           >
             <div class="col-span-full">
@@ -183,10 +182,6 @@ defmodule IngestWeb.LiveComponents.DestinationAdditionalConfigForm do
         :s3 ->
           %S3ConfigAdditional{}
           |> S3ConfigAdditional.changeset(if config, do: config, else: %{})
-
-        :deeplynx ->
-          %DeepLynxConfigAdditional{}
-          |> DeepLynxConfigAdditional.changeset(if config, do: config, else: %{})
       end
 
     {:ok,
@@ -215,11 +210,6 @@ defmodule IngestWeb.LiveComponents.DestinationAdditionalConfigForm do
         :s3 ->
           %S3ConfigAdditional{}
           |> S3ConfigAdditional.changeset(params["s3_config_additional"])
-          |> Map.put(:action, :validate)
-
-        :deeplynx ->
-          %DeepLynxConfigAdditional{}
-          |> DeepLynxConfigAdditional.changeset(params["deeplynx_config_additional"])
           |> Map.put(:action, :validate)
       end
 
@@ -254,12 +244,6 @@ defmodule IngestWeb.LiveComponents.DestinationAdditionalConfigForm do
           %S3ConfigAdditional{}
           |> S3ConfigAdditional.changeset(params["s3_config_additional"])
           |> Map.put(:action, :validate)
-
-        :deeplynx ->
-          %DeepLynxConfigAdditional{}
-          |> DeepLynxConfigAdditional.changeset(params["deeplynx_config_additional"])
-          |> Map.put(:action, :validate)
-
       end
 
     if changeset.errors != [] do
@@ -279,9 +263,6 @@ defmodule IngestWeb.LiveComponents.DestinationAdditionalConfigForm do
 
           :s3 ->
             params["s3_config_additional"]
-
-          :deeplynx ->
-            params["deeplynx_config_additional"]
         end
 
       updated =
