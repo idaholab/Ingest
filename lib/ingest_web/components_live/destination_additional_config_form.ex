@@ -4,6 +4,7 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
   """
 
   use IngestWeb, :live_component
+  require Logger
 
   alias Ingest.Destinations.LakeFSConfigAdditional
   alias Ingest.Destinations.AzureConfigAdditional
@@ -11,6 +12,9 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
 
   @impl true
   def render(assigns) do
+
+    Logger.info("Rendering DestinationsADDITIONAL: Live action is #{inspect(assigns.live_action)}")
+
     ~H"""
     <div>
       <.simple_form for={@form} phx-change="validate" phx-target={@myself} id="form" phx-submit="save">
@@ -134,11 +138,13 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
             </div>
           </div>
         </div>
-
+        <!-- ADDED phx-target={@myself} phx-submit="save" -->A
         <div class="mt-6 flex items-center justify-end gap-x-6">
           <.button
+            phx-target={@myself}
             class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             type="submit"
+            phx-submit="save"
             phx-disable-with="Saving..."
           >
             Save
@@ -228,6 +234,7 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
 
   @impl true
   def handle_event("save", params, socket) do
+    Logger.info("Received params: #{inspect(params)}")
     changeset =
       case socket.assigns.destination.type do
         :lakefs ->
@@ -245,7 +252,8 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
           |> S3ConfigAdditional.changeset(params["s3_config_additionasl"])
           |> Map.put(:action, :validate)
       end
-
+      Logger.info("recieved changes after changeset")
+      Logger.info("Received changeset: #{inspect(changeset)}")
     if changeset.errors != [] do
       {:noreply, socket |> assign(:form, to_form(changeset))}
     else
@@ -270,6 +278,10 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
           socket.assigns.destination_member,
           params
         )
+
+        Logger.info("updated")
+
+        Logger.info("Received changeset: #{inspect(updated)}")
 
       if updated > 0 do
         # we kick off an Oban job to async run any configuration needed on the member
