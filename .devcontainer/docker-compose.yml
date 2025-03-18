@@ -1,0 +1,15 @@
+version: '3'
+services:
+  ingest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VARIANT: latest
+    volumes:
+      - ..:/workspace:cached
+      - vscode-extension:/root/.vscode-server-insiders
+    command: sleep infinity
+
+volumes:
+  vscode-extension:

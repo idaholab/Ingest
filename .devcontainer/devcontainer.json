@@ -1,0 +1,17 @@
+{
+    "name": "Ingest",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "ingest",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "jakebecker.elixir-ls",
+                "pantajoe.vscode-elixir-credo"
+            ]
+        }
+    }
+}
