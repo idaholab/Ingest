@@ -8,7 +8,6 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
 
   @impl true
   def render(assigns) do
-
     ~H"""
     <div>
       <.simple_form
@@ -452,14 +451,12 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
         %{"save" => save_type, "destination" => destination_params} = _params,
         socket
       ) do
-
     Logger.info("SAVE EVENT IN DESTINATION FORM: #{save_type}")
-
-
 
     case save_type do
       "save" ->
         save_destination(socket, socket.assigns.live_action, destination_params)
+
       # currently this only applies to the LakeFS destination, and will populate the repositories and remove the disabled tag
       "test_connection" ->
         destination =
@@ -528,8 +525,8 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
         collect_classifications(destination_params)
       )
 
-      Logger.info("save_destination function firing")
-      Logger.info(destination_params)
+    Logger.info("save_destination function firing")
+    Logger.info(destination_params)
 
     with :ok <-
            Bodyguard.permit(

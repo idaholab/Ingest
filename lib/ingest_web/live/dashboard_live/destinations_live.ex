@@ -7,11 +7,10 @@ defmodule IngestWeb.DestinationsLive do
   alias Ingest.Destinations.Destination
   alias Ingest.Destinations.Client
   use IngestWeb, :live_view
-  require Logger
+
 
   @impl true
   def render(assigns) do
-
     ~H"""
     <div>
       <div :if={!@destinations || Enum.empty?(@destinations)} class="text-center">
@@ -197,7 +196,6 @@ defmodule IngestWeb.DestinationsLive do
   @impl true
   def handle_params(%{"id" => id, "destination_member" => member} = _params, _uri, socket) do
     member = Ingest.Destinations.get_destination_member!(member)
-
 
     {:noreply,
      socket

@@ -1,5 +1,5 @@
 defmodule IngestWeb.TemplateBuilderLive do
-  require Logger
+
   use IngestWeb, :live_view
   alias Ingest.Requests
 

@@ -499,53 +499,6 @@ defmodule IngestWeb.RequestShowLive do
         <!-- STATUS -->
       </div>
 
-    <!-- Start Name Section -->
-      <div class="grid grid-cols-1">
-        <div>
-          <!-- Start Header -->
-          <div class="relative mt-10">
-            <div class="absolute inset-0 flex items-center" aria-hidden="true">
-              <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center">
-              <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
-                File Naming Convention
-              </span>
-            </div>
-          </div>
-          <!-- End Header -->
-          <div class="w-[40rem] mt-11 sm:w-full">
-            <div class="text-sm text-left leading-6 text-zinc-500 pb-4 font-normal">
-              Add or remove these fields in template editor:
-            </div>
-            <div class="flex">
-              <div
-                id="sortable-fields"
-                phx-hook="Sortable"
-                phx-update="stream"
-                class="flex flex-wrap gap-2 bg-gray-100 p-3 rounded-md border border-gray-200"
-              >
-                <%= for template <- @request_templates do %>
-                  <%= for field <- Ingest.Requests.get_name_fields!(template.id) do %>
-                    <div
-                      id={"field-#{field.id}"}
-                      data-id={field.id}
-                      class="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-move text-sm"
-                    >
-                      {field.label}
-                    </div>
-                  <% end %>
-                <% end %>
-              </div>
-              <div class="bg-gray-100 p-3 ml-2 rounded-md border border-gray-200">
-                .[File Extension]
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- End Name Section -->
-
       <div class="grid grid-cols-1">
         <!-- DESTINATIONS -->
         <div>
@@ -762,6 +715,55 @@ defmodule IngestWeb.RequestShowLive do
           request={@request}
         />
       </.modal>
+      
+    <!-- Start Name Section -->
+      <div class="grid grid-cols-1">
+        <div>
+          <!-- Start Header -->
+          <div class="relative mt-10">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center">
+              <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+                File Naming Convention
+              </span>
+            </div>
+          </div>
+          <!-- End Header -->
+          <div class="w-[40rem] mt-11 sm:w-full">
+            <div class="text-sm text-left leading-6 text-zinc-500 pb-4 font-normal">
+              Add or remove these fields in template editor:
+            </div>
+            <div class="flex">
+              <div
+                id="sortable-fields"
+                phx-hook="Sortable"
+                phx-update="stream"
+                class="flex flex-wrap gap-2 bg-gray-100 p-3 rounded-md border border-gray-200"
+              >
+                <%= for template <- @request_templates do %>
+                  <%= for field <- Ingest.Requests.get_name_fields!(template.id) do %>
+                    <div
+                      id={"field-#{field.id}"}
+                      data-id={field.id}
+                      class="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-move text-sm"
+                    >
+                      {field.label}
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+              <div class="bg-gray-100 p-3 ml-2 rounded-md border border-gray-200">
+                .[File Extension]
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Name Section -->
+
+
       <!-- start publish -->
       <div class="pt-10">
         <div class="relative mt-10">

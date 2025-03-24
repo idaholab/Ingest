@@ -9,13 +9,10 @@ defmodule Ingest.Uploaders.Azure do
   alias Ingest.AzureStorage.Config
   alias Ingest.AzureStorage.Blob
   alias Ingest.AzureStorage.Container
-  require Logger;
 
   def init(%Destinations.Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)
     %AzureConfig{} = d_config = destination.azure_config
-
-    Logger.info("AZURE UPLOADERS #{destination} #{filename}")
 
     config = %Config{
       account_name: d_config.account_name,

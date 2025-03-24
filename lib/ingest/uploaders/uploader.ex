@@ -25,8 +25,6 @@ defmodule Ingest.Uploaders.MultiDestinationWriter do
     # Uploads should always belong to a request
     request = Keyword.fetch!(opts, :request)
 
-    Logger.info("Multidestination writer #{request}")
-
     # %Destination{}[] we don't need to overwrite the original destination because each of
     # them already have their configs stored within them - and because this is the UploadWriter
     # we know this is using the staging environment of each

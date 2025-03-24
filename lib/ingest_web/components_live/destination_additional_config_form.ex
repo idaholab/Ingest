@@ -4,7 +4,6 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
   """
 
   use IngestWeb, :live_component
-  require Logger
 
   alias Ingest.Destinations.LakeFSConfigAdditional
   alias Ingest.Destinations.AzureConfigAdditional
@@ -12,9 +11,6 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
 
   @impl true
   def render(assigns) do
-
-    Logger.info("Rendering DestinationsADDITIONAL: Live action is #{inspect(assigns.live_action)}")
-
     ~H"""
     <div>
       <.simple_form for={@form} phx-change="validate" phx-target={@myself} id="form" phx-submit="save">
@@ -234,7 +230,6 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
 
   @impl true
   def handle_event("save", params, socket) do
-    Logger.info("Received params: #{inspect(params)}")
     changeset =
       case socket.assigns.destination.type do
         :lakefs ->
@@ -252,8 +247,7 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
           |> S3ConfigAdditional.changeset(params["s3_config_additionasl"])
           |> Map.put(:action, :validate)
       end
-      Logger.info("recieved changes after changeset")
-      Logger.info("Received changeset: #{inspect(changeset)}")
+
     if changeset.errors != [] do
       {:noreply, socket |> assign(:form, to_form(changeset))}
     else
@@ -278,10 +272,6 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
           socket.assigns.destination_member,
           params
         )
-
-        Logger.info("updated")
-
-        Logger.info("Received changeset: #{inspect(updated)}")
 
       if updated > 0 do
         # we kick off an Oban job to async run any configuration needed on the member

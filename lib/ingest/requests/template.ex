@@ -125,7 +125,7 @@ defmodule Ingest.Requests.TemplateField do
       :branch_options,
       :required,
       :name_field,
-      :file_extensionsgit 
+      :file_extensions
     ])
     |> validate_required([:label, :type])
   end

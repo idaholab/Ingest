@@ -4,7 +4,6 @@ defmodule Ingest.Destinations.S3Config do
   """
   use Ecto.Schema
   import Ecto.Changeset
-  require Logger
 
   embedded_schema do
     field :access_key_id, Ingest.Encrypted.Binary
