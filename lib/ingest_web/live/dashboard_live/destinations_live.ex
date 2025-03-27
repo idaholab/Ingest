@@ -8,7 +8,6 @@ defmodule IngestWeb.DestinationsLive do
   alias Ingest.Destinations.Client
   use IngestWeb, :live_view
 
-
   @impl true
   def render(assigns) do
     ~H"""

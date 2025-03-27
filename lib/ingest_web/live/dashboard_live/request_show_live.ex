@@ -715,7 +715,7 @@ defmodule IngestWeb.RequestShowLive do
           request={@request}
         />
       </.modal>
-      
+
     <!-- Start Name Section -->
       <div class="grid grid-cols-1">
         <div>
@@ -726,11 +726,23 @@ defmodule IngestWeb.RequestShowLive do
             </div>
             <div class="relative flex justify-center">
               <span class="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
-                File Naming Convention
+                File Naming and Directory Convention
               </span>
             </div>
           </div>
           <!-- End Header -->
+
+          <!-- experiment -->
+          <div class="mt-10">
+            <%= for destination <- @request_destinations do %>
+              <%= if destination.lakefs_config do %>
+                <div class="text-lg  font-bold text-gray-800">
+                  LakeFS Repository: {destination.lakefs_config.storage_namespace}{destination.lakefs_config.repository}/
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+          <!-- end experiment -->
           <div class="w-[40rem] mt-11 sm:w-full">
             <div class="text-sm text-left leading-6 text-zinc-500 pb-4 font-normal">
               Add or remove these fields in template editor:
@@ -1108,6 +1120,8 @@ defmodule IngestWeb.RequestShowLive do
       RequestMembers
       |> where(request_id: ^request.id)
       |> Repo.all()
+
+    # Logger.info("request")
 
     {:ok,
      socket
