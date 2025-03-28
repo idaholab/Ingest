@@ -22,6 +22,10 @@ defmodule Ingest.Uploaders.Lakefs do
         destination.lakefs_config.repository
       end
 
+    Logger.info(
+      "THIS IS TESTING BUILD CONFIG IN INIT #{inspect(build_config(destination.lakefs_config))}"
+    )
+
     # first we check if the object by filename and path exist in the bucket already
     # if it does, then we need to change the name and appened a - COPY (date) to the end of it
     filename =
@@ -73,8 +77,6 @@ defmodule Ingest.Uploaders.Lakefs do
         filename,
         data
       ) do
-
-
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination, request, user)
 
@@ -85,17 +87,18 @@ defmodule Ingest.Uploaders.Lakefs do
         destination.lakefs_config.repository
       end
 
-    with s3_op <-
-           ExAws.S3.put_object(
-             "#{repository}/#{branch_name}",
-             filename,
-             data
-           ),
-         s3_config <- build_config(destination.lakefs_config),
-         {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
-      {:ok, upload_id}
-    else
-      err -> {:error, err}
+    s3_op = ExAws.S3.put_object("#{repository}/#{branch_name}", filename, data)
+    s3_config = build_config(destination.lakefs_config)
+
+    case ExAws.request(s3_op, s3_config) do
+      {:ok, %{status_code: 200}} ->
+        {:ok, :uploaded}
+
+      {:ok, other} ->
+        {:error, {:unexpected_success_response, other}}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -106,8 +109,6 @@ defmodule Ingest.Uploaders.Lakefs do
         filename,
         data
       ) do
-
-
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination, request, user)
 
@@ -117,6 +118,10 @@ defmodule Ingest.Uploaders.Lakefs do
       else
         destination.lakefs_config.repository
       end
+
+    Logger.info(
+      "THIS IS TESTING BUILD CONFIG IN METADATA #{inspect(build_config(destination.lakefs_config))}"
+    )
 
     with s3_op <-
            ExAws.S3.put_object_copy(
@@ -223,5 +228,4 @@ defmodule Ingest.Uploaders.Lakefs do
       {:error, _err} -> nil
     end
   end
-
 end
