@@ -22,9 +22,6 @@ defmodule Ingest.Uploaders.Lakefs do
         destination.lakefs_config.repository
       end
 
-    Logger.info(
-      "THIS IS TESTING BUILD CONFIG IN INIT #{inspect(build_config(destination.lakefs_config))}"
-    )
 
     # first we check if the object by filename and path exist in the bucket already
     # if it does, then we need to change the name and appened a - COPY (date) to the end of it
@@ -119,24 +116,44 @@ defmodule Ingest.Uploaders.Lakefs do
         destination.lakefs_config.repository
       end
 
-    Logger.info(
-      "THIS IS TESTING BUILD CONFIG IN METADATA #{inspect(build_config(destination.lakefs_config))}"
-    )
+    s3_op =
+      ExAws.S3.put_object_copy(
+        "#{repository}/#{branch_name}",
+        filename,
+        "#{repository}/#{branch_name}",
+        filename,
+        [
+          {:metadata_directive, "REPLACE"},
+          {:meta, data}
+        ]
+      )
 
-    with s3_op <-
-           ExAws.S3.put_object_copy(
-             "#{repository}/#{branch_name}",
-             filename,
-             "#{repository}/#{branch_name}",
-             filename,
-             [{:metadata_directive, "REPLACE"}, {:meta, data}]
-           ),
-         s3_config <- build_config(destination.lakefs_config),
-         {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
-      {:ok, upload_id}
-    else
-      err -> {:error, err}
+    s3_config = build_config(destination.lakefs_config)
+
+    case ExAws.request(s3_op, s3_config) do
+      {:ok, %{status_code: 200}} ->
+        {:ok, :metadata_updated}
+
+      {:ok, other} ->
+        {:error, {:unexpected_success_response, other}}
+
+      {:error, reason} ->
+        {:error, reason}
     end
+    # with s3_op <-
+    #        ExAws.S3.put_object_copy(
+    #          "#{repository}/#{branch_name}",
+    #          filename,
+    #          "#{repository}/#{branch_name}",
+    #          filename,
+    #          [{:metadata_directive, "REPLACE"}, {:meta, data}]
+    #        ),
+    #      s3_config <- build_config(destination.lakefs_config),
+    #      {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
+    #   {:ok, upload_id}
+    # else
+    #   err -> {:error, err}
+    # end
   end
 
   def upload_chunk(%Destination{} = destination, _filename, state, data, _opts \\ []) do

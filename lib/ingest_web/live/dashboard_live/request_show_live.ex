@@ -715,7 +715,7 @@ defmodule IngestWeb.RequestShowLive do
           request={@request}
         />
       </.modal>
-
+      
     <!-- Start Name Section -->
       <div class="grid grid-cols-1">
         <div>

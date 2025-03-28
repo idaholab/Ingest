@@ -62,7 +62,7 @@ defmodule IngestWeb.UserSettingsLive do
           </button>
         </div>
       </div>
-
+      
     <!-- Password Form Section -->
       <div class="flex flex-col justify-center items-center">
         <div id="password-form-wrap" class="hidden flex justify-center items-center">

@@ -1,5 +1,4 @@
 defmodule IngestWeb.TemplateBuilderLive do
-
   use IngestWeb, :live_view
   alias Ingest.Requests
 
