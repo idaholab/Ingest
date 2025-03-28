@@ -228,6 +228,15 @@ defmodule IngestWeb.UploadShowLive do
     {:noreply, socket}
   end
 
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    socket =
+      socket
+      |> Phoenix.LiveView.cancel_upload(:files, ref)
+      |> put_flash(:info, "Upload canceled")
+
+    {:noreply, socket}
+  end
+
   defp mb(number) do
     if number do
       Float.floor(number / 1_000_000, 2)
