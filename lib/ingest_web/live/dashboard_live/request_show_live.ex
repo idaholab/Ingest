@@ -715,8 +715,8 @@ defmodule IngestWeb.RequestShowLive do
           request={@request}
         />
       </.modal>
-      
-    <!-- Start Name Section -->
+
+    <%!-- <!-- Start Name Section -->
       <div class="grid grid-cols-1">
         <div>
           <!-- Start Header -->
@@ -773,7 +773,7 @@ defmodule IngestWeb.RequestShowLive do
           </div>
         </div>
       </div>
-      <!-- End Name Section -->
+      <!-- End Name Section --> --%>
 
 
       <!-- start publish -->
@@ -1120,8 +1120,6 @@ defmodule IngestWeb.RequestShowLive do
       RequestMembers
       |> where(request_id: ^request.id)
       |> Repo.all()
-
-    # Logger.info("request")
 
     {:ok,
      socket
