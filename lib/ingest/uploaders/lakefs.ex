@@ -11,7 +11,7 @@ defmodule Ingest.Uploaders.Lakefs do
 
   def init!(%Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)
-    Logger.info("UPSERT BRANCH PARAM IN INIT #{inspect(destination)}----------#{inspect(state.request)}----------#{inspect(state.user)}")
+
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination, state.request, state.user)
 
@@ -74,7 +74,7 @@ defmodule Ingest.Uploaders.Lakefs do
         data
       ) do
 
-    Logger.info("UPSERT BRANCH PARAM UPLOAD FULL OBJECRT #{inspect(destination.lakefs_config)}----------#{inspect(request)}----------#{inspect(user)}")
+
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination, request, user)
 
@@ -107,7 +107,7 @@ defmodule Ingest.Uploaders.Lakefs do
         data
       ) do
 
-    Logger.info("UPSERT BRANCH PARAM IN UPDATE METADATA #{inspect(destination.lakefs_config)}----------#{inspect(request)}----------#{inspect(user)}")
+
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination, request, user)
 
