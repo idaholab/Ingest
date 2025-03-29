@@ -7,9 +7,11 @@ defmodule Ingest.Uploaders.Lakefs do
   alias Ingest.Requests.Request
   alias Ingest.Destinations.LakeFSConfig
   alias Ingest.Destinations.Destination
+  require Logger
 
   def init!(%Destination{} = destination, filename, state, opts \\ []) do
     original_filename = Keyword.get(opts, :original_filename, nil)
+
     # we need validate/create if not exists a branch for the request & user email
     branch_name = upsert_branch(destination, state.request, state.user)
 
@@ -19,6 +21,7 @@ defmodule Ingest.Uploaders.Lakefs do
       else
         destination.lakefs_config.repository
       end
+
 
     # first we check if the object by filename and path exist in the bucket already
     # if it does, then we need to change the name and appened a - COPY (date) to the end of it
@@ -72,7 +75,7 @@ defmodule Ingest.Uploaders.Lakefs do
         data
       ) do
     # we need validate/create if not exists a branch for the request & user email
-    branch_name = upsert_branch(destination.lakefs_config, request, user)
+    branch_name = upsert_branch(destination, request, user)
 
     repository =
       if destination.additional_config do
@@ -81,17 +84,18 @@ defmodule Ingest.Uploaders.Lakefs do
         destination.lakefs_config.repository
       end
 
-    with s3_op <-
-           ExAws.S3.put_object(
-             "#{repository}/#{branch_name}",
-             filename,
-             data
-           ),
-         s3_config <- build_config(destination.lakefs_config),
-         {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
-      {:ok, upload_id}
-    else
-      err -> {:error, err}
+    s3_op = ExAws.S3.put_object("#{repository}/#{branch_name}", filename, data)
+    s3_config = build_config(destination.lakefs_config)
+
+    case ExAws.request(s3_op, s3_config) do
+      {:ok, %{status_code: 200}} ->
+        {:ok, :uploaded}
+
+      {:ok, other} ->
+        {:error, {:unexpected_success_response, other}}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -103,7 +107,7 @@ defmodule Ingest.Uploaders.Lakefs do
         data
       ) do
     # we need validate/create if not exists a branch for the request & user email
-    branch_name = upsert_branch(destination.lakefs_config, request, user)
+    branch_name = upsert_branch(destination, request, user)
 
     repository =
       if destination.additional_config do
@@ -112,20 +116,44 @@ defmodule Ingest.Uploaders.Lakefs do
         destination.lakefs_config.repository
       end
 
-    with s3_op <-
-           ExAws.S3.put_object_copy(
-             "#{repository}/#{branch_name}",
-             filename,
-             "#{repository}/#{branch_name}",
-             filename,
-             [{:metadata_directive, "REPLACE"}, {:meta, data}]
-           ),
-         s3_config <- build_config(destination.lakefs_config),
-         {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
-      {:ok, upload_id}
-    else
-      err -> {:error, err}
+    s3_op =
+      ExAws.S3.put_object_copy(
+        "#{repository}/#{branch_name}",
+        filename,
+        "#{repository}/#{branch_name}",
+        filename,
+        [
+          {:metadata_directive, "REPLACE"},
+          {:meta, data}
+        ]
+      )
+
+    s3_config = build_config(destination.lakefs_config)
+
+    case ExAws.request(s3_op, s3_config) do
+      {:ok, %{status_code: 200}} ->
+        {:ok, :metadata_updated}
+
+      {:ok, other} ->
+        {:error, {:unexpected_success_response, other}}
+
+      {:error, reason} ->
+        {:error, reason}
     end
+    # with s3_op <-
+    #        ExAws.S3.put_object_copy(
+    #          "#{repository}/#{branch_name}",
+    #          filename,
+    #          "#{repository}/#{branch_name}",
+    #          filename,
+    #          [{:metadata_directive, "REPLACE"}, {:meta, data}]
+    #        ),
+    #      s3_config <- build_config(destination.lakefs_config),
+    #      {:ok, %{body: %{upload_id: upload_id}}} <- ExAws.request(s3_op, s3_config) do
+    #   {:ok, upload_id}
+    # else
+    #   err -> {:error, err}
+    # end
   end
 
   def upload_chunk(%Destination{} = destination, _filename, state, data, _opts \\ []) do

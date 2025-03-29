@@ -134,11 +134,13 @@ defmodule IngestWeb.LiveComponents.DestinationAddtionalConfigForm do
             </div>
           </div>
         </div>
-
+        <!-- ADDED phx-target={@myself} phx-submit="save" -->A
         <div class="mt-6 flex items-center justify-end gap-x-6">
           <.button
+            phx-target={@myself}
             class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             type="submit"
+            phx-submit="save"
             phx-disable-with="Saving..."
           >
             Save

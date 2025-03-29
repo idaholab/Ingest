@@ -4,6 +4,7 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
   """
   alias Ingest.Destinations
   use IngestWeb, :live_component
+  require Logger
 
   @impl true
   def render(assigns) do
@@ -450,6 +451,8 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
         %{"save" => save_type, "destination" => destination_params} = _params,
         socket
       ) do
+    Logger.info("SAVE EVENT IN DESTINATION FORM: #{save_type}")
+
     case save_type do
       "save" ->
         save_destination(socket, socket.assigns.live_action, destination_params)
@@ -521,6 +524,9 @@ defmodule IngestWeb.LiveComponents.DestinationForm do
         "classifications_allowed",
         collect_classifications(destination_params)
       )
+
+    Logger.info("save_destination function firing")
+    Logger.info(destination_params)
 
     with :ok <-
            Bodyguard.permit(
