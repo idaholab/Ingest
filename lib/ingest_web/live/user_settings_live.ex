@@ -1,6 +1,5 @@
 defmodule IngestWeb.UserSettingsLive do
   use IngestWeb, :live_view
-  require Logger
 
   alias Ingest.Accounts
 

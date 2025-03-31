@@ -5,6 +5,7 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
   """
   alias Ingest.Uploads
   use IngestWeb, :live_component
+  require Logger
 
   @impl true
   def render(assigns) do
@@ -241,6 +242,7 @@ defmodule IngestWeb.LiveComponents.MetadataEntryForm do
 
   @impl true
   def handle_event("save", %{"save" => save_type} = params, socket) do
+
     case Uploads.update_metadata(socket.assigns.metadata, %{
            data: params,
            submitted: save_type == "submit"

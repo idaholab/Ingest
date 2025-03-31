@@ -23,6 +23,7 @@ defmodule Ingest.Requests.Request do
     field :visibility, Ecto.Enum, values: [:public, :private, :internal]
     field :description, :string
     field :allowed_email_domains, {:array, :string}
+    field :file_name_convention, {:array, :string}
 
     belongs_to :user, User, type: :binary_id, foreign_key: :inserted_by
     belongs_to :project, Project, type: :binary_id, foreign_key: :project_id

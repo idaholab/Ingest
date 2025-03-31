@@ -10,6 +10,7 @@ defmodule Ingest.Workers.Metadata do
   alias Ingest.Uploaders.Azure
   alias Ingest.Uploaders.S3
   alias Ingest.Uploaders.Lakefs
+  require Logger
 
   use Oban.Worker, queue: :metadata
   @impl Oban.Worker
@@ -100,25 +101,31 @@ defmodule Ingest.Workers.Metadata do
 
       :lakefs ->
         if destination.lakefs_config.integrated_metadata do
-          {:ok, _sent} =
-            Lakefs.update_metadata(
-              destination,
-              upload.request,
-              upload.user,
-              path.path,
-              [
-                {:ingest_metadata, Jason.encode!(metadata)}
-              ]
-            )
+          with {:ok, _sent} <-
+                 Lakefs.update_metadata(
+                   destination,
+                   upload.request,
+                   upload.user,
+                   path.path,
+                   [{:ingest_metadata, Jason.encode!(metadata)}]
+                 ) do
+            {:ok, :metadata_updated}
+          else
+            error -> Logger.error("Upload to #{inspect(:lakefs)} failed: #{inspect(error)}")
+          end
         else
-          {:ok, _sent} =
-            Lakefs.upload_full_object(
-              destination,
-              upload.request,
-              upload.user,
-              filename,
-              metadata
-            )
+          with {:ok, _sent} <-
+                 Lakefs.upload_full_object(
+                   destination,
+                   upload.request,
+                   upload.user,
+                   filename,
+                   metadata
+                 ) do
+            {:ok, :metadata_uploaded}
+          else
+            error -> Logger.error("Upload to #{inspect(:lakefs)} failed: #{inspect(error)}")
+          end
         end
 
       _ ->
