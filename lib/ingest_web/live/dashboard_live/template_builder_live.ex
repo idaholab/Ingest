@@ -14,7 +14,7 @@ defmodule IngestWeb.TemplateBuilderLive do
           </p>
         </div>
         <.link
-          :if={@template.inserted_by == @current_user.id}
+          :if={Requests.can_share_template?(@current_user, @template)}
           navigate={~p"/dashboard/templates/#{@template.id}/share"}
         >
           <.button class="bg-primary">Share</.button>
