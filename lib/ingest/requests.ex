@@ -57,6 +57,11 @@ defmodule Ingest.Requests do
   """
   def get_template!(id), do: Repo.get!(Template, id) |> Repo.preload(:template_members)
 
+  def can_share_template?(%{id: user_id}, %Template{inserted_by: user_id}), do: true
+  def can_share_template?(%{id: user_id}, %Template{template_members: members}) do
+    Enum.any?(members, fn %{id: member_id} -> member_id == user_id end)
+  end
+
   @doc """
   Gets name convention fields for a given template
   Raises `Ecto.NoResultsError` if the array is empty.
