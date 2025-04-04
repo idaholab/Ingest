@@ -564,23 +564,30 @@ defmodule Ingest.Requests do
     |> Repo.insert()
   end
 
-  def add_user_to_template_by_email(%Template{} = template, email, role \\ :member) do
-    member = Ingest.Accounts.get_user_by_email(email)
 
-    if member do
-      %TemplateMembers{}
-      |> TemplateMembers.changeset(%{
-        email: email,
-        user_id: member.id,
-        template_id: template.id,
-        role: role
-      })
-      |> Repo.insert()
-    else
-      %TemplateMembers{}
-      |> TemplateMembers.changeset(%{email: email, template_id: template.id, role: role})
-      |> Repo.insert()
+  def add_user_to_template_by_email(%Template{} = template, email, role \\ :member) do
+
+    case Ingest.Accounts.get_user_by_email(email) do
+
+      nil ->
+        {:error, :user_not_found}
+
+      %User{} = member ->
+        params = %{
+          email: email,
+          user_id: member.id,
+          template_id: template.id,
+          role: role
+        }
+
+        changeset = TemplateMembers.changeset(%TemplateMembers{}, params)
+
+        case Repo.insert(changeset) do
+          {:ok, record} -> {:ok, record}
+          {:error, cs} -> {:error, cs}
+        end
     end
+
   end
 
   def backfill_shared_templates(%User{} = user) do
@@ -601,11 +608,11 @@ defmodule Ingest.Requests do
   end
 
   def remove_template_user(%TemplateMembers{} = tm) do
-    query =
-      from t in TemplateMembers,
-        where: t.user_id == ^tm.user_id and t.project_id == ^tm.template_id
 
-    Repo.delete_all(query)
+    from(t in TemplateMembers,
+      where: t.user_id == ^tm.user_id and t.template_id == ^tm.template_id
+    )
+    |> Repo.delete_all()
   end
 
   @doc """

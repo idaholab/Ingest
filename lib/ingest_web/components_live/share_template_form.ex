@@ -4,11 +4,17 @@ defmodule IngestWeb.LiveComponents.ShareTemplateForm do
   needed for the operation.
   """
   use IngestWeb, :live_component
+  require Logger
 
   @impl true
   def render(assigns) do
     ~H"""
     <div>
+    <%= if @invite_error do %>
+  <div class="bg-yellow-100 text-yellow-800 p-4 rounded mb-4 border border-yellow-300">
+    <%= @invite_error %>
+  </div>
+<% end %>
       <dul role="list" class="divide-y divide-gray-100">
         <%= for member <- @template.template_members do %>
           <li class="flex items-center justify-between gap-x-6 py-5">
@@ -56,6 +62,7 @@ defmodule IngestWeb.LiveComponents.ShareTemplateForm do
                 phx-click="remove_member"
                 phx-value-member={member.id}
                 phx-value-project={@template.id}
+                phx-target={@myself}
                 class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 cursor-pointer"
               >
                 Remove
@@ -87,26 +94,63 @@ defmodule IngestWeb.LiveComponents.ShareTemplateForm do
   def update(assigns, socket) do
     {:ok,
      socket
+     |> assign_new(:invite_error, fn -> nil end)
      |> assign(:invite_form, to_form(%{"email" => ""}))
      |> assign(assigns)}
   end
 
   @impl true
   def handle_event("save", %{"email" => email}, socket) do
-    case Ingest.Requests.add_user_to_template_by_email(socket.assigns.template, email) do
-      {:ok, _n} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Succesfully Invited User!")
-         |> push_patch(to: ~p"/dashboard/templates/#{socket.assigns.template.id}")}
 
-      {:error, _e} ->
+    case Ingest.Requests.add_user_to_template_by_email(socket.assigns.template, email) do
+      {:ok, _record} ->
+        updated_template = Ingest.Requests.get_template!(socket.assigns.template.id)
+
         {:noreply,
          socket
-         |> put_flash(:error, "Failed To Invite User!")
-         |> push_patch(to: ~p"/dashboard/templates/#{socket.assigns.template.id}")}
+         |> assign(:invite_error, nil)
+         |> assign(:template, updated_template)
+         |> put_flash(:info, "Successfully invited user!")
+         |> push_patch(to: ~p"/dashboard/templates/#{socket.assigns.template.id}/share")}
+
+      {:error, :user_not_found} ->
+
+        {:noreply, assign(socket, :invite_error, "User #{email} not found. Are you sure they have an account?")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "There was a problem inviting this user.")
+         |> assign(invite_form: to_form(%{"email" => email}))}
+
+      unexpected ->
+        Logger.error("Unexpected result: #{inspect(unexpected)}")
+        {:noreply,
+         socket
+         |> put_flash(:error, "Something went really wrong.")}
     end
+
   end
+
+  @impl true
+def handle_event("remove_member", %{"member" => member_id, "project" => template_id} = _params, socket) do
+
+  case Ingest.Repo.get_by(Ingest.Requests.TemplateMembers, user_id: member_id, template_id: template_id) do
+    nil ->
+      {:noreply, put_flash(socket, :error, "Member not found.")}
+
+    template_member ->
+      Ingest.Requests.remove_template_user(template_member)
+
+      updated_template = Ingest.Requests.get_template!(template_id)
+
+      {:noreply,
+       socket
+       |> put_flash(:info, "Member removed!")
+       |> assign(:invite_error, nil)
+       |> assign(:template, updated_template)}
+  end
+end
 
   @impl true
   def handle_event(
