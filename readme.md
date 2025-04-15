@@ -19,6 +19,11 @@ Ingest is desisgned to be the upload point for various data management solutions
 4. Run `mix phx.gen.secret` and copy the output to line 27 in your `config/dev.exs` file - under `secret_key_base`
 5. If you're on VSCode you can use the default run configuration to run your application from the editor, or you may start your server by running `mix phx.server` in either your terminal or an iEX instance
 
+## Editor Setup
+We recommend that you use either VSCode or Neovim for Elixir. 
+[Setup for VSCode](https://fly.io/phoenix-files/setup-vscode-for-elixir-development/) (Make sure you also install the Credo extension)
+[Setup for NeoVim](https://elixirforum.com/t/neovim-elixir-setup-configuration-from-scratch-guide/46310)
+
 ### VSCode Extensions
 
 Visual Studio Code with a few extensions is primarily recommended as the editor of choice for Elixir/Phoenix. Extensions are available through the extensions tab on the left column of VS Code and typed into the search bar. These extensions help with linting and coding hints to ease the development experience. **Note**: Users of IntelliJ should be aware that there is no support for Phx HEEx templates and that it is recommended to use VSC or at least Zed or Neovim instead.
@@ -55,7 +60,10 @@ You also need to modify the configuration file in `config/config.exs`, adding `c
 
 ### Modifying `config/dev.exs`
 
-You will also need to update your `secret_key_base` environment variable. To generate a new secret, type `mix phx.gen.secret` at the command line. Paste the resulting output into `secret_key_base` in `dev.exs` (full image cropped for security reasons):
+You need to add the cacerts_path to the following line in dev.exs like so:
+![alt text](assets/README/dev_config_cert_116.png)
+
+You will also need to update your `secret_key_base` environment variable (step 4 in setup process). To generate a new secret, type `mix phx.gen.secret` at the command line. Paste the resulting output into `secret_key_base` in `dev.exs` (full image cropped for security reasons):
 
 ![alt text](assets/README/secret_key_base.png)
 
@@ -67,10 +75,6 @@ You will also need to update your `secret_key_base` environment variable. To gen
 - ElixirLS Problems - Two different solutions. Either make sure you are opening the project from the server directory or install hex globally. `mix archive.install github hexpm/hex branch latest` run this command in `/users/{YourName}` and `/Ingest/` directory.  
 - If you are getting an error with Argon2 running `mix setup`, make sure you do not have a space in the folder names (even the parent folders of the git repo)
 
-## Editor Setup
-We recommend that you use either VSCode or Neovim for Elixir. 
-[Setup for VSCode](https://fly.io/phoenix-files/setup-vscode-for-elixir-development/) (Make sure you also install the Credo extension)
-[Setup for NeoVim](https://elixirforum.com/t/neovim-elixir-setup-configuration-from-scratch-guide/46310)
 
 ## Running
 To start your Phoenix server:
